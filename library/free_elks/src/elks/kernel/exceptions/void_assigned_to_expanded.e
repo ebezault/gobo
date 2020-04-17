@@ -25,7 +25,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("Void assigned to expanded.")
+			create Result.make_from_string_general ("Void assigned to expanded.")
 		end
 
 note

@@ -30,7 +30,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("Eiffel run-time panic.")
+			create Result.make_from_string_general ("Eiffel run-time panic.")
 		end
 
 feature {EXCEPTION_MANAGER} -- Status setting

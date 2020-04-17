@@ -26,7 +26,7 @@ feature -- Access
 	string_type: READABLE_STRING_8
 			-- Type of strings `Current' manipulate to perform searches.
 		do
-			Result := ""
+			Result := {STRING_8} ""
 		end
 
 	max_code_point_value: INTEGER = 255

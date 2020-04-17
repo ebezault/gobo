@@ -30,7 +30,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("No more memory.")
+			create Result.make_from_string_general ("No more memory.")
 		end
 
 feature {EXCEPTION_MANAGER} -- Status setting

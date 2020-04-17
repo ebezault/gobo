@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "Ancestor of all exception classes."
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -57,7 +57,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- A short message describing what current exception is
 		once
-			create Result.make_from_string_8 ("General exception")
+			create Result.make_from_string_general ("General exception")
 		end
 
 	message: detachable STRING
@@ -96,8 +96,10 @@ feature -- Access
 		local
 			u: UTF_CONVERTER
 		do
-			if attached internal_trace as l_trace then
-				Result := u.utf_8_string_8_to_escaped_string_32 (l_trace)
+			if attached {STRING_8} internal_trace as l_trace_8 then
+				Result := u.utf_8_string_8_to_escaped_string_32 (l_trace_8)
+			elseif attached internal_trace as l_trace then
+				Result := l_trace
 			end
 		end
 
@@ -227,10 +229,20 @@ feature -- Output
 			-- New string containing terse printable representation
 			-- of current object
 		do
-			Result := {UTF_CONVERTER}.string_32_to_utf_8_string_8 (generating_type.name_32)
-			if attached trace as t then
-				Result.append_character ('%N')
-				{UTF_CONVERTER}.escaped_utf_32_string_into_utf_8_string_8 (t, Result)
+			create Result.make (50)
+			if attached {STRING_8} Result as l_result then
+				{UTF_CONVERTER}.string_32_into_utf_8_string_8 (generating_type.name_32, l_result)
+				if attached trace as t then
+					Result.append_character ('%N')
+					{UTF_CONVERTER}.escaped_utf_32_string_into_utf_8_string_8 (t, l_result)
+				end
+			else
+				Result.append_string_general (generating_type.name_32)
+				if attached trace as t then
+					Result.append_character ('%N')
+					Result.append_string_general (t)
+				end
+				
 			end
 		end
 

@@ -25,7 +25,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("Postcondition violated.")
+			create Result.make_from_string_general ("Postcondition violated.")
 		end
 
 note

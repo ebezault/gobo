@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "Implementation of the STORABLE mechanism with streams."
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -254,7 +254,7 @@ feature -- Output
 		do
 		end
 
-	put_character, putchar (c: CHARACTER)
+	put_character, putchar (c: CHARACTER_8)
 			-- Write `c' to medium.
 		do
 		end

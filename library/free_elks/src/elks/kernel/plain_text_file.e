@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "Files viewed as persistent sequences of ASCII characters"
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -39,49 +39,49 @@ feature -- Output
 	put_integer, putint, put_integer_32 (i: INTEGER)
 			-- Write ASCII value of `i' at current position.
 		do
-			put_string (i.out)
+			put_string_general (i.out)
 		end
 
 	put_integer_64 (i: INTEGER_64)
 			-- Write ASCII value of `i' at current position.
 		do
-			put_string (i.out)
+			put_string_general (i.out)
 		end
 
 	put_integer_16 (i: INTEGER_16)
 			-- Write ASCII value of `i' at current position.
 		do
-			put_string (i.out)
+			put_string_general (i.out)
 		end
 
 	put_integer_8 (i: INTEGER_8)
 			-- Write ASCII value of `i' at current position.
 		do
-			put_string (i.out)
+			put_string_general (i.out)
 		end
 
 	put_natural_64 (i: NATURAL_64)
 			-- Write ASCII value of `i' at current position.
 		do
-			put_string (i.out)
+			put_string_general (i.out)
 		end
 
 	put_natural, put_natural_32 (i: NATURAL_32)
 			-- Write ASCII value of `i' at current position.
 		do
-			put_string (i.out)
+			put_string_general (i.out)
 		end
 
 	put_natural_16 (i: NATURAL_16)
 			-- Write ASCII value of `i' at current position.
 		do
-			put_string (i.out)
+			put_string_general (i.out)
 		end
 
 	put_natural_8 (i: NATURAL_8)
 			-- Write ASCII value of `i' at current position.
 		do
-			put_string (i.out)
+			put_string_general (i.out)
 		end
 
 	put_boolean, putbool (b: BOOLEAN)
@@ -191,7 +191,7 @@ feature -- Input
 			last_double := file_gd (file_pointer)
 		end
 
-	read_to_string (a_string: STRING; pos, nb: INTEGER): INTEGER
+	read_to_string (a_string: STRING_8; pos, nb: INTEGER): INTEGER
 			-- Fill `a_string', starting at position `pos' with at
 			-- most `nb' characters read from current file.
 			-- Return the number of characters actually read.
@@ -212,7 +212,7 @@ feature {NONE} -- Implementation
 			Result.set_trailing_separators_acceptable (False)
 		end
 
-	internal_leading_separators: STRING = " %N%R%T"
+	internal_leading_separators: STRING_8 = " %N%R%T"
 			-- Characters that are considered as leading separators
 
 	is_sequence_an_expected_numeric: BOOLEAN

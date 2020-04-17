@@ -153,13 +153,19 @@ feature -- Access
 			end
 		end
 
-	name: STRING_8
-			-- File name as a STRING_8 instance. The value might be truncated
+	name: STRING
+			-- File name as a STRING instance. The value might be truncated
 			-- from the original name used to create the current FILE instance.
 		obsolete
 			"Use `path' to ensure you can retrieve all kind of names. [2017-05-31]"
 		do
-			Result := internal_name.as_string_8
+			if attached {READABLE_STRING_8} internal_name as l_string_8 then
+				Result := l_string_8
+			elseif attached {STRING} internal_name.as_string_32 as l_string_32 then
+				Result := l_string_32
+			else
+				Result := internal_name.as_string_8
+			end
 		ensure then
 			name_not_empty: not Result.is_empty
 		end

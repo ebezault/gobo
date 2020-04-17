@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "[
 			Collection of features that are used to mark
 			places in code that needs refactoring.
@@ -13,42 +13,42 @@ class REFACTORING_HELPER
 
 feature -- Markers
 
-	fixme (comment: READABLE_STRING_8)
+	fixme (comment: READABLE_STRING_GENERAL)
 			-- Mark code that has to be "fixed" with `comment'.
 		require
 			comment_not_void: comment /= Void
 		do
 			debug ("refactor_fixme")
-				io.error.put_string ("FIXME: ")
-				io.error.put_string (comment)
+				io.error.put_string_general ("FIXME: ")
+				io.error.put_string_general (comment)
 				io.error.put_new_line
 			end
 		ensure
 			instance_free: class
 		end
 
-	to_implement (comment: READABLE_STRING_8)
+	to_implement (comment: READABLE_STRING_GENERAL)
 			-- Mark code that has to be "implemented" with `comment'.
 		require
 			comment_not_void: comment /= Void
 		do
 			debug ("refactor_fixme")
-				io.error.put_string ("TO_BE_IMPLEMENTED: ")
-				io.error.put_string (comment)
+				io.error.put_string_general ("TO_BE_IMPLEMENTED: ")
+				io.error.put_string_general (comment)
 				io.error.put_new_line
 			end
 		ensure
 			instance_free: class
 		end
 
-	to_implement_assertion (comment: READABLE_STRING_8): BOOLEAN
+	to_implement_assertion (comment: READABLE_STRING_GENERAL): BOOLEAN
 			-- Mark assertion that has to be "implemented" with `comment'.
 		require
 			comment_not_void: comment /= Void
 		do
 			debug ("refactor_fixme")
-				io.error.put_string ("ASSERTION_TO_BE_IMPLEMENTED: ")
-				io.error.put_string (comment)
+				io.error.put_string_general ("ASSERTION_TO_BE_IMPLEMENTED: ")
+				io.error.put_string_general (comment)
 				io.error.put_new_line
 			end
 			Result := True

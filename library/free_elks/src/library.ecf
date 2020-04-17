@@ -22,7 +22,7 @@
 		</file_rule>
 		<option warning="true"/>
 		<mapping old_name="REAL" new_name="REAL_32"/>
-		<mapping old_name="STRING" new_name="STRING_8"/>
+		<mapping old_name="STRING" new_name="STRING_32"/>
 		<mapping old_name="REAL_REF" new_name="REAL_32_REF"/>
 		<mapping old_name="INTEGER_REF" new_name="INTEGER_32_REF"/>
 		<mapping old_name="INTEGER" new_name="INTEGER_32"/>
@@ -30,8 +30,8 @@
 		<mapping old_name="WIDE_CHARACTER_REF" new_name="CHARACTER_32_REF"/>
 		<mapping old_name="NATURAL" new_name="NATURAL_32"/>
 		<mapping old_name="DOUBLE_REF" new_name="REAL_64_REF"/>
-		<mapping old_name="CHARACTER" new_name="CHARACTER_8"/>
-		<mapping old_name="CHARACTER_REF" new_name="CHARACTER_8_REF"/>
+		<mapping old_name="CHARACTER" new_name="CHARACTER_32"/>
+		<mapping old_name="CHARACTER_REF" new_name="CHARACTER_32_REF"/>
 		<mapping old_name="DOUBLE" new_name="REAL_64"/>
 		<cluster name="free_elks" location="./" recursive="true">
 			<file_rule>

@@ -347,7 +347,7 @@ feature -- Access
 		require
 			a_type_id_nonnegative: a_type_id >= 0
 		local
-			l_result: detachable STRING_8
+			l_result: detachable STRING
 		do
 			id_to_storable_version.search (a_type_id)
 			if id_to_storable_version.found then
@@ -355,7 +355,7 @@ feature -- Access
 			else
 				l_result := {ISE_RUNTIME}.storable_version_of_type (a_type_id)
 				if l_result /= Void then
-					create Result.make_from_string (l_result)
+					create Result.make_from_string ({UTF_CONVERTER}.escaped_utf_32_string_to_utf_8_string_8 (l_result))
 				end
 				id_to_storable_version.put (Result, a_type_id)
 			end

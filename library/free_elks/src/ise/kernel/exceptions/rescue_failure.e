@@ -25,7 +25,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("Exception in rescue clause.")
+			create Result.make_from_string_general ("Exception in rescue clause.")
 		end
 
 end

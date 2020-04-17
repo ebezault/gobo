@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "Internal file information"
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -138,7 +138,7 @@ feature -- Access
 			Result := file_info ($buffered_file_info, 10)
 		end
 
-	owner_name: STRING
+	owner_name: STRING_8
 			-- Name of the file owner, if available from /etc/passwd.
 			-- Otherwise, the UID
 		require
@@ -147,7 +147,7 @@ feature -- Access
 			Result := file_owner (user_id)
 		end
 
-	group_name: STRING
+	group_name: STRING_8
 			-- Name of the file group, if available from /etc/group.
 			-- Otherwise, the GID
 		require
@@ -156,7 +156,7 @@ feature -- Access
 			Result := file_group (group_id)
 		end
 
-	file_name: detachable STRING
+	file_name: detachable STRING_8
 			-- File name as a STRING_8 instance. The value might be truncated
 			-- from the original name used to create the current FILE instance.
 		obsolete
@@ -254,11 +254,11 @@ feature {NATIVE_STRING_HANDLER} -- Access
 				create l_cstring.make_empty (l_count)
 				l_count := utf_16_to_multi_byte (a_ptr, l_cstring.item, l_count)
 					-- We do -1 since we simply do not count the null terminating character to build our string.
-				Result := l_cstring.substring (1, l_count - 1)
+				Result := l_cstring.substring_8 (1, l_count - 1)
 			else
 					-- On Unix we do not even try to interpret the path, we just give it as is.
 				create l_cstring.make_shared_from_pointer (a_ptr)
-				Result := l_cstring.string
+				Result := l_cstring.string_8
 			end
 		end
 
@@ -567,7 +567,7 @@ feature {NONE} -- Implementation
 			"eif_file_info"
 		end
 
-	file_owner (uid: INTEGER): STRING
+	file_owner (uid: INTEGER): STRING_8
 			-- Convert UID to login name if possible
 		external
 			"C signature (int): EIF_REFERENCE use %"eif_file.h%""
@@ -575,7 +575,7 @@ feature {NONE} -- Implementation
 			"eif_file_owner"
 		end
 
-	file_group (gid: INTEGER): STRING
+	file_group (gid: INTEGER): STRING_8
 			-- Convert GID to group name if possible
 		external
 			"C signature (int): EIF_REFERENCE use %"eif_file.h%""

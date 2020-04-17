@@ -55,7 +55,7 @@ convert
 	make_from_string ({READABLE_STRING_8, STRING_8}),
 	make_from_cil ({SYSTEM_STRING}),
 	to_cil: {SYSTEM_STRING},
-	as_string_32: {STRING_32},
+	as_string_32: {READABLE_STRING_32, STRING_32},
 	as_string_8: {STRING_8}
 
 feature {NONE} -- Initialization

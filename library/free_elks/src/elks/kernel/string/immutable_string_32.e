@@ -58,7 +58,6 @@ create {IMMUTABLE_STRING_32}
 convert
 	to_cil: {SYSTEM_STRING},
 	make_from_cil ({SYSTEM_STRING}),
-	make_from_string_8 ({READABLE_STRING_8, IMMUTABLE_STRING_8, STRING_8}),
 	make_from_string_32 ({READABLE_STRING_32, STRING_32}),
 	as_string_32: {STRING_32}
 

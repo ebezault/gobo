@@ -35,7 +35,7 @@ feature {EXCEPTION_MANAGER} -- Element change
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("Class invariant violated.")
+			create Result.make_from_string_general ("Class invariant violated.")
 		end
 
 feature -- Status report

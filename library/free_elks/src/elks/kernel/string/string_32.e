@@ -100,8 +100,7 @@ create
 
 convert
 	to_cil: {SYSTEM_STRING},
-	make_from_cil ({SYSTEM_STRING}),
-	as_string_8: {READABLE_STRING_8, STRING_8}
+	make_from_cil ({SYSTEM_STRING})
 
 feature -- Initialization
 

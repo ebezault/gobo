@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "Any medium that can perform input and/or output"
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -95,10 +95,10 @@ feature -- Status report
 		do
 		end
 
-	last_character: CHARACTER
+	last_character: CHARACTER_8
 			-- Last character read by `read_character'
 
-	last_string: STRING
+	last_string: STRING_8
 			-- Last string read
 
 	last_integer: INTEGER
@@ -246,6 +246,21 @@ feature -- Output
 		deferred
 		end
 
+	put_string_general (s: READABLE_STRING_GENERAL)
+			-- Write `s' to medium.
+		require
+			extendible: extendible
+			non_void: s /= Void
+		do
+			if attached {READABLE_STRING_32} s as l_string_32 then
+				put_string_32 (l_string_32)
+			elseif attached {READABLE_STRING_8} s as l_string_8 then
+				put_string (l_string_8)
+			else
+				put_string_32 (s.to_string_32)
+			end
+		end
+
 	put_string, putstring (s: READABLE_STRING_8)
 			-- Write `s' to medium.
 		require
@@ -254,7 +269,16 @@ feature -- Output
 		deferred
 		end
 
-	put_character, putchar (c: CHARACTER)
+	put_string_32 (s: READABLE_STRING_32)
+			-- Write `s' to medium.
+		require
+			extendible: extendible
+			non_void: s /= Void
+		do
+			put_string ({UTF_CONVERTER}.escaped_utf_32_string_to_utf_8_string_8 (s))
+		end
+		
+	put_character, putchar (c: CHARACTER_8)
 			-- Write `c' to medium.
 		require
 			extendible: extendible
@@ -509,7 +533,7 @@ feature -- Input
 
 feature -- Obsolete
 
-	lastchar: CHARACTER
+	lastchar: CHARACTER_8
 			-- Last character read by `read_character'
 		do
 			Result := last_character

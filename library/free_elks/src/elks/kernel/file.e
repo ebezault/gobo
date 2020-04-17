@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "Sequential files, viewed as persistent sequences of characters"
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -8,9 +8,9 @@
 
 deferred class FILE inherit
 
-	UNBOUNDED [CHARACTER]
+	UNBOUNDED [CHARACTER_8]
 
-	SEQUENCE [CHARACTER]
+	SEQUENCE [CHARACTER_8]
 		undefine
 			prune
 		redefine
@@ -30,7 +30,7 @@ deferred class FILE inherit
 
 feature -- Initialization
 
-	make (fn: STRING_8)
+	make (fn: STRING)
 			-- Create file object with `fn' as file name.
 		obsolete
 			"Use any of the `make_...' routines instead to benefit from Unicode file names. [2017-05-31]"
@@ -211,17 +211,23 @@ feature -- Access
 		end
 
 	name: STRING
-			-- File name as a STRING_8 instance. The value might be truncated
+			-- File name as a STRING instance. The value might be truncated
 			-- from the original name used to create the current FILE instance.
 		obsolete
 			"Use `path.name' to ensure that Unicode filenames are not truncated. [2017-05-31]"
 		do
-			Result := internal_name.as_string_8
+			if attached {READABLE_STRING_8} internal_name as l_string_8 then
+				Result := l_string_8
+			elseif attached {STRING} internal_name.as_string_32 as l_string_32 then
+				Result := l_string_32
+			else
+				Result := internal_name.as_string_8
+			end
 		ensure then
 			name_not_empty: not Result.is_empty
 		end
 
-	item: CHARACTER
+	item: CHARACTER_8
 			-- Current item
 		do
 			read_character
@@ -248,7 +254,7 @@ feature -- Access
 
 	descriptor_available: BOOLEAN
 
-	separator: CHARACTER
+	separator: CHARACTER_8
 			-- ASCII code of character following last word read
 
 	file_pointer: POINTER
@@ -306,7 +312,7 @@ feature -- Access
 			Result := buffered_file_info.protection
 		end
 
-	owner_name: STRING
+	owner_name: STRING_8
 			-- Name of owner
 		require
 			file_exists: exists
@@ -352,7 +358,7 @@ feature -- Access
 			instance_free: class
 		end
 
-	null_name: STRING
+	null_name: STRING_8
 			-- Null device name.
 		note
 			EIS: "name=Null Device", "src=https://en.wikipedia.org/wiki/Null_device", "protocol=uri"
@@ -1030,7 +1036,7 @@ feature -- Iteration
 
 feature -- Element change
 
-	extend (v: CHARACTER)
+	extend (v: CHARACTER_8)
 			-- Include `v' at end.
 		do
 			put_character (v)
@@ -1121,7 +1127,7 @@ feature -- Element change
 			file_ps (file_pointer, p.item + start_pos, nb_bytes)
 		end
 
-	put_character, putchar (c: CHARACTER)
+	put_character, putchar (c: CHARACTER_8)
 			-- Write `c' at current position.
 		do
 			file_pc (file_pointer, c)
@@ -1211,7 +1217,7 @@ feature -- Element change
 			name_changed: internal_name.same_string (new_path.name)
 		end
 
-	add_permission (who, what: STRING)
+	add_permission (who, what: STRING_8)
 			-- Add read, write, execute or setuid permission
 			-- for `who' ('u', 'g' or 'o') to `what'.
 		require
@@ -1228,7 +1234,7 @@ feature -- Element change
 			file_perm (internal_name_pointer.item, $ext_who, $ext_what, 1)
 		end
 
-	remove_permission (who, what: STRING)
+	remove_permission (who, what: STRING_8)
 			-- Remove read, write, execute or setuid permission
 			-- for `who' ('u', 'g' or 'o') to `what'.
 		require
@@ -1536,7 +1542,7 @@ feature -- Input
 			bytes_read := file_gss (file_pointer, p.item + start_pos, nb_bytes)
 		end
 
-	read_to_string (a_string: STRING; pos, nb: INTEGER): INTEGER
+	read_to_string (a_string: STRING_8; pos, nb: INTEGER): INTEGER
 			-- Fill `a_string', starting at position `pos' with at
 			-- most `nb' characters read from current file.
 			-- Return the number of characters actually read.
@@ -1759,13 +1765,13 @@ feature {NONE} -- Implementation
 	default_last_string_size: INTEGER = 256
 			-- Default size for creating `last_string'
 
-	true_string: STRING
+	true_string: STRING_8
 			-- Character string "true"
 		once
 			Result := "True"
 		end
 
-	false_string: STRING
+	false_string: STRING_8
 			-- Character string "false"
 		once
 			Result := "False"
@@ -1843,10 +1849,10 @@ feature {NONE} -- Implementation
 			"eif_file_fd"
 		end
 
-	file_gc (file: POINTER): CHARACTER
+	file_gc (file: POINTER): CHARACTER_8
 			-- Access the next character
 		external
-			"C blocking signature (FILE *): EIF_CHARACTER use %"eif_file.h%""
+			"C blocking signature (FILE *): EIF_CHARACTER_8 use %"eif_file.h%""
 		alias
 			"eif_file_gc"
 		end
@@ -1913,11 +1919,11 @@ feature {NONE} -- Implementation
 			"eif_file_gw"
 		end
 
-	file_lh (file: POINTER): CHARACTER
+	file_lh (file: POINTER): CHARACTER_8
 			-- Look ahead in `file' and find out the value of the next
 			-- character. Do not read over character.
 		external
-			"C signature (FILE *): EIF_CHARACTER use %"eif_file.h%""
+			"C signature (FILE *): EIF_CHARACTER_8 use %"eif_file.h%""
 		alias
 			"eif_file_lh"
 		end
@@ -2029,10 +2035,10 @@ feature {NONE} -- Implementation
 			"eif_file_ps"
 		end
 
-	file_pc (file: POINTER; c: CHARACTER)
+	file_pc (file: POINTER; c: CHARACTER_8)
 			-- Put `c' to end of `file'.
 		external
-			"C signature (FILE *, EIF_CHARACTER) use %"eif_file.h%""
+			"C signature (FILE *, EIF_CHARACTER_8) use %"eif_file.h%""
 		alias
 			"eif_file_pc"
 		end

@@ -109,7 +109,7 @@ feature -- Access
 				-- Alias `managed_data' to be a C string so that we copy the raw sequence
 				-- of bytes into a STRING_8 but we do not include the null-terminating character.
 			create l_cstr.make_shared_from_pointer_and_count (managed_data.item, managed_data.count)
-			Result := l_cstr.substring (1, managed_data.count - unit_size)
+			Result := l_cstr.substring_8 (1, managed_data.count - unit_size)
 		end
 
 	string: STRING_32

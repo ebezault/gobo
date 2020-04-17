@@ -26,7 +26,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("External event.")
+			create Result.make_from_string_general ("External event.")
 		end
 
 end

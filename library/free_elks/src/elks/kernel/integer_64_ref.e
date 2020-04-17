@@ -433,12 +433,12 @@ feature -- Conversion
 			i: INTEGER_32
 		do
 			i := item.to_integer_32
-			Result := if i <= 9 then '0' else 'A' - 10 end + i
+			Result := if i <= 9 then {CHARACTER_8} '0' else {CHARACTER_8} 'A' - 10 end + i
 		ensure
 			valid_character: ("0123456789ABCDEF").has (Result)
 		end
 
-	to_character: CHARACTER
+	to_character: CHARACTER_8
 			-- Returns corresponding ASCII character to `item' value.
 		obsolete
 			"Use `to_character_8' instead. [2017-05-31]"

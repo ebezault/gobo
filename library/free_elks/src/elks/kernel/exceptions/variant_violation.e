@@ -25,7 +25,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("Non-decreasing loop variant or negative value reached.")
+			create Result.make_from_string_general ("Non-decreasing loop variant or negative value reached.")
 		end
 
 note

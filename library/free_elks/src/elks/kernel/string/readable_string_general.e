@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "Common ancestors to all STRING classes. Read-only interface."
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -819,7 +819,7 @@ feature -- Conversion
 			end
 		ensure
 			as_string_8_not_void: Result /= Void
-			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
+			identity: (attached {STRING_8} Current and Result = Current) or (not attached {STRING_8} Current and Result /= Current)
 		end
 
 	as_string_8_conversion: STRING_8
@@ -883,7 +883,7 @@ feature -- Conversion
 			end
 		ensure
 			as_string_8_not_void: Result /= Void
-			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
+			identity: (attached {STRING_8} Current and Result = Current) or (not attached {STRING_8} Current and Result /= Current)
 		end
 
 	as_string_32_conversion: STRING_32

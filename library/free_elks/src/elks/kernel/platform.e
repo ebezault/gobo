@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "Platform-dependent properties."
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -300,9 +300,9 @@ feature -- Obsoletes
 	maximum_character_code: INTEGER
 			-- Largest supported code for CHARACTER_8 values
 		obsolete
-			"Use `{CHARACTER}.max_value' instead. [2017-05-31]"
+			"Use `{CHARACTER_8}.max_value' instead. [2017-05-31]"
 		do
-			Result := {CHARACTER}.max_value
+			Result := {CHARACTER_8}.max_value
 		ensure
 			instance_free: class
 			meaningful: Result >= 127
@@ -311,9 +311,9 @@ feature -- Obsoletes
 	maximum_integer: INTEGER
 			-- Largest supported value of type INTEGER_32
 		obsolete
-			"Use `{INTEGER}.max_value' instead. [2017-05-31]"
+			"Use `{INTEGER_32}.max_value' instead. [2017-05-31]"
 		do
-			Result := {INTEGER}.max_value
+			Result := {INTEGER_32}.max_value
 		ensure
 			instance_free: class
 			meaningful: Result >= 0
@@ -322,9 +322,9 @@ feature -- Obsoletes
 	minimum_character_code: INTEGER
 			-- Smallest supported code for CHARACTER_8 values
 		obsolete
-			"Use `{CHARACTER}.min_value' instead. [2017-05-31]"
+			"Use `{CHARACTER_8}.min_value' instead. [2017-05-31]"
 		do
-			Result := {CHARACTER}.min_value
+			Result := {CHARACTER_8}.min_value
 		ensure
 			instance_free: class
 			meaningful: Result <= 0
@@ -333,9 +333,9 @@ feature -- Obsoletes
 	minimum_integer: INTEGER
 			-- Smallest supported value of type INTEGER_32
 		obsolete
-			"Use `{INTEGER}.min_value' instead. [2017-05-31]"
+			"Use `{INTEGER_32}.min_value' instead. [2017-05-31]"
 		do
-			Result := {INTEGER}.min_value
+			Result := {INTEGER_32}.min_value
 		ensure
 			instance_free: class
 			meaningful: Result <= 0

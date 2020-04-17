@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "[
 		Sequences of 8-bit characters, accessible through integer indices
 		in a contiguous range. Read-only interface.
@@ -746,7 +746,7 @@ feature -- Output
 			Result.append (Current)
 		ensure then
 			out_not_void: Result /= Void
-			same_items: same_type ("") implies Result.same_string (Current)
+			same_items: same_type ({STRING_8} "") implies Result.same_string (Current)
 		end
 
 feature {NONE} -- Implementation

@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "[
 		Commonly used console input and output mechanisms. 
 		This class may be used as ancestor by classes needing its facilities.
@@ -28,6 +28,7 @@ class CONSOLE inherit
 				lastchar, lastint, lastreal, laststring, lastdouble,
 				readable, is_closed, extendible, is_open_write,
 				putint, put_integer, put_integer_8, put_integer_16, put_integer_32, put_integer_64,
+				put_string_general, put_string_32,
 				readint, read_integer, read_integer_8, read_integer_16, read_integer_32, read_integer_64,
 				put_natural, put_natural_8, put_natural_16, put_natural_32, put_natural_64,
 				read_natural, read_natural_8, read_natural_16, read_natural_32, read_natural_64
@@ -35,10 +36,10 @@ class CONSOLE inherit
 			make_open_stdin, make_open_stdout, count, is_empty, exists,
 			read_real, read_double, read_character,
 			read_line, read_stream, read_word, next_line,
-			put_boolean, put_real, put_double, put_string, put_character,
+			put_boolean, put_real, put_double, put_string, putstring, put_character,
 			put_new_line, new_line, end_of_file, file_close,
 			readreal, readdouble, readchar, readline, readstream,
-			readword, putbool, putreal, putdouble, putstring, putchar,
+			readword, putbool, putreal, putdouble, putchar,
 			dispose, read_to_string, back, read_line_thread_aware,
 			read_stream_thread_aware, read_word_thread_aware,
 			read_integer_with_no_type,
@@ -254,7 +255,7 @@ feature -- Input
 
 feature -- Output
 
-	put_character, putchar (c: CHARACTER)
+	put_character, putchar (c: CHARACTER_8)
 			-- Write `c' at end of default output.
 		do
 			console_pc (file_pointer, c)
@@ -289,9 +290,9 @@ feature -- Output
 			-- Write `b' at end of default output.
 		do
 			if b then
-				put_string ("True")
+				put_string_general ("True")
 			else
-				put_string ("False")
+				put_string_general ("False")
 			end
 		end
 
@@ -349,7 +350,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-	read_to_string (a_string: STRING; pos, nb: INTEGER): INTEGER
+	read_to_string (a_string: STRING_8; pos, nb: INTEGER): INTEGER
 			-- Fill `a_string', starting at position `pos' with at
 			-- most `nb' characters read from current file.
 			-- Return the number of characters actually read.
@@ -364,10 +365,10 @@ feature {NONE} -- Implementation
 			"C signature (FILE *): EIF_BOOLEAN use %"eif_console.h%""
 		end
 
-	console_separator (file: POINTER): CHARACTER
+	console_separator (file: POINTER): CHARACTER_8
 			-- ASCII code of character following last word read
 		external
-			"C signature (FILE *): EIF_CHARACTER use %"eif_console.h%""
+			"C signature (FILE *): EIF_CHARACTER_8 use %"eif_console.h%""
 		end
 
 	console_ps (file: POINTER; s: POINTER; length: INTEGER)
@@ -382,10 +383,10 @@ feature {NONE} -- Implementation
 			"C signature (FILE *, EIF_REAL) use %"eif_console.h%""
 		end
 
-	console_pc (file: POINTER; c: CHARACTER)
+	console_pc (file: POINTER; c: CHARACTER_8)
 			-- Write character `c' at end of `file'
 		external
-			"C signature (FILE *, EIF_CHARACTER) use %"eif_console.h%""
+			"C signature (FILE *, EIF_CHARACTER_8) use %"eif_console.h%""
 		end
 
 	console_pd (file: POINTER; d: REAL_64)
@@ -412,10 +413,10 @@ feature {NONE} -- Implementation
 			"C blocking signature (FILE *): EIF_REAL use %"eif_console.h%""
 		end
 
-	console_readchar (file: POINTER): CHARACTER
+	console_readchar (file: POINTER): CHARACTER_8
 			-- Read a character from the console
 		external
-			"C blocking signature (FILE *): EIF_CHARACTER use %"eif_console.h%""
+			"C blocking signature (FILE *): EIF_CHARACTER_8 use %"eif_console.h%""
 		end
 
 	console_readint (file: POINTER): INTEGER

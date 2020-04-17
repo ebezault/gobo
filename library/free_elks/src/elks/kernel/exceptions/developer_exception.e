@@ -27,8 +27,9 @@ feature -- Access
 		end
 
 	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("Developer exception.")
+			create Result.make_from_string_general ("Developer exception.")
 		end
 
 note

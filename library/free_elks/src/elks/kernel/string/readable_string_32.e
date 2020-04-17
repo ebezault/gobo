@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "[
 		Sequences of 32-bit characters, accessible through integer indices
 		in a contiguous range. Read-only interface.
@@ -37,7 +37,6 @@ inherit
 
 convert
 	to_cil: {SYSTEM_STRING},
-	as_string_8: {READABLE_STRING_8, STRING_8},
 	as_string_32: {STRING_32}
 
 feature {NONE} -- Initialization
@@ -704,9 +703,12 @@ feature -- Output
 	out: STRING
 			-- Printable representation.
 		do
-			Result := {UTF_CONVERTER}.string_32_to_utf_8_string_8 (Current)
-		ensure then
-			out_not_void: Result /= Void
+			create Result.make (count)
+			if attached {STRING_8} Result as l_result then
+				{UTF_CONVERTER}.string_32_into_utf_8_string_8 (Current, l_result)
+			else
+				Result.append_string_general (Current)
+			end
 		end
 
 feature {NONE} -- Implementation

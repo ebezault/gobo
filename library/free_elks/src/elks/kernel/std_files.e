@@ -1,4 +1,4 @@
-﻿note
+note
 	description: "[
 		Commonly used input and output mechanisms.
 		This class may be used as either ancestor or supplier
@@ -59,7 +59,7 @@ feature -- Access
 
 feature -- Status report
 
-	last_character, lastchar: CHARACTER
+	last_character, lastchar: CHARACTER_8
 			-- Last character read by `read_character'
 		do
 			Result := input.last_character
@@ -139,7 +139,7 @@ feature -- Status report
 			instance_free: class
 		end
 
-	last_string, laststring: STRING
+	last_string, laststring: STRING_8
 			-- Last string read by `read_line',
 			-- `read_stream', or `read_word'
 		do
@@ -179,18 +179,34 @@ feature -- Element change
 			default_output := output
 		end
 
-	put_character, putchar (c: CHARACTER)
+	put_character, putchar (c: CHARACTER_8)
 			-- Write `c' at end of default output.
 		do
 			standard_default.put_character (c)
 		end
 
-	put_string, putstring (s: READABLE_STRING_8)
+	put_string (s: READABLE_STRING_GENERAL)
+			-- Write `s' at end of default output.
+		require
+			string_not_void: s /= Void
+		do
+			standard_default.put_string_general (s)
+		end
+
+	put_string_8 (s: READABLE_STRING_8)
 			-- Write `s' at end of default output.
 		require
 			string_not_void: s /= Void
 		do
 			standard_default.put_string (s)
+		end
+
+	put_string_32 (s: READABLE_STRING_32)
+			-- Write `s' at end of default output.
+		require
+			string_not_void: s /= Void
+		do
+			standard_default.put_string_32 (s)
 		end
 
 	put_real, putreal, put_real_32 (r: REAL_32)

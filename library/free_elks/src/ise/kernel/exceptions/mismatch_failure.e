@@ -26,7 +26,7 @@ feature -- Access
 	tag: IMMUTABLE_STRING_32
 			-- <Precursor>
 		once
-			create Result.make_from_string_8 ("Mismatch failed.")
+			create Result.make_from_string_general ("Mismatch failed.")
 		end
 
 end

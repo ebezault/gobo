@@ -68,7 +68,7 @@ feature -- Access
 		do
 			Result := internal_name
 			if not attached Result then
-				create Result.make_from_string (runtime_name)
+				create Result.make_from_string ({UTF_CONVERTER}.escaped_utf_32_string_to_utf_8_string_8 (runtime_name))
 				internal_name := Result
 			end
 		ensure
@@ -244,9 +244,9 @@ feature -- Features from STRING needed here for the transition period (see conve
 		require
 			other_not_void: other /= Void
 		do
-			Result := name.same_string (other)
+			Result := name_32.same_string (other)
 		ensure
-			definition: Result = name.same_string (other)
+			definition: Result = name_32.same_string (other)
 		end
 
 	is_case_insensitive_equal (other: STRING): BOOLEAN
@@ -260,9 +260,9 @@ feature -- Features from STRING needed here for the transition period (see conve
 		require
 			other_not_void: other /= Void
 		do
-			Result := name.is_case_insensitive_equal (other)
+			Result := name_32.is_case_insensitive_equal (other)
 		ensure
-			definition: Result = name.is_case_insensitive_equal (other)
+			definition: Result = name_32.is_case_insensitive_equal (other)
 		end
 
 	as_lower: STRING
