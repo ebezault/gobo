@@ -815,6 +815,7 @@ void* GE_check_null(void* ptr)
  */
 static void GE_signal_handler(int a_sig)
 {
+	fprintf(stderr, "GE_signal_handler %d\n", a_sig);
 	GE_raise_with_message(GE_EX_SIG, "Illegal instruction");
 }
 
@@ -824,6 +825,9 @@ static void GE_signal_handler(int a_sig)
 void GE_set_signal_handlers()
 {
 	signal(SIGILL, &GE_signal_handler);
+#ifdef SIGBUS
+	signal(SIGBUS, &GE_signal_handler);
+#endif
 }
 
 #ifdef EIF_WINDOWS
