@@ -43,6 +43,8 @@
 #endif
 #endif
 
+#include <signal.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -806,6 +808,22 @@ void* GE_check_null(void* ptr)
 		GE_raise(GE_EX_MEM);
 	}
 	return (ptr);
+}
+
+/*
+ * Code to be executed when the signal `a_sig' is raised.
+ */
+static void GE_signal_handler(int a_sig)
+{
+	GE_raise_with_message(GE_EX_SIG, "Illegal instruction");
+}
+
+/*
+ * Set signal handlers.
+ */
+void GE_set_signal_handlers()
+{
+	signal(SIGILL, &GE_signal_handler);
 }
 
 #ifdef EIF_WINDOWS
