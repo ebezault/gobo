@@ -33742,6 +33742,7 @@ feature {NONE} -- C function generation
 				print_result_name (current_file)
 				current_file.put_character (';')
 				current_file.put_new_line
+				print_indentation
 				print_context_type_declaration (current_file)
 				current_file.put_character (' ')
 				current_file.put_string (c_ac)
@@ -33939,6 +33940,7 @@ feature {NONE} -- C function generation
 				print_result_name (current_file)
 				current_file.put_character (';')
 				current_file.put_new_line
+				print_indentation
 				print_context_type_declaration (current_file)
 				current_file.put_character (' ')
 				current_file.put_string (c_ac)
@@ -34136,6 +34138,7 @@ feature {NONE} -- C function generation
 				print_result_name (current_file)
 				current_file.put_character (';')
 				current_file.put_new_line
+				print_indentation
 				print_context_type_declaration (current_file)
 				current_file.put_character (' ')
 				current_file.put_string (c_ac)
@@ -34333,6 +34336,7 @@ feature {NONE} -- C function generation
 				print_result_name (current_file)
 				current_file.put_character (';')
 				current_file.put_new_line
+				print_indentation
 				print_context_type_declaration (current_file)
 				current_file.put_character (' ')
 				current_file.put_string (c_ac)
@@ -35730,18 +35734,10 @@ feature {NONE} -- Memory allocation
 --				current_file.put_line ("fprintf(stderr, %"" + a_type.base_type.unaliased_to_text + "\n%");")
 			end
 			print_indentation
-			print_result_name (current_file)
+			current_file.put_string (c_size_t)
+			current_file.put_character (' ')
+			current_file.put_character ('s')
 			print_assign_to
-			current_file.put_character ('(')
-			print_type_declaration (a_type, current_file)
-			current_file.put_character (')')
-			if use_scoop or a_type.has_nested_reference_fields then
-				current_file.put_string (c_ge_malloc)
-			else
-				l_atomic_malloc := True
-				current_file.put_string (c_ge_malloc_atomic)
-			end
-			current_file.put_character ('(')
 			current_file.put_string (c_sizeof)
 			current_file.put_character ('(')
 			print_type_name (a_type, current_file)
@@ -35770,6 +35766,21 @@ feature {NONE} -- Memory allocation
 				print_type_declaration (l_item_type, current_file)
 				current_file.put_character (')')
 			end
+			print_semicolon_newline
+			print_indentation
+			print_result_name (current_file)
+			print_assign_to
+			current_file.put_character ('(')
+			print_type_declaration (a_type, current_file)
+			current_file.put_character (')')
+			if use_scoop or a_type.has_nested_reference_fields then
+				current_file.put_string (c_ge_malloc)
+			else
+				l_atomic_malloc := True
+				current_file.put_string (c_ge_malloc_atomic)
+			end
+			current_file.put_character ('(')
+			current_file.put_character ('s')
 			current_file.put_character (')')
 			print_semicolon_newline
 				-- Dispose routine.
@@ -35784,71 +35795,36 @@ feature {NONE} -- Memory allocation
 			current_file.put_character (' ')
 			current_file.put_character ('{')
 			current_file.put_new_line
-			if l_special_type /= Void and l_item_type /= Void then
-					-- Initialize items if needed.
-				current_file.put_string (c_ifndef)
-				current_file.put_character (' ')
-				if l_atomic_malloc then
-					current_file.put_line (c_ge_malloc_atomic_cleared)
-				else
-					current_file.put_line (c_ge_malloc_cleared)
-				end
-				print_indentation
-				current_file.put_string (c_if)
-				current_file.put_character (' ')
-				current_file.put_character ('(')
-				current_file.put_character ('a')
-				current_file.put_character ('1')
-				print_greater_than
-				current_file.put_character ('1')
-				current_file.put_character (')')
-				current_file.put_character (' ')
-				current_file.put_character ('{')
-				current_file.put_new_line
-				indent
-				print_indentation
-				current_file.put_string (c_memset)
-				current_file.put_character ('(')
-				current_file.put_character ('(')
-				current_file.put_string (c_char)
-				current_file.put_character ('*')
-				current_file.put_character (')')
-				current_file.put_character ('(')
-				print_result_name (current_file)
-				current_file.put_character (')')
-				current_file.put_character (',')
-				current_file.put_character ('0')
-				current_file.put_character (',')
-				current_file.put_string (c_sizeof)
-				current_file.put_character ('(')
-				print_type_name (a_type, current_file)
-				current_file.put_character (')')
-				current_file.put_character ('+')
-				current_file.put_character ('(')
-				current_file.put_character ('a')
-				current_file.put_character ('1')
-				current_file.put_character ('-')
-				current_file.put_character ('1')
-				current_file.put_character (')')
-				current_file.put_character ('*')
-				current_file.put_string (c_sizeof)
-				current_file.put_character ('(')
-				print_type_declaration (l_item_type, current_file)
-				current_file.put_character (')')
-				current_file.put_character (')')
-				print_semicolon_newline
-				dedent
-				current_file.put_character ('}')
-				current_file.put_new_line
-				current_file.put_line (c_endif)
-			end
 			indent
+			current_file.put_string (c_ifndef)
+			current_file.put_character (' ')
+			if l_atomic_malloc then
+				current_file.put_line (c_ge_malloc_atomic_cleared)
+			else
+				current_file.put_line (c_ge_malloc_cleared)
+			end
 			print_indentation
+			current_file.put_string (c_memset)
+			current_file.put_character ('(')
+			current_file.put_character ('(')
+			current_file.put_string (c_char)
 			current_file.put_character ('*')
-			print_type_cast (a_type, current_file)
+			current_file.put_character (')')
+			current_file.put_character ('(')
 			print_result_name (current_file)
+			current_file.put_character (')')
+			current_file.put_character (',')
+			current_file.put_character ('0')
+			current_file.put_character (',')
+			current_file.put_character ('s')
+			current_file.put_character (')')
+			print_semicolon_newline
+			current_file.put_line (c_endif)
+				-- Set 'type_id'.
+			print_indentation
+			print_attribute_type_id_access (tokens.result_keyword, a_type, False)
 			print_assign_to
-			print_default_name (a_type, current_file)
+			current_file.put_integer (a_type.id)
 			print_semicolon_newline
 			if use_scoop then
 					-- Set SCOOP region.
@@ -35873,6 +35849,17 @@ feature {NONE} -- Memory allocation
 				print_attribute_special_count_access (tokens.result_keyword, l_special_type, False)
 				print_assign_to
 				current_file.put_character ('0')
+				print_semicolon_newline
+					-- Set offset.
+				print_indentation
+				print_attribute_special_offset_access (tokens.result_keyword, l_special_type, False)
+				print_assign_to
+				current_file.put_string (c_offsetof)
+				current_file.put_character ('(')
+				print_type_name (l_special_type, current_file)
+				print_comma
+				print_attribute_special_item_name (l_special_type, current_file)
+				current_file.put_character (')')
 				print_semicolon_newline
 			end
 			dedent
@@ -45206,6 +45193,7 @@ feature {NONE} -- Constants
 	c_sc: STRING = "sc"
 	c_scond: STRING = "scond"
 	c_se: STRING = "se"
+	c_size_t: STRING = "size_t"
 	c_sizeof: STRING = "sizeof"
 	c_sr: STRING = "sr"
 	c_status_suffix: STRING = "_status"
