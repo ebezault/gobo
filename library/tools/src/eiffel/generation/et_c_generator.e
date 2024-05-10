@@ -35723,8 +35723,7 @@ feature {NONE} -- Memory allocation
 			print_type_declaration (a_type, current_file)
 			current_file.put_character (' ')
 			print_result_name (current_file)
-			current_file.put_character (';')
-			current_file.put_new_line
+			print_semicolon_newline
 			debug ("gobo_ids")
 					-- Keep track of the number of objects created by type ids.
 				current_file.put_line ("gobo_ids[" + a_type.id.out + "]++;")
@@ -35732,9 +35731,7 @@ feature {NONE} -- Memory allocation
 			end
 			print_indentation
 			print_result_name (current_file)
-			current_file.put_character (' ')
-			current_file.put_character ('=')
-			current_file.put_character (' ')
+			print_assign_to
 			current_file.put_character ('(')
 			print_type_declaration (a_type, current_file)
 			current_file.put_character (')')
@@ -35774,8 +35771,7 @@ feature {NONE} -- Memory allocation
 				current_file.put_character (')')
 			end
 			current_file.put_character (')')
-			current_file.put_character (';')
-			current_file.put_new_line
+			print_semicolon_newline
 				-- Dispose routine.
 			print_dispose_registration (tokens.result_keyword, a_type)
 				-- Default initialization.
@@ -35788,47 +35784,7 @@ feature {NONE} -- Memory allocation
 			current_file.put_character (' ')
 			current_file.put_character ('{')
 			current_file.put_new_line
-			indent
-			print_indentation
-			current_file.put_character ('*')
-			print_type_cast (a_type, current_file)
-			print_result_name (current_file)
-			current_file.put_character (' ')
-			current_file.put_character ('=')
-			current_file.put_character (' ')
-			print_default_name (a_type, current_file)
-			current_file.put_character (';')
-			current_file.put_new_line
-			if use_scoop then
-					-- Set SCOOP region.
-				print_indentation
-				print_attribute_region_access (tokens.result_keyword, a_type, False)
-				print_assign_to
-				current_file.put_string (c_ac)
-				current_file.put_string (c_arrow)
-				current_file.put_string (c_region)
-				print_semicolon_newline
-			end
 			if l_special_type /= Void and l_item_type /= Void then
-					-- Set 'capacity'.
-				print_indentation
-				print_attribute_special_capacity_access (tokens.result_keyword, l_special_type, False)
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
-				current_file.put_character ('a')
-				current_file.put_character ('1')
-				current_file.put_character (';')
-				current_file.put_new_line
-					-- Set 'count'.
-				print_indentation
-				print_attribute_special_count_access (tokens.result_keyword, l_special_type, False)
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
-				current_file.put_character ('0')
-				current_file.put_character (';')
-				current_file.put_new_line
 					-- Initialize items if needed.
 				current_file.put_string (c_ifndef)
 				current_file.put_character (' ')
@@ -35858,25 +35814,66 @@ feature {NONE} -- Memory allocation
 				current_file.put_character ('*')
 				current_file.put_character (')')
 				current_file.put_character ('(')
-				print_attribute_special_item_access (tokens.result_keyword, l_special_type, False)
+				print_result_name (current_file)
 				current_file.put_character (')')
 				current_file.put_character (',')
 				current_file.put_character ('0')
 				current_file.put_character (',')
+				current_file.put_string (c_sizeof)
+				current_file.put_character ('(')
+				print_type_name (a_type, current_file)
+				current_file.put_character (')')
+				current_file.put_character ('+')
+				current_file.put_character ('(')
 				current_file.put_character ('a')
 				current_file.put_character ('1')
+				current_file.put_character ('-')
+				current_file.put_character ('1')
+				current_file.put_character (')')
 				current_file.put_character ('*')
 				current_file.put_string (c_sizeof)
 				current_file.put_character ('(')
 				print_type_declaration (l_item_type, current_file)
 				current_file.put_character (')')
 				current_file.put_character (')')
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				dedent
 				current_file.put_character ('}')
 				current_file.put_new_line
 				current_file.put_line (c_endif)
+			end
+			indent
+			print_indentation
+			current_file.put_character ('*')
+			print_type_cast (a_type, current_file)
+			print_result_name (current_file)
+			print_assign_to
+			print_default_name (a_type, current_file)
+			print_semicolon_newline
+			if use_scoop then
+					-- Set SCOOP region.
+				print_indentation
+				print_attribute_region_access (tokens.result_keyword, a_type, False)
+				print_assign_to
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_region)
+				print_semicolon_newline
+			end
+			if l_special_type /= Void then
+					-- Set 'capacity'.
+				print_indentation
+				print_attribute_special_capacity_access (tokens.result_keyword, l_special_type, False)
+				print_assign_to
+				current_file.put_character ('a')
+				current_file.put_character ('1')
+				print_semicolon_newline
+					-- Set 'count'.
+				print_indentation
+				print_attribute_special_count_access (tokens.result_keyword, l_special_type, False)
+				print_assign_to
+				current_file.put_character ('0')
+				print_semicolon_newline
 			end
 			dedent
 			print_indentation
@@ -35887,8 +35884,7 @@ feature {NONE} -- Memory allocation
 			current_file.put_string (c_return)
 			current_file.put_character (' ')
 			print_result_name (current_file)
-			current_file.put_character (';')
-			current_file.put_new_line
+			print_semicolon_newline
 			dedent
 			current_file.put_character ('}')
 			current_file.put_new_line
