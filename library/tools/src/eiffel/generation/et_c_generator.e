@@ -35782,10 +35782,12 @@ feature {NONE} -- Memory allocation
 				l_item_type := l_special_type.item_type_set.static_type.primary_type
 				current_file.put_character ('+')
 				current_file.put_character ('(')
+				current_file.put_character ('(')
 				current_file.put_character ('a')
 				current_file.put_character ('1')
 				current_file.put_character ('>')
 				current_file.put_character ('1')
+				current_file.put_character (')')
 				current_file.put_character ('?')
 				current_file.put_character ('(')
 				current_file.put_character ('a')

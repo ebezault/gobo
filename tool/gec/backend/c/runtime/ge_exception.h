@@ -287,6 +287,11 @@ extern EIF_REFERENCE GE_check_void2(EIF_REFERENCE obj, EIF_INTEGER i);
 #define GE_null(ptr) GE_check_null(ptr)
 extern void* GE_check_null(void* ptr);
 
+/*
+ * Set signal handlers.
+ */
+extern void GE_set_signal_handlers(void);
+
 #ifdef EIF_WINDOWS
 /*
  * Set default exception handler.
