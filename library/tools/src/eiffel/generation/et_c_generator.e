@@ -35805,6 +35805,43 @@ feature {NONE} -- Memory allocation
 				current_file.put_character (')')
 			end
 			print_semicolon_newline
+
+current_file.put_line ("{")
+			if exception_trace_mode then
+				print_indentation
+				current_file.put_string (c_ge_call)
+				current_file.put_character (' ')
+				current_file.put_string (c_tc)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_character ('{')
+				if current_in_exception_trace then
+					current_file.put_character ('0')
+					current_file.put_character (',')
+				end
+				print_escaped_string (current_type.base_class.upper_name)
+				current_file.put_character (',')
+				print_escaped_string ("malloc")
+				current_file.put_character (',')
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character ('}')
+				current_file.put_character (';')
+				current_file.put_new_line
+				print_indentation
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_string (c_tc_address)
+				current_file.put_character (';')
+				current_file.put_new_line
+			end
+
 			print_indentation
 			print_result_name (current_file)
 			print_assign_to
@@ -35821,6 +35858,25 @@ feature {NONE} -- Memory allocation
 			current_file.put_character ('s')
 			current_file.put_character (')')
 			print_semicolon_newline
+
+
+			if exception_trace_mode then
+					print_indentation
+					current_file.put_string (c_ac)
+					current_file.put_string (c_arrow)
+					current_file.put_string (c_call)
+					current_file.put_character (' ')
+					current_file.put_character ('=')
+					current_file.put_character (' ')
+					current_file.put_string (c_tc)
+					current_file.put_character ('.')
+					current_file.put_string (c_caller)
+					current_file.put_character (';')
+					current_file.put_new_line
+			end
+			current_file.put_line ("}")
+
+
 				-- Dispose routine.
 			print_dispose_registration (tokens.result_keyword, a_type)
 				-- Default initialization.
@@ -35912,6 +35968,45 @@ current_file.put_line ("{")
 			current_file.put_line ("}")
 
 			current_file.put_line (c_endif)
+
+
+current_file.put_line ("{")
+			if exception_trace_mode then
+				print_indentation
+				current_file.put_string (c_ge_call)
+				current_file.put_character (' ')
+				current_file.put_string (c_tc)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_character ('{')
+				if current_in_exception_trace then
+					current_file.put_character ('0')
+					current_file.put_character (',')
+				end
+				print_escaped_string (current_type.base_class.upper_name)
+				current_file.put_character (',')
+				print_escaped_string ("setting")
+				current_file.put_character (',')
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character ('}')
+				current_file.put_character (';')
+				current_file.put_new_line
+				print_indentation
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_string (c_tc_address)
+				current_file.put_character (';')
+				current_file.put_new_line
+			end
+
+
 				-- Set 'type_id'.
 			print_indentation
 			print_attribute_type_id_access (tokens.result_keyword, a_type, False)
@@ -35954,6 +36049,26 @@ current_file.put_line ("{")
 				current_file.put_character (')')
 				print_semicolon_newline
 			end
+
+
+			if exception_trace_mode then
+					print_indentation
+					current_file.put_string (c_ac)
+					current_file.put_string (c_arrow)
+					current_file.put_string (c_call)
+					current_file.put_character (' ')
+					current_file.put_character ('=')
+					current_file.put_character (' ')
+					current_file.put_string (c_tc)
+					current_file.put_character ('.')
+					current_file.put_string (c_caller)
+					current_file.put_character (';')
+					current_file.put_new_line
+			end
+			current_file.put_line ("}")
+
+
+
 			dedent
 			print_indentation
 			current_file.put_character ('}')
