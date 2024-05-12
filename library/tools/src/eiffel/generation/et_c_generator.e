@@ -35808,6 +35808,13 @@ feature {NONE} -- Memory allocation
 
 current_file.put_line ("{")
 			if exception_trace_mode then
+				if l_special_type /= Void then
+					current_file.put_line ("char w[1024];")
+					current_file.put_line ("sprintf(w, %"malloc %%d %%zu%", a1, s);")
+				else
+					current_file.put_line ("char *w = %"malloc%";")
+				end
+				current_file.put_line ("{")
 				print_indentation
 				current_file.put_string (c_ge_call)
 				current_file.put_character (' ')
@@ -35822,7 +35829,7 @@ current_file.put_line ("{")
 				end
 				print_escaped_string (current_type.base_class.upper_name)
 				current_file.put_character (',')
-				print_escaped_string ("malloc")
+				current_file.put_character ('w')
 				current_file.put_character (',')
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
@@ -35873,6 +35880,7 @@ current_file.put_line ("{")
 					current_file.put_string (c_caller)
 					current_file.put_character (';')
 					current_file.put_new_line
+					current_file.put_line ("}")
 			end
 			current_file.put_line ("}")
 
