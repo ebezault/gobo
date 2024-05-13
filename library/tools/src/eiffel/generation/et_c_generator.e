@@ -35809,7 +35809,7 @@ feature {NONE} -- Memory allocation
 current_file.put_line ("{")
 			if exception_trace_mode then
 				if l_special_type /= Void then
-					current_file.put_line ("char w[1024];")
+					current_file.put_line ("char *w = calloc(1024);")
 					current_file.put_line ("sprintf(w, %"malloc %%d %%zu%", a1, s);")
 				else
 					current_file.put_line ("char *w = %"malloc%";")
