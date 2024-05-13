@@ -14,6 +14,7 @@
 #pragma once
 #endif
 
+#include <string.h>
 #ifndef GE_EXCEPTION_H
 #include "ge_exception.h"
 #endif
@@ -93,6 +94,8 @@
 #endif
 
 #include "gc.h"
+#else
+#include <stdlib.h>
 #endif
 
 #ifdef __cplusplus

@@ -35806,13 +35806,24 @@ feature {NONE} -- Memory allocation
 			end
 			print_semicolon_newline
 
-current_file.put_line ("{")
+			print_indentation
+			current_file.put_string (c_if)
+			current_file.put_character (' ')
+			current_file.put_character ('(')
+			current_file.put_string (c_initialize)
+			current_file.put_character (')')
+			current_file.put_character (' ')
+			current_file.put_character ('{')
+			current_file.put_new_line
+			indent
+
 			if exception_trace_mode then
+				current_file.put_line ("{")
 				if l_special_type /= Void then
 					current_file.put_line ("char *w = calloc(1024, 1);")
-					current_file.put_line ("sprintf(w, %"malloc %%d %%zu%", a1, s);")
+					current_file.put_line ("sprintf(w, %"calloc %%d %%zu%", a1, s);")
 				else
-					current_file.put_line ("char *w = %"malloc%";")
+					current_file.put_line ("char *w = %"calloc%";")
 				end
 				current_file.put_line ("{")
 				print_indentation
@@ -35856,130 +35867,39 @@ current_file.put_line ("{")
 			print_type_declaration (a_type, current_file)
 			current_file.put_character (')')
 			if use_scoop or a_type.has_nested_reference_fields then
-				current_file.put_string (c_ge_malloc)
+				current_file.put_string (c_ge_calloc)
 			else
 				l_atomic_malloc := True
-				current_file.put_string (c_ge_malloc_atomic)
+				current_file.put_string (c_ge_calloc_atomic)
 			end
 			current_file.put_character ('(')
+			current_file.put_character ('1')
+			print_comma
 			current_file.put_character ('s')
 			current_file.put_character (')')
 			print_semicolon_newline
 
-
-			if exception_trace_mode then
-					print_indentation
-					current_file.put_string (c_ac)
-					current_file.put_string (c_arrow)
-					current_file.put_string (c_call)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
-					current_file.put_string (c_tc)
-					current_file.put_character ('.')
-					current_file.put_string (c_caller)
-					current_file.put_character (';')
-					current_file.put_new_line
-					current_file.put_line ("}")
-			end
-			current_file.put_line ("}")
-
-
-				-- Dispose routine.
-			print_dispose_registration (tokens.result_keyword, a_type)
-				-- Default initialization.
-			print_indentation
-			current_file.put_string (c_if)
-			current_file.put_character (' ')
-			current_file.put_character ('(')
-			current_file.put_string (c_initialize)
-			current_file.put_character (')')
-			current_file.put_character (' ')
-			current_file.put_character ('{')
-			current_file.put_new_line
-			indent
-			current_file.put_string (c_ifndef)
-			current_file.put_character (' ')
-			if l_atomic_malloc then
-				current_file.put_line (c_ge_malloc_atomic_cleared)
-			else
-				current_file.put_line (c_ge_malloc_cleared)
-			end
-
-current_file.put_line ("{")
 			if exception_trace_mode then
 				print_indentation
-				current_file.put_string (c_ge_call)
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
 				current_file.put_character (' ')
 				current_file.put_string (c_tc)
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
-				current_file.put_character ('{')
-				if current_in_exception_trace then
-					current_file.put_character ('0')
-					current_file.put_character (',')
-				end
-				print_escaped_string (current_type.base_class.upper_name)
-				current_file.put_character (',')
-				print_escaped_string ("memset")
-				current_file.put_character (',')
-				current_file.put_string (c_ac)
-				current_file.put_string (c_arrow)
-				current_file.put_string (c_call)
-				current_file.put_character ('}')
+				current_file.put_character ('.')
+				current_file.put_string (c_caller)
 				current_file.put_character (';')
 				current_file.put_new_line
-				print_indentation
-				current_file.put_string (c_ac)
-				current_file.put_string (c_arrow)
-				current_file.put_string (c_call)
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
-				current_file.put_string (c_tc_address)
-				current_file.put_character (';')
-				current_file.put_new_line
+				current_file.put_line ("}")
+				current_file.put_line ("}")
 			end
 
-			print_indentation
-			current_file.put_string (c_memset)
-			current_file.put_character ('(')
-			current_file.put_character ('(')
-			current_file.put_string (c_char)
-			current_file.put_character ('*')
-			current_file.put_character (')')
-			current_file.put_character ('(')
-			print_result_name (current_file)
-			current_file.put_character (')')
-			current_file.put_character (',')
-			current_file.put_character ('0')
-			current_file.put_character (',')
-			current_file.put_character ('s')
-			current_file.put_character (')')
-			print_semicolon_newline
+				-- Default initialization.
 
 			if exception_trace_mode then
-					print_indentation
-					current_file.put_string (c_ac)
-					current_file.put_string (c_arrow)
-					current_file.put_string (c_call)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
-					current_file.put_string (c_tc)
-					current_file.put_character ('.')
-					current_file.put_string (c_caller)
-					current_file.put_character (';')
-					current_file.put_new_line
-			end
-			current_file.put_line ("}")
-
-			current_file.put_line (c_endif)
-
-
-current_file.put_line ("{")
-			if exception_trace_mode then
+				current_file.put_line ("{")
 				print_indentation
 				current_file.put_string (c_ge_call)
 				current_file.put_character (' ')
@@ -36013,7 +35933,6 @@ current_file.put_line ("{")
 				current_file.put_character (';')
 				current_file.put_new_line
 			end
-
 
 				-- Set 'type_id'.
 			print_indentation
@@ -36058,47 +35977,122 @@ current_file.put_line ("{")
 				print_semicolon_newline
 			end
 
+			if exception_trace_mode then
+				print_indentation
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_string (c_tc)
+				current_file.put_character ('.')
+				current_file.put_string (c_caller)
+				current_file.put_character (';')
+				current_file.put_new_line
+				current_file.put_line ("}")
+			end
+
+			dedent
+			print_indentation
+			current_file.put_character ('}')
+			current_file.put_character (' ')
+			current_file.put_string (c_else)
+			current_file.put_character (' ')
+			current_file.put_character ('{')
+			current_file.put_new_line
+			indent
 
 			if exception_trace_mode then
-					print_indentation
-					current_file.put_string (c_ac)
-					current_file.put_string (c_arrow)
-					current_file.put_string (c_call)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
-					current_file.put_string (c_tc)
-					current_file.put_character ('.')
-					current_file.put_string (c_caller)
-					current_file.put_character (';')
-					current_file.put_new_line
+				current_file.put_line ("{")
+				print_indentation
+				current_file.put_string (c_ge_call)
+				current_file.put_character (' ')
+				current_file.put_string (c_tc)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_character ('{')
+				if current_in_exception_trace then
+					current_file.put_character ('0')
+					current_file.put_character (',')
+				end
+				print_escaped_string (current_type.base_class.upper_name)
+				current_file.put_character (',')
+				current_file.put_string ("malloc")
+				current_file.put_character (',')
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character ('}')
+				current_file.put_character (';')
+				current_file.put_new_line
+				print_indentation
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_string (c_tc_address)
+				current_file.put_character (';')
+				current_file.put_new_line
 			end
-			current_file.put_line ("}")
 
+			print_indentation
+			print_result_name (current_file)
+			print_assign_to
+			current_file.put_character ('(')
+			print_type_declaration (a_type, current_file)
+			current_file.put_character (')')
+			if l_atomic_malloc then
+				current_file.put_string (c_ge_malloc_atomic)
+			else
+				current_file.put_string (c_ge_malloc)
+			end
+			current_file.put_character ('(')
+			current_file.put_character ('s')
+			current_file.put_character (')')
+			print_semicolon_newline
 
+			if exception_trace_mode then
+				print_indentation
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_string (c_tc)
+				current_file.put_character ('.')
+				current_file.put_string (c_caller)
+				current_file.put_character (';')
+				current_file.put_new_line
+				current_file.put_line ("}")
+			end
 
 			dedent
 			print_indentation
 			current_file.put_character ('}')
 			current_file.put_new_line
 
-
 			if exception_trace_mode then
-					print_indentation
-					current_file.put_string (c_ac)
-					current_file.put_string (c_arrow)
-					current_file.put_string (c_call)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
-					current_file.put_string (c_tc)
-					current_file.put_character ('.')
-					current_file.put_string (c_caller)
-					current_file.put_character (';')
-					current_file.put_new_line
+				print_indentation
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character (' ')
+				current_file.put_character ('=')
+				current_file.put_character (' ')
+				current_file.put_string (c_tc)
+				current_file.put_character ('.')
+				current_file.put_string (c_caller)
+				current_file.put_character (';')
+				current_file.put_new_line
 			end
 
-
+				-- Dispose routine.
+			print_dispose_registration (tokens.result_keyword, a_type)
 				-- Return the new object.
 			print_indentation
 			current_file.put_string (c_return)
@@ -45102,6 +45096,8 @@ feature {NONE} -- Constants
 	c_ge_boxed: STRING = "GE_boxed"
 	c_ge_boxed_pointer: STRING = "GE_boxed_pointer"
 	c_ge_call: STRING = "GE_call"
+	c_ge_calloc: STRING = "GE_calloc"
+	c_ge_calloc_atomic: STRING = "GE_calloc_atomic"
 	c_ge_case_int64: STRING = "GE_case_int64"
 	c_ge_case_nat64: STRING = "GE_case_nat64"
 	c_ge_catcall: STRING = "GE_catcall"
