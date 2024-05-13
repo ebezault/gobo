@@ -36019,7 +36019,7 @@ feature {NONE} -- Memory allocation
 				end
 				print_escaped_string (current_type.base_class.upper_name)
 				current_file.put_character (',')
-				current_file.put_string ("malloc")
+				print_escaped_string ("malloc")
 				current_file.put_character (',')
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
