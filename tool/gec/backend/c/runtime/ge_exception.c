@@ -826,7 +826,7 @@ void GE_set_signal_handlers()
 {
 	signal(SIGILL, &GE_signal_handler);
 #ifdef SIGBUS
-	signal(SIGBUS, &GE_signal_handler);
+	signal(SIGSEGV, &GE_signal_handler);
 #endif
 }
 
