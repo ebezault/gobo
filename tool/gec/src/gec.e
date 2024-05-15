@@ -416,8 +416,11 @@ feature {NONE} -- Processing
 				create l_command.make (l_gecc_pathname + " --thread=" + thread_count.out + " " + l_script_filename)
 				l_command.execute
 				l_exit_code := l_command.exit_code
-			else
+			elseif {PLATFORM}.is_thread_capable then
 				create l_gecc.execute_with_arguments (<<"--thread=" + thread_count.out, l_script_filename>>)
+				l_exit_code := l_gecc.exit_code
+			else
+				create l_gecc.execute_with_arguments (<<l_script_filename>>)
 				l_exit_code := l_gecc.exit_code
 			end
 			file_system.cd (file_system.relative_parent_directory)
