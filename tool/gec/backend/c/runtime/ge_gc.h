@@ -367,6 +367,13 @@ extern void GE_boehm_dispose_once_per_object_data(void* data, void* disp); /* Ca
 #define GE_register_dispose_once_per_object_data(data, disp) /* do nothing */
 #endif
 
+#ifdef GE_USE_BOEHM_GC
+#define malloc(size) GE_unprotected_malloc_atomic_uncollectable(size)
+#define calloc(nelem, elsize) GE_unprotected_calloc_atomic_uncollectable((nelem), (elsize))
+#define realloc(p, size) GE_unprotected_realloc((p), (size))
+#define free(p) GE_free(p)
+#endif
+
 /*
  * Access to objects, useful with GCs which move objects in memory.
  * This is not the case here, since the Boehm GC is not a moving GC.
