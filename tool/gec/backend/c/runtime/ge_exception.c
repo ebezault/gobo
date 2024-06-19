@@ -666,25 +666,39 @@ static void GE_raise_exception(long code, int new_obj, int signal_code, int erro
 		exit(1);
 	} else {
 		l_context->raising_exception = '\1';
+		fprintf(stderr, "E1\n");
 		l_context->exception_code = code;
 		l_context->exception_tag = tag;
+		fprintf(stderr, "E2\n");
 		if (code != GE_EX_FAIL) {
+			fprintf(stderr, "E3\n");
 			GE_wipe_out_exception_trace_buffer(&l_context->last_exception_trace);
 		}
+		fprintf(stderr, "E4\n");
 		l_trace = trace;
+		fprintf(stderr, "E5\n");
 		if (l_context->exception_trace_enabled && !l_trace) {
+			fprintf(stderr, "E6\n");
 			l_trace_buffer = &l_context->exception_trace_buffer;
+			fprintf(stderr, "E7\n");
 			GE_wipe_out_exception_trace_buffer(l_trace_buffer);
+			fprintf(stderr, "E8\n");
 			GE_print_exception_trace(l_context, code, tag, l_trace_buffer);
+			fprintf(stderr, "E9\n");
 			l_trace = l_trace_buffer->area;
 		}
+		fprintf(stderr, "E10\n");
 		if ((code != GE_EX_FAIL) && l_trace) {
+			fprintf(stderr, "E11\n");
 			GE_append_to_exception_trace_buffer(&l_context->last_exception_trace, l_trace);
 		}
+		fprintf(stderr, "E12\n");
 		GE_call_set_exception_data(l_context, code, new_obj, signal_code, error_code, tag, recipient, eclass, rf_routine, rf_class, l_trace, line_number, is_invariant_entry);
+		fprintf(stderr, "E13\n");
 		l_context->raising_exception = '\0';
 		l_context->exception_code = 0;
 		l_context->exception_tag = (char*)0;
+		fprintf(stderr, "E14\n");
 		GE_jump_to_last_rescue(l_context);
 	}
 }
