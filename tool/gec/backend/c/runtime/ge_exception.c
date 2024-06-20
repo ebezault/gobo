@@ -360,8 +360,11 @@ static void GE_print_exception_trace(GE_context* a_context, long a_code, const c
 	sprintf(buffer, "%s\n", "*******************************************************************************");
 	GE_append_to_exception_trace_buffer(a_trace, buffer);
 #elif defined(GE_USE_THREADS)
+	fprintf(stderr, "F8\n");
 	sprintf(buffer, "%s\n", "******************************** Thread exception *****************************");
+	fprintf(stderr, "F9\n");
 	GE_append_to_exception_trace_buffer(a_trace, buffer);
+	fprintf(stderr, "F10\n");
 	sprintf(buffer,"%-19.19s %-22.22s 0x%" EIF_POINTER_DISPLAY " %s\n", "In thread", l_thread_name, l_thread_id, "(thread id)");
 	GE_append_to_exception_trace_buffer(a_trace, buffer);
 	sprintf(buffer, "%s\n", "*******************************************************************************");
@@ -373,37 +376,50 @@ static void GE_print_exception_trace(GE_context* a_context, long a_code, const c
 	GE_append_to_exception_trace_buffer(a_trace, buffer);
 	sprintf(buffer, "%s\n", "-------------------------------------------------------------------------------");
 	GE_append_to_exception_trace_buffer(a_trace, buffer);
+	fprintf(stderr, "F11\n");
 	if (GE_root_class_name) {
 		l_root_class = GE_root_class_name;
 	} else {
 		l_root_class = "ROOT CLASS";
 	}
+	fprintf(stderr, "F12\n");
 	l_call = a_context->call;
 	if (l_call && l_call->caller) {
+		fprintf(stderr, "F13\n");
 		l_class_name = l_call->class_name;
 		l_feature_name = l_call->feature_name;
+		fprintf(stderr, "F14\n");
 #ifdef GE_USE_CURRENT_IN_EXCEPTION_TRACE
 		l_object = l_call->object;
 #endif
 	} else {
+		fprintf(stderr, "F15\n");
 		l_class_name = l_root_class;
 		l_feature_name = l_root_feature;
 	}
 	if (a_tag) {
+		fprintf(stderr, "F16\n");
 		sprintf(l_tag_buf, "%.254s:", a_tag);
 		l_tag = l_tag_buf;
 	} else {
 		l_tag = "";
 	}
+	fprintf(stderr, "F17\n");
 	GE_print_class_feature_tag(a_trace, l_class_name, l_feature_name, l_tag);
+	fprintf(stderr, "F18\n");
 	l_reason = GE_exception_tag(a_code);
+	fprintf(stderr, "F19\n");
 	l_effect = "Fail";
 	GE_print_object_location_reason_effect(a_trace, l_object, l_location, l_reason, l_effect);
+	fprintf(stderr, "F20\n");
 	sprintf(buffer, "%s\n", "-------------------------------------------------------------------------------");
 	GE_append_to_exception_trace_buffer(a_trace, buffer);
+	fprintf(stderr, "F21\n");
 	while (l_call) {
 		l_tag = "";
+		fprintf(stderr, "F22\n");
 		GE_print_class_feature_tag(a_trace, l_call->class_name, l_call->feature_name, l_tag);
+		fprintf(stderr, "F23\n");
 #ifdef GE_USE_CURRENT_IN_EXCEPTION_TRACE
 		l_object = l_call->object;
 #endif
@@ -416,11 +432,15 @@ static void GE_print_exception_trace(GE_context* a_context, long a_code, const c
 				l_reason = "Dirty region.";
 			}
 		}
+		fprintf(stderr, "F24\n");
 		GE_print_object_location_reason_effect(a_trace, l_object, l_location, l_reason, l_effect);
+		fprintf(stderr, "F25\n");
 		sprintf(buffer, "%s\n", "-------------------------------------------------------------------------------");
 		GE_append_to_exception_trace_buffer(a_trace, buffer);
+		fprintf(stderr, "F26\n");
 		l_call = l_call->caller;
 	}
+	fprintf(stderr, "F27\n");
 }
 
 /*
