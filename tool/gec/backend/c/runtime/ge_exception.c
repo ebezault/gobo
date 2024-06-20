@@ -178,8 +178,8 @@ static void GE_print_class_feature_tag(GE_exception_trace_buffer* a_trace, const
 {
 	char buffer[256];
 	int l_class_count, l_feature_count, l_tag_count;
-	char* l_class_name = a_class_name?a_class_name:"?";
-	char* l_feature_name =  a_feature_name?a_feature_name:"?";
+	const char* l_class_name = a_class_name?a_class_name:"?";
+	const char* l_feature_name =  a_feature_name?a_feature_name:"?";
 
 		/* We are trying to provide the best format possible so that we can see all the useful
 		 * information about the location and the reason of the crash.
