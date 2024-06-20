@@ -189,9 +189,13 @@ static void GE_print_class_feature_tag(GE_exception_trace_buffer* a_trace, const
 		 * writting more than `buffer' can hold. And for `sprintf', a null character is appended
 		 * after the last character written, which should be taken into account.
 		 */
+	fprintf(stderr, "H1\n");
 	l_class_count = (int)strlen(a_class_name);
+	fprintf(stderr, "H2\n");
 	l_feature_count = (int)strlen(a_feature_name);
+	fprintf(stderr, "H3\n");
 	l_tag_count = (int)strlen(a_tag_name);
+	fprintf(stderr, "H4\n");
 
 		/* 1 - precision of 211 = 254 - 43, 43 being number of characters written
 		 *      for `a_class_name' and `a_feature_name'. */
