@@ -178,6 +178,8 @@ static void GE_print_class_feature_tag(GE_exception_trace_buffer* a_trace, const
 {
 	char buffer[256];
 	int l_class_count, l_feature_count, l_tag_count;
+	char* l_class_name = a_class_name?a_class_name:"?";
+	char* l_feature_name =  a_feature_name?a_feature_name:"?";
 
 		/* We are trying to provide the best format possible so that we can see all the useful
 		 * information about the location and the reason of the crash.
@@ -190,9 +192,9 @@ static void GE_print_class_feature_tag(GE_exception_trace_buffer* a_trace, const
 		 * after the last character written, which should be taken into account.
 		 */
 	fprintf(stderr, "H1\n");
-	l_class_count = (int)strlen(a_class_name);
+	l_class_count = (int)strlen(l_class_name);
 	fprintf(stderr, "H2\n");
-	l_feature_count = (int)strlen(a_feature_name);
+	l_feature_count = (int)strlen(l_feature_name);
 	fprintf(stderr, "H3\n");
 	l_tag_count = (int)strlen(a_tag_name);
 	fprintf(stderr, "H4\n");
@@ -207,16 +209,16 @@ static void GE_print_class_feature_tag(GE_exception_trace_buffer* a_trace, const
 		 *      excluding eclipse from above numbers. */
 	if (l_class_count > 19) {
 		if (l_class_count > 251) {
-			sprintf(buffer, "%.251s...\n", a_class_name);
+			sprintf(buffer, "%.251s...\n", l_class_name);
 		} else {
-			sprintf(buffer, "%*.254s\n", l_class_count, a_class_name);
+			sprintf(buffer, "%*.254s\n", l_class_count, l_class_name);
 		}
 		GE_append_to_exception_trace_buffer(a_trace, buffer);
 		if (l_feature_count > 22) {
 			if (l_feature_count > 231) {
-				sprintf(buffer, "%.231s...\n", a_feature_name);
+				sprintf(buffer, "%.231s...\n", l_feature_name);
 			} else {
-				sprintf(buffer, "%*.234s\n", 20 + l_feature_count, a_feature_name);
+				sprintf(buffer, "%*.234s\n", 20 + l_feature_count, l_feature_name);
 			}
 			GE_append_to_exception_trace_buffer(a_trace, buffer);
 			if (l_tag_count > 0) {
@@ -229,18 +231,18 @@ static void GE_print_class_feature_tag(GE_exception_trace_buffer* a_trace, const
 			}
 		} else {
 			if (l_tag_count > 208) {
-				sprintf(buffer, "%*.22s %.208s...\n", 20 + l_feature_count, a_feature_name, a_tag_name);
+				sprintf(buffer, "%*.22s %.208s...\n", 20 + l_feature_count, l_feature_name, a_tag_name);
 			} else {
-				sprintf(buffer, "%*.22s %*.211s\n", 20 + l_feature_count, a_feature_name, (43 + l_tag_count) - (20 + l_feature_count + 1), a_tag_name);
+				sprintf(buffer, "%*.22s %*.211s\n", 20 + l_feature_count, l_feature_name, (43 + l_tag_count) - (20 + l_feature_count + 1), a_tag_name);
 			}
 			GE_append_to_exception_trace_buffer(a_trace, buffer);
 		}
 	} else {
 		if (l_feature_count > 22) {
 			if (l_feature_count > 208) {
-				sprintf(buffer, "%-19.19s %.208s...\n", a_class_name, a_feature_name);
+				sprintf(buffer, "%-19.19s %.208s...\n", l_class_name, l_feature_name);
 			} else {
-				sprintf(buffer, "%-19.19s %*.211s\n", a_class_name, l_feature_count, a_feature_name);
+				sprintf(buffer, "%-19.19s %*.211s\n", l_class_name, l_feature_count, l_feature_name);
 			}
 			GE_append_to_exception_trace_buffer(a_trace, buffer);
 			if (l_tag_count > 0) {
@@ -253,9 +255,9 @@ static void GE_print_class_feature_tag(GE_exception_trace_buffer* a_trace, const
 			}
 		} else {
 			if (l_tag_count > 208) {
-				sprintf(buffer, "%-19.19s %-22.22s %-29.208s...\n", a_class_name, a_feature_name, a_tag_name);
+				sprintf(buffer, "%-19.19s %-22.22s %-29.208s...\n", l_class_name, l_feature_name, a_tag_name);
 			} else {
-				sprintf(buffer, "%-19.19s %-22.22s %-29.211s\n", a_class_name, a_feature_name, a_tag_name);
+				sprintf(buffer, "%-19.19s %-22.22s %-29.211s\n", l_class_name, l_feature_name, a_tag_name);
 			}
 			GE_append_to_exception_trace_buffer(a_trace, buffer);
 		}
