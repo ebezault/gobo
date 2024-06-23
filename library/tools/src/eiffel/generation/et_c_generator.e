@@ -20110,6 +20110,7 @@ feature {NONE} -- Deep features generation
 			l_dynamic_type_set: ET_DYNAMIC_TYPE_SET
 			l_capacity_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_special_type: detachable ET_DYNAMIC_SPECIAL_TYPE
+			l_item_type: ET_DYNAMIC_PRIMARY_TYPE
 		do
 			old_type := current_type
 			current_type := a_type
@@ -20245,6 +20246,30 @@ feature {NONE} -- Deep features generation
 					current_file.put_character (')')
 					current_file.put_character (';')
 					current_file.put_new_line
+						-- Set item pseudo attribute.
+					print_indentation
+					print_attribute_special_item_access (tokens.result_keyword, l_special_type, False)
+					print_assign_to
+					current_file.put_character ('(')
+					l_item_type := l_special_type.item_type_set.static_type.primary_type
+					print_type_declaration (l_item_type, current_file)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					current_file.put_character ('(')
+					current_file.put_string (c_char)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					print_result_name (current_file)
+					current_file.put_character (')')
+					current_file.put_character ('+')
+					current_file.put_string (c_sizeof)
+					current_file.put_character ('(')
+					print_type_name (l_special_type, current_file)
+					current_file.put_character (')')
+					current_file.put_character (')')
+					print_semicolon_newline
 					if not l_has_nested_reference_attributes then
 							-- Copy items if they are not reference objects or expanded
 							-- objects containing (recursively) reference attributes.
@@ -23901,9 +23926,6 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 				print_assign_flags_attribute_to_temp_variable (a_target, a_special_type, False)
 				print_assign_onces_attribute_to_temp_variable (a_target, a_special_type, False)
 				print_assign_special_capacity_attribute_to_temp_variable (l_capacity_temp, a_target, a_special_type, False)
-					-- Do not use "*(T123*)(C) = *(T123*)(a1);" because we might overwrite
-					-- some items due to struct padding (unused bytes added at the end of
-					-- the struct for memory alignment).
 				print_indentation
 				current_file.put_string (c_memcpy)
 				current_file.put_character ('(')
@@ -23918,6 +23940,29 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 				current_file.put_string (c_sizeof)
 				current_file.put_character ('(')
 				print_type_declaration (l_item_type, current_file)
+				current_file.put_character (')')
+				current_file.put_character (')')
+				print_semicolon_newline
+					-- Set item pseudo attribute.
+				print_indentation
+				print_attribute_special_item_access (a_target, a_special_type, False)
+				print_assign_to
+				current_file.put_character ('(')
+				print_type_declaration (l_item_type, current_file)
+				current_file.put_character ('*')
+				current_file.put_character (')')
+				current_file.put_character ('(')
+				current_file.put_character ('(')
+				current_file.put_string (c_char)
+				current_file.put_character ('*')
+				current_file.put_character (')')
+				current_file.put_character ('(')
+				print_expression (a_target)
+				current_file.put_character (')')
+				current_file.put_character ('+')
+				current_file.put_string (c_sizeof)
+				current_file.put_character ('(')
+				print_type_name (a_special_type, current_file)
 				current_file.put_character (')')
 				current_file.put_character (')')
 				print_semicolon_newline
@@ -33701,6 +33746,7 @@ feature {NONE} -- C function generation
 			l_string_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_area_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_count_type: ET_DYNAMIC_PRIMARY_TYPE
+			l_item_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_temp: ET_IDENTIFIER
 			old_file: KI_TEXT_OUTPUT_STREAM
 		do
@@ -33716,6 +33762,10 @@ feature {NONE} -- C function generation
 					-- Error in feature 'count', already reported in ET_DYNAMIC_SYSTEM.compile_kernel.
 				set_fatal_error
 				error_handler.report_giaac_error (generator, "print_new_string_8_function", 2, "attribute `count' has no type.")
+			elseif not attached {ET_DYNAMIC_SPECIAL_TYPE} l_area_type as l_special_type then
+					-- Internal error: the type of the area should be a SPECIAL type.
+				set_fatal_error
+				error_handler.report_giaac_error (generator, "print_new_string_8_function", 3, "type of `area' is not a SPECIAL type.")
 			else
 				l_count_type := l_dynamic_type_set.static_type.primary_type
 					-- Print signature to `header_file' and `current_file'.
@@ -33811,6 +33861,30 @@ feature {NONE} -- C function generation
 						current_file.put_character (';')
 						current_file.put_new_line
 					end
+						-- Set item pseudo attribute of 'area'.
+					print_indentation
+					print_attribute_special_item_access (l_temp, l_area_type, False)
+					print_assign_to
+					current_file.put_character ('(')
+					l_item_type := l_special_type.item_type_set.static_type.primary_type
+					print_type_declaration (l_item_type, current_file)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					current_file.put_character ('(')
+					current_file.put_string (c_char)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					print_expression (l_temp)
+					current_file.put_character (')')
+					current_file.put_character ('+')
+					current_file.put_string (c_sizeof)
+					current_file.put_character ('(')
+					print_type_name (l_area_type, current_file)
+					current_file.put_character (')')
+					current_file.put_character (')')
+					print_semicolon_newline
 						-- Set 'capacity' of 'area'.
 					print_indentation
 					print_attribute_special_capacity_access (l_temp, l_area_type, False)
@@ -33899,6 +33973,7 @@ feature {NONE} -- C function generation
 			l_string_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_area_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_count_type: ET_DYNAMIC_PRIMARY_TYPE
+			l_item_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_temp: ET_IDENTIFIER
 			old_file: KI_TEXT_OUTPUT_STREAM
 		do
@@ -33914,6 +33989,10 @@ feature {NONE} -- C function generation
 					-- Error in feature 'count', already reported in ET_DYNAMIC_SYSTEM.compile_kernel.
 				set_fatal_error
 				error_handler.report_giaac_error (generator, "print_new_string_32_function", 2, "attribute `count' has no type.")
+			elseif not attached {ET_DYNAMIC_SPECIAL_TYPE} l_area_type as l_special_type then
+					-- Internal error: the type of the area should be a SPECIAL type.
+				set_fatal_error
+				error_handler.report_giaac_error (generator, "print_new_string_32_function", 3, "type of `area' is not a SPECIAL type.")
 			else
 				l_count_type := l_dynamic_type_set.static_type.primary_type
 					-- Print signature to `header_file' and `current_file'.
@@ -34009,6 +34088,30 @@ feature {NONE} -- C function generation
 						current_file.put_character (';')
 						current_file.put_new_line
 					end
+						-- Set item pseudo attribute of 'area'.
+					print_indentation
+					print_attribute_special_item_access (l_temp, l_area_type, False)
+					print_assign_to
+					current_file.put_character ('(')
+					l_item_type := l_special_type.item_type_set.static_type.primary_type
+					print_type_declaration (l_item_type, current_file)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					current_file.put_character ('(')
+					current_file.put_string (c_char)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					print_expression (l_temp)
+					current_file.put_character (')')
+					current_file.put_character ('+')
+					current_file.put_string (c_sizeof)
+					current_file.put_character ('(')
+					print_type_name (l_area_type, current_file)
+					current_file.put_character (')')
+					current_file.put_character (')')
+					print_semicolon_newline
 						-- Set 'capacity' of 'area'.
 					print_indentation
 					print_attribute_special_capacity_access (l_temp, l_area_type, False)
@@ -34097,6 +34200,7 @@ feature {NONE} -- C function generation
 			l_string_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_area_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_count_type: ET_DYNAMIC_PRIMARY_TYPE
+			l_item_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_temp: ET_IDENTIFIER
 			old_file: KI_TEXT_OUTPUT_STREAM
 		do
@@ -34112,6 +34216,10 @@ feature {NONE} -- C function generation
 					-- Error in feature 'count', already reported in ET_DYNAMIC_SYSTEM.compile_kernel.
 				set_fatal_error
 				error_handler.report_giaac_error (generator, "print_new_immutable_string_8_function", 2, "attribute `count' has no type.")
+			elseif not attached {ET_DYNAMIC_SPECIAL_TYPE} l_area_type as l_special_type then
+					-- Internal error: the type of the area should be a SPECIAL type.
+				set_fatal_error
+				error_handler.report_giaac_error (generator, "print_new_immutable_string_8_function", 3, "type of `area' is not a SPECIAL type.")
 			else
 				l_count_type := l_dynamic_type_set.static_type.primary_type
 					-- Print signature to `header_file' and `current_file'.
@@ -34207,6 +34315,30 @@ feature {NONE} -- C function generation
 						current_file.put_character (';')
 						current_file.put_new_line
 					end
+						-- Set item pseudo attribute of 'area'.
+					print_indentation
+					print_attribute_special_item_access (l_temp, l_area_type, False)
+					print_assign_to
+					current_file.put_character ('(')
+					l_item_type := l_special_type.item_type_set.static_type.primary_type
+					print_type_declaration (l_item_type, current_file)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					current_file.put_character ('(')
+					current_file.put_string (c_char)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					print_expression (l_temp)
+					current_file.put_character (')')
+					current_file.put_character ('+')
+					current_file.put_string (c_sizeof)
+					current_file.put_character ('(')
+					print_type_name (l_area_type, current_file)
+					current_file.put_character (')')
+					current_file.put_character (')')
+					print_semicolon_newline
 						-- Set 'capacity' of 'area'.
 					print_indentation
 					print_attribute_special_capacity_access (l_temp, l_area_type, False)
@@ -34295,6 +34427,7 @@ feature {NONE} -- C function generation
 			l_string_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_area_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_count_type: ET_DYNAMIC_PRIMARY_TYPE
+			l_item_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_temp: ET_IDENTIFIER
 			old_file: KI_TEXT_OUTPUT_STREAM
 		do
@@ -34310,6 +34443,10 @@ feature {NONE} -- C function generation
 					-- Error in feature 'count', already reported in ET_DYNAMIC_SYSTEM.compile_kernel.
 				set_fatal_error
 				error_handler.report_giaac_error (generator, "print_new_immutable_string_32_function", 2, "attribute `count' has no type.")
+			elseif not attached {ET_DYNAMIC_SPECIAL_TYPE} l_area_type as l_special_type then
+					-- Internal error: the type of the area should be a SPECIAL type.
+				set_fatal_error
+				error_handler.report_giaac_error (generator, "print_new_immutable_string_32_function", 3, "type of `area' is not a SPECIAL type.")
 			else
 				l_count_type := l_dynamic_type_set.static_type.primary_type
 					-- Print signature to `header_file' and `current_file'.
@@ -34405,6 +34542,30 @@ feature {NONE} -- C function generation
 						current_file.put_character (';')
 						current_file.put_new_line
 					end
+						-- Set item pseudo attribute of 'area'.
+					print_indentation
+					print_attribute_special_item_access (l_temp, l_area_type, False)
+					print_assign_to
+					current_file.put_character ('(')
+					l_item_type := l_special_type.item_type_set.static_type.primary_type
+					print_type_declaration (l_item_type, current_file)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					current_file.put_character ('(')
+					current_file.put_string (c_char)
+					current_file.put_character ('*')
+					current_file.put_character (')')
+					current_file.put_character ('(')
+					print_expression (l_temp)
+					current_file.put_character (')')
+					current_file.put_character ('+')
+					current_file.put_string (c_sizeof)
+					current_file.put_character ('(')
+					print_type_name (l_area_type, current_file)
+					current_file.put_character (')')
+					current_file.put_character (')')
+					print_semicolon_newline
 						-- Set 'capacity' of 'area'.
 					print_indentation
 					print_attribute_special_capacity_access (l_temp, l_area_type, False)
@@ -34615,6 +34776,29 @@ feature {NONE} -- C function generation
 					current_file.put_character (';')
 					current_file.put_new_line
 				end
+					-- Set item pseudo attribute of 'area'.
+				print_indentation
+				print_attribute_special_item_access (l_temp, l_special_type, False)
+				print_assign_to
+				current_file.put_character ('(')
+				print_type_declaration (l_item_type, current_file)
+				current_file.put_character ('*')
+				current_file.put_character (')')
+				current_file.put_character ('(')
+				current_file.put_character ('(')
+				current_file.put_string (c_char)
+				current_file.put_character ('*')
+				current_file.put_character (')')
+				current_file.put_character ('(')
+				print_expression (l_temp)
+				current_file.put_character (')')
+				current_file.put_character ('+')
+				current_file.put_string (c_sizeof)
+				current_file.put_character ('(')
+				print_type_name (l_special_type, current_file)
+				current_file.put_character (')')
+				current_file.put_character (')')
+				print_semicolon_newline
 					-- Set 'capacity' of 'area'.
 				print_indentation
 				print_attribute_special_capacity_access (l_temp, l_special_type, False)
@@ -34643,15 +34827,7 @@ feature {NONE} -- C function generation
 				print_type_declaration (l_integer_type, current_file)
 				current_file.put_line (" j = n;")
 				print_indentation
-				if l_item_type.is_expanded then
-					current_file.put_string (c_volatile)
-					current_file.put_character (' ')
-					print_type_declaration (l_item_type, current_file)
-				else
-					print_type_declaration (l_item_type, current_file)
-					current_file.put_character (' ')
-					current_file.put_string (c_volatile)
-				end
+				print_type_declaration (l_item_type, current_file)
 				current_file.put_character (' ')
 				current_file.put_character ('*')
 				current_file.put_character ('i')
@@ -34854,15 +35030,7 @@ feature {NONE} -- C function generation
 				current_file.put_character (';')
 				current_file.put_new_line
 				print_indentation
-				if l_item_type.is_expanded then
-					current_file.put_string (c_volatile)
-					current_file.put_character (' ')
-					print_type_declaration (l_item_type, current_file)
-				else
-					print_type_declaration (l_item_type, current_file)
-					current_file.put_character (' ')
-					current_file.put_string (c_volatile)
-				end
+				print_type_declaration (l_item_type, current_file)
 				current_file.put_character (' ')
 				current_file.put_character ('*')
 				current_file.put_character ('i')
@@ -35792,7 +35960,6 @@ feature {NONE} -- Memory allocation
 				current_file.put_character (')')
 			end
 			print_semicolon_newline
-
 			print_indentation
 			current_file.put_string (c_if)
 			current_file.put_character (' ')
@@ -35846,16 +36013,38 @@ feature {NONE} -- Memory allocation
 				current_file.put_character ('a')
 				current_file.put_character ('1')
 				print_semicolon_newline
-					-- Note that 'count' is already set to zero..
+					-- Note that 'count' is already set to zero.
+					-- Set item pseudo attribute.
+				print_indentation
+				print_attribute_special_item_access (tokens.result_keyword, l_special_type, False)
+				print_assign_to
+				current_file.put_character ('(')
+				l_item_type := l_special_type.item_type_set.static_type.primary_type
+				print_type_declaration (l_item_type, current_file)
+				current_file.put_character ('*')
+				current_file.put_character (')')
+				current_file.put_character ('(')
+				current_file.put_character ('(')
+				current_file.put_string (c_char)
+				current_file.put_character ('*')
+				current_file.put_character (')')
+				current_file.put_character ('(')
+				print_result_name (current_file)
+				current_file.put_character (')')
+				current_file.put_character ('+')
+				current_file.put_string (c_sizeof)
+				current_file.put_character ('(')
+				print_type_name (l_special_type, current_file)
+				current_file.put_character (')')
+				current_file.put_character (')')
+				print_semicolon_newline
 					-- Set offset.
 				print_indentation
 				print_attribute_special_offset_access (tokens.result_keyword, l_special_type, False)
 				print_assign_to
-				current_file.put_string (c_offsetof)
+				current_file.put_string (c_sizeof)
 				current_file.put_character ('(')
 				print_type_name (l_special_type, current_file)
-				print_comma
-				print_attribute_special_item_name (l_special_type, current_file)
 				current_file.put_character (')')
 				print_semicolon_newline
 			end
@@ -38504,19 +38693,10 @@ feature {NONE} -- Type generation
 						-- See https://stackoverflow.com/questions/246977/is-using-flexible-array-members-in-c-bad-practice.
 					a_file.put_character ('%T')
 					l_item_type_set := l_special_type.item_type_set
-					if l_item_type_set.is_expanded then
-						a_file.put_string (c_volatile)
-						a_file.put_character (' ')
-						print_type_declaration (l_item_type_set.static_type.primary_type, a_file)
-					else
-						print_type_declaration (l_item_type_set.static_type.primary_type, a_file)
-						a_file.put_character (' ')
-						a_file.put_string (c_volatile)
-					end
+					print_type_declaration (l_item_type_set.static_type.primary_type, a_file)
+					a_file.put_character ('*')
 					a_file.put_character (' ')
 					print_attribute_special_item_name (l_special_type, a_file)
-					a_file.put_character ('[')
-					a_file.put_character (']')
 					a_file.put_character (';')
 					a_file.put_character (' ')
 					a_file.put_character ('/')
@@ -39074,7 +39254,7 @@ feature {NONE} -- Type generation
 						end
 					end
 					if attached {ET_DYNAMIC_SPECIAL_TYPE} l_type as l_special_type then
-								-- One more attribute: 'item'.
+							-- One more attribute: 'item'.
 						l_attribute_count := l_attribute_count + 1
 						l_comma_needed := False
 						current_file.put_string ("GE_attribute T")
@@ -39102,14 +39282,9 @@ feature {NONE} -- Type generation
 								current_file.put_character (',')
 								current_file.put_character (' ')
 							end
-								-- Note: if `offsetof' is not supported, then we can use: ((int)&(((T317*) 0)->a2))
-								-- See: http://stackoverflow.com/questions/142016/c-c-structure-offset
-							current_file.put_string (c_offsetof)
+							current_file.put_string (c_sizeof)
 							current_file.put_character ('(')
 							print_type_name (l_type, current_file)
-							current_file.put_character (',')
-							current_file.put_character (' ')
-							print_attribute_special_item_name (l_type, current_file)
 							current_file.put_character (')')
 						end
 						current_file.put_character ('}')
@@ -39804,14 +39979,9 @@ feature {NONE} -- Default initialization values generation
 					if not l_empty_struct then
 						a_file.put_character (',')
 					end
-						-- Note: if `offsetof' is not supported, then we can use: ((int)&(((T317*) 0)->a2))
-						-- See: http://stackoverflow.com/questions/142016/c-c-structure-offset
-					a_file.put_string (c_offsetof)
+					a_file.put_string (c_sizeof)
 					a_file.put_character ('(')
 					print_type_name (a_type, current_file)
-					a_file.put_character (',')
-					a_file.put_character (' ')
-					print_attribute_special_item_name (a_type, current_file)
 					a_file.put_character (')')
 					l_empty_struct := False
 				end
@@ -39848,9 +40018,7 @@ feature {NONE} -- Default initialization values generation
 					if not l_empty_struct then
 						a_file.put_character (',')
 					end
-					a_file.put_character ('{')
-					print_default_attribute_value (l_special_type.item_type_set.static_type.primary_type, a_file)
-					a_file.put_character ('}')
+					a_file.put_character ('0')
 					l_empty_struct := False
 				elseif attached {ET_DYNAMIC_TUPLE_TYPE} a_type as l_tuple_type then
 					l_item_type_sets := l_tuple_type.item_type_sets

@@ -155,7 +155,7 @@ feature -- Features
 			-- expanded attributes which contain fields, which require special
 			-- treatment in the implementation of routine 'standard_is_equal'?
 		do
-			Result := precursor or has_item_nested_custom_standard_is_equal_routine
+			Result := True or precursor or has_item_nested_custom_standard_is_equal_routine
 		end
 
 	has_item_nested_custom_standard_is_equal_routine: BOOLEAN
