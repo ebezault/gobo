@@ -2,7 +2,6 @@
 
 variables:
   GOBO_CLI_GC: no
-  GOBO_CLI_SETTING: exception_trace=true
 
 stages:
 
