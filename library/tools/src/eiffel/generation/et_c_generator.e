@@ -7650,7 +7650,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 						-- sure that he C optimizer will not implement it with 'register'.
 						--
 						-- https://barrgroup.com/embedded-systems/how-to/c-volatile-keyword
-					if a_result_type.is_expanded then
+					if a_result_type.is_expanded and not a_result_type.is_pointer then
 						current_file.put_string (c_volatile)
 						current_file.put_character (' ')
 						print_type_declaration (a_result_type, current_file)
@@ -7697,7 +7697,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 							-- with 'register'.
 							--
 							-- https://barrgroup.com/embedded-systems/how-to/c-volatile-keyword
-						if l_local_type.is_expanded then
+						if l_local_type.is_expanded and not l_local_type.is_pointer then
 							current_file.put_string (c_volatile)
 							current_file.put_character (' ')
 							print_type_declaration (l_local_type, current_file)
@@ -8026,7 +8026,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 							print_indentation
 							if not volatile_object_test_locals.has (l_name.seed) then
 								print_type_declaration (l_type, current_file)
-							elseif l_type.is_expanded then
+							elseif l_type.is_expanded and not l_type.is_pointer then
 								current_file.put_string (c_volatile)
 								current_file.put_character (' ')
 								print_type_declaration (l_type, current_file)
@@ -8071,7 +8071,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 							print_indentation
 							if not volatile_iteration_cursors.has (l_name.seed) then
 								print_type_declaration (l_type, current_file)
-							elseif l_type.is_expanded then
+							elseif l_type.is_expanded and not l_type.is_pointer then
 								current_file.put_string (c_volatile)
 								current_file.put_character (' ')
 								print_type_declaration (l_type, current_file)
@@ -8114,7 +8114,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 							print_indentation
 							if not volatile_inline_separate_arguments.has (l_name.seed) then
 								print_type_declaration (l_type, current_file)
-							elseif l_type.is_expanded then
+							elseif l_type.is_expanded and not l_type.is_pointer then
 								current_file.put_string (c_volatile)
 								current_file.put_character (' ')
 								print_type_declaration (l_type, current_file)
@@ -8159,7 +8159,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					print_indentation
 					if not volatile_temp_variables.item (i) then
 						print_type_declaration (l_type, current_file)
-					elseif l_type.is_expanded then
+					elseif l_type.is_expanded and not l_type.is_pointer then
 						current_file.put_string (c_volatile)
 						current_file.put_character (' ')
 						print_type_declaration (l_type, current_file)
@@ -21302,7 +21302,7 @@ feature {NONE} -- Separate calls
 					-- from the other SCOOP processor. This prevents the C optimizer
 					-- to implement it with 'register'.
 					-- https://barrgroup.com/embedded-systems/how-to/c-volatile-keyword
-				if l_result_type.is_expanded then
+				if l_result_type.is_expanded and not l_result_type.is_pointer then
 					current_file.put_string (c_volatile)
 					current_file.put_character (' ')
 					print_type_declaration (l_result_type, current_file)
@@ -22065,7 +22065,7 @@ feature {NONE} -- Separate calls
 				l_index := l_call_expression.index
 				l_result_type := dynamic_type_set (l_call_expression).static_type.primary_type
 				print_indentation
-				if l_result_type.is_expanded then
+				if l_result_type.is_expanded and not l_result_type.is_pointer then
 					current_file.put_string (c_volatile)
 					current_file.put_character (' ')
 					print_type_declaration (l_result_type, current_file)
@@ -22251,7 +22251,7 @@ feature {NONE} -- Separate calls
 			current_file.put_character (' ')
 			if attached {ET_QUALIFIED_FEATURE_CALL_EXPRESSION} a_separate_call as l_call_expression then
 				l_result_type := dynamic_type_set (l_call_expression).static_type.primary_type
-				if l_result_type.is_expanded then
+				if l_result_type.is_expanded and not l_result_type.is_pointer then
 					header_file.put_string (c_volatile)
 					header_file.put_character (' ')
 					print_type_declaration (l_result_type, header_file)
@@ -22501,7 +22501,7 @@ feature {NONE} -- Separate calls
 			if attached {ET_QUALIFIED_FEATURE_CALL_EXPRESSION} a_separate_call as l_call_expression then
 				l_result_type := dynamic_type_set (l_call_expression).static_type.primary_type
 				header_file.put_character ('%T')
-				if l_result_type.is_expanded then
+				if l_result_type.is_expanded and not l_result_type.is_pointer then
 					header_file.put_string (c_volatile)
 					header_file.put_character (' ')
 					print_type_declaration (l_result_type, header_file)
@@ -34363,7 +34363,7 @@ feature {NONE} -- C function generation
 				print_type_declaration (l_integer_type, current_file)
 				current_file.put_line (" j = n;")
 				print_indentation
-				if l_item_type.is_expanded then
+				if l_item_type.is_expanded and not l_item_type.is_pointer then
 					current_file.put_string (c_volatile)
 					current_file.put_character (' ')
 					print_type_declaration (l_item_type, current_file)
@@ -34574,7 +34574,7 @@ feature {NONE} -- C function generation
 				current_file.put_character (';')
 				current_file.put_new_line
 				print_indentation
-				if l_item_type.is_expanded then
+				if l_item_type.is_expanded and not l_item_type.is_pointer then
 					current_file.put_string (c_volatile)
 					current_file.put_character (' ')
 					print_type_declaration (l_item_type, current_file)

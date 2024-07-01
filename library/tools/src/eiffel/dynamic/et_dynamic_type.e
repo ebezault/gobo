@@ -91,6 +91,14 @@ feature -- Status report
 			definition: Result = base_class.is_real_n_class
 		end
 
+	is_pointer: BOOLEAN
+			-- Is current type "POINTER"?
+		do
+			Result := base_class.is_pointer_class
+		ensure
+			definition: Result = base_class.is_pointer_class
+		end
+
 	is_self_initializing: BOOLEAN
 			-- Is current type self-initializing?
 			--
