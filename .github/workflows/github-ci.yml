@@ -14,6 +14,7 @@ on:
 
 env:
   GOBO_CLI_SETTING: exception_trace=true
+  GOBO_CLI_THREAD: 0
 
 jobs:
 
