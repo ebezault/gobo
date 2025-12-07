@@ -13,6 +13,7 @@ on:
   pull_request:
 
 env:
+  GOBO_DEFAULT_GC: no
   GOBO_CLI_SETTING: exception_trace=true
   GOBO_CLI_THREAD: 0
 
