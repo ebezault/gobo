@@ -161,9 +161,9 @@ void ca_store(EIF_POINTER area, EIF_INTEGER siz, EIF_POINTER file)
 		xraise(EN_IO);
 }
 
-void write_int(FILE* file, EIF_INTEGER_32 val)
+void write_int(EIF_POINTER file, EIF_INTEGER_32 val)
 {
-	fwrite(&val, sizeof(EIF_INTEGER_32), 1, file);
+	fwrite(&val, sizeof(EIF_INTEGER_32), 1, (FILE*)file);
 }
 
 #ifdef __cplusplus
