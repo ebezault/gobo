@@ -187,16 +187,18 @@ feature {ET_AST_NODE} -- Processing
 			l_seed: INTEGER
 		do
 			l_old_call_name := a_instruction.name
-			l_seed := l_old_call_name.seed
-			if l_seed /= 0 and then callee_seeds.has (l_seed) then
-				create l_call_name.make (a_instruction.assign_symbol.text)
-				l_call_name.set_seed (l_seed)
-				l_call_name.set_feature_name (True)
-				l_position := a_instruction.assign_symbol.first_position
-				l_call_name.set_position (l_position.line, l_position.column)
-				a_instruction.set_name (l_call_name)
-				process_qualified_feature_call (a_instruction)
-				a_instruction.set_name (l_old_call_name)
+			if not (attached {ET_IDENTIFIER} l_old_call_name as l_label and then l_label.is_tuple_label) then
+				l_seed := l_old_call_name.seed
+				if l_seed /= 0 and then callee_seeds.has (l_seed) then
+					create l_call_name.make (a_instruction.assign_symbol.text)
+					l_call_name.set_seed (l_seed)
+					l_call_name.set_feature_name (True)
+					l_position := a_instruction.assign_symbol.first_position
+					l_call_name.set_position (l_position.line, l_position.column)
+					a_instruction.set_name (l_call_name)
+					process_qualified_feature_call (a_instruction)
+					a_instruction.set_name (l_old_call_name)
+				end
 			end
 			precursor (a_instruction)
 		end
