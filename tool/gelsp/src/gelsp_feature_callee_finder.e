@@ -81,7 +81,6 @@ feature -- Basic operations
 			-- is called in a closure from `current_class'.
 		local
 			l_seed: INTEGER
-			l_class: ET_CLASS
 			l_range: LS_RANGE
 			l_detail: LS_STRING
 			l_ranges: LS_RANGE_LIST

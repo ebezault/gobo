@@ -429,7 +429,6 @@ feature {ET_AST_NODE} -- Processing
 			-- Process `a_expression'.
 		local
 			l_name: ET_FEATURE_NAME
-			l_seed: INTEGER
 		do
 			l_name := a_expression.name
 			report_callee (l_name, current_class)
