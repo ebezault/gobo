@@ -167,7 +167,11 @@ feature -- Handling 'textDocument/prepareCallHierarchy' requests
 		local
 			l_caller_finder: GELSP_FEATURE_CALLER_FINDER
 		do
-			if not attached {LS_OBJECT} a_request.item.data as l_data then
+			if attached {LS_STRING} a_request.item.data as l_data then
+				if attached class_mapping.value (l_data.utf8_value) as l_class then
+					on_client_hierarchy (l_class, a_response)
+				end
+			elseif not attached {LS_OBJECT} a_request.item.data as l_data then
 				-- Missing information.
 			elseif not attached {LS_STRING} l_data.value ("class") as l_filename then
 				-- Missing information.
@@ -183,13 +187,51 @@ feature -- Handling 'textDocument/prepareCallHierarchy' requests
 			end
 		end
 
+	on_client_hierarchy (a_class: ET_CLASS; a_response: LS_CALL_HIERARCHY_INCOMING_CALLS_RESPONSE)
+			-- Handle 'callHierarchy/incomingCalls' request with the clients of `a_class`.
+			-- Build `a_response` accordingly.
+		local
+			l_all_classes: DS_ARRAYED_LIST [ET_CLASS]
+			l_client: ET_CLASS
+			l_clients: DS_ARRAYED_LIST [ET_CLASS]
+			l_sorter: DS_QUICK_SORTER [ET_CLASS]
+			i, nb: INTEGER
+		do
+			create l_all_classes.make (3000)
+			a_class.current_system.classes_do_recursive (agent l_all_classes.force_last)
+			create l_clients.make (300)
+			nb := l_all_classes.count
+			from i := 1 until i > nb loop
+				l_client := l_all_classes.item (i)
+				if attached l_client.supplier_classes as l_supplier_classes and then l_supplier_classes.has (a_class) then
+					l_clients.force_last (l_client)
+				end
+				i := i + 1
+			end
+			nb := l_clients.count
+			if nb > 1 then
+				create l_sorter.make (class_comparator_by_name)
+				l_clients.sort (l_sorter)
+			end
+			from i := 1 until i > nb loop
+				if attached client_hierarchy_item (l_clients.item (i)) as l_client_hierarchy_item then
+					a_response.add_call_hierarchy_incoming_call (l_client_hierarchy_item)
+				end
+				i := i + 1
+			end
+		end
+
 	on_call_hierarchy_outgoing_calls_request (a_request: LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST; a_response: LS_CALL_HIERARCHY_OUTGOING_CALLS_RESPONSE)
 			-- Handle 'callHierarchy/incomingCalls' request `a_request`.
 			-- Build `a_response` accordingly.
 		local
 			l_callee_finder: GELSP_FEATURE_CALLEE_FINDER
 		do
-			if not attached {LS_OBJECT} a_request.item.data as l_data then
+			if attached {LS_STRING} a_request.item.data as l_data then
+				if attached class_mapping.value (l_data.utf8_value) as l_class then
+					on_supplier_hierarchy (l_class, a_response)
+				end
+			elseif not attached {LS_OBJECT} a_request.item.data as l_data then
 				-- Missing information.
 			elseif not attached {LS_STRING} l_data.value ("class") as l_filename then
 				-- Missing information.
@@ -202,6 +244,30 @@ feature -- Handling 'textDocument/prepareCallHierarchy' requests
 			elseif attached l_class.seeded_feature (l_seed.to_integer) as l_feature then
 				create l_callee_finder.make (a_response, Current, system_processor)
 				l_callee_finder.find_callees (l_feature)
+			end
+		end
+
+	on_supplier_hierarchy (a_class: ET_CLASS; a_response: LS_CALL_HIERARCHY_OUTGOING_CALLS_RESPONSE)
+			-- Handle 'callHierarchy/incomingCalls' request with the suppliers of `a_class`.
+			-- Build `a_response` accordingly.
+		local
+			l_suppliers: DS_ARRAYED_LIST [ET_CLASS]
+			l_sorter: DS_QUICK_SORTER [ET_CLASS]
+			i, nb: INTEGER
+		do
+			if attached a_class.supplier_classes as l_supplier_classes then
+				create l_suppliers.make_from_linear (l_supplier_classes)
+				nb := l_suppliers.count
+				if nb > 1 then
+					create l_sorter.make (class_comparator_by_name)
+					l_suppliers.sort (l_sorter)
+				end
+				from i := 1 until i > nb loop
+					if attached supplier_hierarchy_item (l_suppliers.item (i)) as l_supplier_hierarchy_item then
+						a_response.add_call_hierarchy_outgoing_call (l_supplier_hierarchy_item)
+					end
+					i := i + 1
+				end
 			end
 		end
 
@@ -1637,8 +1703,6 @@ feature -- Helper
 		local
 			l_item: LS_CALL_HIERARCHY_ITEM
 			l_ranges: LS_RANGE_LIST
-			l_class_impl: ET_CLASS
-			l_closure_impl: ET_STANDALONE_CLOSURE
 			l_range: LS_RANGE
 			l_uri: UT_URI
 			l_document_uri: LS_STRING
@@ -1668,6 +1732,53 @@ feature -- Helper
 				create l_item.make (l_name, l_kind, Void, l_detail, l_document_uri, l_range, l_range, l_data)
 				create l_ranges.make_with_capacity (2)
 				l_ranges.put_last (l_range)
+				create Result.make (l_item, l_ranges)
+			end
+		end
+
+	client_supplier_hierarchy_item (a_class: ET_CLASS): detachable LS_CALL_HIERARCHY_ITEM
+			-- CLient/supplier hierarchy item for `a_class`.
+		require
+			a_class_not_void: a_class /= Void
+		local
+			l_range: LS_RANGE
+			l_uri: UT_URI
+			l_document_uri: LS_STRING
+			l_data: LS_STRING
+		do
+			if attached a_class.filename as l_filename then
+				l_uri := {UT_FILE_URI_ROUTINES}.filename_to_uri (l_filename)
+				create l_document_uri.make_from_string (l_uri.full_reference)
+				l_range := range (a_class.name, a_class)
+				create l_data.make_from_utf8 (l_filename)
+				create Result.make (class_name (a_class), {LS_SYMBOL_KINDS}.class_, Void, class_status (a_class, True), l_document_uri, l_range, l_range, l_data)
+			end
+		end
+
+	client_hierarchy_item (a_client: ET_CLASS): detachable LS_CALL_HIERARCHY_INCOMING_CALL
+			-- CLient hierarchy item for `a_client`.
+		require
+			a_client_not_void: a_client /= Void
+		local
+			l_ranges: LS_RANGE_LIST
+		do
+			if attached client_supplier_hierarchy_item (a_client) as l_item then
+				create l_ranges.make_with_capacity (1)
+				l_ranges.put_last (l_item.range)
+				create Result.make (l_item, l_ranges)
+			end
+		end
+
+	supplier_hierarchy_item (a_supplier: ET_CLASS): detachable LS_CALL_HIERARCHY_OUTGOING_CALL
+			-- Supplier hierarchy item for `a_supplier`.
+		require
+			a_supplier_not_void: a_supplier /= Void
+		local
+			l_ranges: LS_RANGE_LIST
+		do
+			if attached client_supplier_hierarchy_item (a_supplier) as l_item then
+				create l_ranges.make_with_capacity (1)
+				l_ranges.put_last (l_item.range)
 				create Result.make (l_item, l_ranges)
 			end
 		end

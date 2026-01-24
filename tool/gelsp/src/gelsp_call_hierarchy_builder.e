@@ -16,6 +16,7 @@ inherit
 		rename
 			make as make_browsable_name_processor
 		redefine
+			process_class_name,
 			process_precursor_name,
 			process_qualified_call_name,
 			process_unqualified_call_name
@@ -63,6 +64,17 @@ feature -- Basic operations
 		end
 
 feature {ET_BROWSABLE_NAME} -- Processing
+
+	process_class_name (a_name: ET_BROWSABLE_CLASS_NAME)
+			-- Process `a_name`.
+		local
+			l_class: ET_CLASS
+		do
+			l_class := a_name.actual_class
+			if attached message_manager.client_supplier_hierarchy_item (l_class) as client_supplier_hierarchy_item then
+				response.add_call_hierarchy_item (client_supplier_hierarchy_item)
+			end
+		end
 
 	process_precursor_name (a_name: ET_BROWSABLE_PRECURSOR_NAME)
 			-- Process `a_name`.

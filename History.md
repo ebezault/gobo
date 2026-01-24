@@ -4,8 +4,8 @@
 
 ### gelsp
 
-* Implemented `Call Hierarchy` menu/panel with feature callers and
-  callees.
+* Implemented `Call Hierarchy` menu/panel with callers and callees in
+  case of features, and with clients and suppliers in case of classes.
 * Implemented `Type Hierarchy` menu/panel with ancestor and descendant
   classes.
 
