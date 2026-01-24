@@ -5,14 +5,14 @@
 		"LSP completion lists"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_COMPLETION_LIST
 
 inherit
 
-	LS_OPTIONAL_COMPLETION_RESULT
+	LS_COMPLETION_RESULT
 
 create
 

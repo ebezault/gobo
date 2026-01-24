@@ -74,6 +74,8 @@ feature -- Basic operations
 				a_manager.definition_request_handler.set_client_capabilities (l_text_document_capabilities.definition)
 				a_manager.type_definition_request_handler.set_client_capabilities (l_text_document_capabilities.type_definition)
 				a_manager.implementation_request_handler.set_client_capabilities (l_text_document_capabilities.implementation)
+				a_manager.call_hierarchy_prepare_request_handler.set_client_capabilities (l_text_document_capabilities.call_hierarchy)
+				a_manager.type_hierarchy_prepare_request_handler.set_client_capabilities (l_text_document_capabilities.type_hierarchy)
 				a_manager.document_symbol_request_handler.set_client_capabilities (l_text_document_capabilities.document_symbol)
 				a_manager.publish_diagnostics_notification_handler.set_client_capabilities (l_text_document_capabilities.publish_diagnostics)
 			end
@@ -127,6 +129,10 @@ feature -- Basic operations
 			l_server_capabilities.set_type_definition_provider (a_manager.type_definition_request_handler.server_options)
 			a_manager.implementation_request_handler.build_server_options
 			l_server_capabilities.set_implementation_provider (a_manager.implementation_request_handler.server_options)
+			a_manager.call_hierarchy_prepare_request_handler.build_server_options
+			l_server_capabilities.set_call_hierarchy_provider (a_manager.call_hierarchy_prepare_request_handler.server_options)
+			a_manager.type_hierarchy_prepare_request_handler.build_server_options
+			l_server_capabilities.set_type_hierarchy_provider (a_manager.type_hierarchy_prepare_request_handler.server_options)
 			a_manager.document_symbol_request_handler.build_server_options
 			l_server_capabilities.set_document_symbol_provider (a_manager.document_symbol_request_handler.server_options)
 			a_manager.workspace_symbol_request_handler.build_server_options

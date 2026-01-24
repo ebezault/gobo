@@ -46,6 +46,47 @@ feature {LS_SERVER_INITIALIZE_REQUEST_HANDLER} -- Setting
 			workspace_folders_set: workspace_folders = a_workspace_folders
 		end
 
+feature -- Handling 'textDocument/prepareCallHierarchy' requests
+
+	on_call_hierarchy_prepare_request (a_request: LS_CALL_HIERARCHY_PREPARE_REQUEST; a_response: LS_CALL_HIERARCHY_PREPARE_RESPONSE)
+			-- Handle 'textDocument/prepareCallHierarchy' request `a_request`.
+			-- Build `a_response` accordingly.
+			--
+			-- (To be redefined in servers.
+			-- Redefine `call_hierarchy_prepare_request_handler` accordingly as per the precondition.)
+		require
+			a_request_not_void: a_request /= Void
+			a_response_not_void: a_response /= Void
+			call_hierarchy_prepare_request_supported: call_hierarchy_prepare_request_handler.generating_type.conforms_to ({detachable LS_SERVER_CALL_HIERARCHY_PREPARE_REQUEST_HANDLER})
+		do
+		end
+
+	on_call_hierarchy_incoming_calls_request (a_request: LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST; a_response: LS_CALL_HIERARCHY_INCOMING_CALLS_RESPONSE)
+			-- Handle 'callHierarchy/incomingCalls' request `a_request`.
+			-- Build `a_response` accordingly.
+			--
+			-- (To be redefined in servers.
+			-- Redefine `call_hierarchy_incoming_calls_request_handler` accordingly as per the precondition.)
+		require
+			a_request_not_void: a_request /= Void
+			a_response_not_void: a_response /= Void
+			call_hierarchy_incoming_calls_request_supported: call_hierarchy_incoming_calls_request_handler.generating_type.conforms_to ({detachable LS_SERVER_CALL_HIERARCHY_INCOMING_CALLS_REQUEST_HANDLER})
+		do
+		end
+
+	on_call_hierarchy_outgoing_calls_request (a_request: LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST; a_response: LS_CALL_HIERARCHY_OUTGOING_CALLS_RESPONSE)
+			-- Handle 'callHierarchy/incomingCalls' request `a_request`.
+			-- Build `a_response` accordingly.
+			--
+			-- (To be redefined in servers.
+			-- Redefine `call_hierarchy_outgoing_calls_request_handler` accordingly as per the precondition.)
+		require
+			a_request_not_void: a_request /= Void
+			a_response_not_void: a_response /= Void
+			call_hierarchy_outgoing_calls_request_supported: call_hierarchy_outgoing_calls_request_handler.generating_type.conforms_to ({detachable LS_SERVER_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST_HANDLER})
+		do
+		end
+
 feature -- Handling 'textDocument/completion' requests
 
 	on_completion_request (a_request: LS_COMPLETION_REQUEST; a_response: LS_COMPLETION_RESPONSE)
@@ -250,6 +291,47 @@ feature -- Handling 'textDocument/typeDefinition' requests
 			a_request_not_void: a_request /= Void
 			a_response_not_void: a_response /= Void
 			type_definition_request_supported: type_definition_request_handler.generating_type.conforms_to ({detachable LS_SERVER_TYPE_DEFINITION_REQUEST_HANDLER})
+		do
+		end
+
+feature -- Handling 'textDocument/prepareTypeHierarchy' requests
+
+	on_type_hierarchy_prepare_request (a_request: LS_TYPE_HIERARCHY_PREPARE_REQUEST; a_response: LS_TYPE_HIERARCHY_PREPARE_RESPONSE)
+			-- Handle 'textDocument/prepareTypeHierarchy' request `a_request`.
+			-- Build `a_response` accordingly.
+			--
+			-- (To be redefined in servers.
+			-- Redefine `type_hierarchy_prepare_request_handler` accordingly as per the precondition.)
+		require
+			a_request_not_void: a_request /= Void
+			a_response_not_void: a_response /= Void
+			type_hierarchy_prepare_request_supported: type_hierarchy_prepare_request_handler.generating_type.conforms_to ({detachable LS_SERVER_TYPE_HIERARCHY_PREPARE_REQUEST_HANDLER})
+		do
+		end
+
+	on_type_hierarchy_subtypes_request (a_request: LS_TYPE_HIERARCHY_SUBTYPES_REQUEST; a_response: LS_TYPE_HIERARCHY_SUBTYPES_RESPONSE)
+			-- Handle 'typeHierarchy/subtypes' request `a_request`.
+			-- Build `a_response` accordingly.
+			--
+			-- (To be redefined in servers.
+			-- Redefine `type_hierarchy_subtypes_request_handler` accordingly as per the precondition.)
+		require
+			a_request_not_void: a_request /= Void
+			a_response_not_void: a_response /= Void
+			type_hierarchy_subtypes_request_supported: type_hierarchy_subtypes_request_handler.generating_type.conforms_to ({detachable LS_SERVER_TYPE_HIERARCHY_SUBTYPES_REQUEST_HANDLER})
+		do
+		end
+
+	on_type_hierarchy_supertypes_request (a_request: LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST; a_response: LS_TYPE_HIERARCHY_SUPERTYPES_RESPONSE)
+			-- Handle 'typeHierarchy/supertypes' request `a_request`.
+			-- Build `a_response` accordingly.
+			--
+			-- (To be redefined in servers.
+			-- Redefine `type_hierarchy_supertypes_request_handler` accordingly as per the precondition.)
+		require
+			a_request_not_void: a_request /= Void
+			a_response_not_void: a_response /= Void
+			type_hierarchy_supertypes_request_supported: type_hierarchy_supertypes_request_handler.generating_type.conforms_to ({detachable LS_SERVER_TYPE_HIERARCHY_SUPERTYPES_REQUEST_HANDLER})
 		do
 		end
 

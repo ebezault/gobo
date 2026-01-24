@@ -5,7 +5,7 @@
 		"LSP client handlers for 'initialize' requests"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_CLIENT_INITIALIZE_REQUEST_HANDLER
@@ -50,6 +50,8 @@ feature -- Basic operations
 			a_manager.definition_request_handler.set_server_options (l_server_capabilities.definition_provider)
 			a_manager.type_definition_request_handler.set_server_options (l_server_capabilities.type_definition_provider)
 			a_manager.implementation_request_handler.set_server_options (l_server_capabilities.implementation_provider)
+			a_manager.call_hierarchy_prepare_request_handler.set_server_options (l_server_capabilities.call_hierarchy_provider)
+			a_manager.type_hierarchy_prepare_request_handler.set_server_options (l_server_capabilities.type_hierarchy_provider)
 			a_manager.document_symbol_request_handler.set_server_options (l_server_capabilities.document_symbol_provider)
 			a_manager.workspace_symbol_request_handler.set_server_options (l_server_capabilities.workspace_symbol_provider)
 			if attached {LS_WORKSPACE_SYMBOL_OPTIONS} l_server_capabilities.workspace_symbol_provider as l_workspace_symbol_provider then

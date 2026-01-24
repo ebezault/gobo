@@ -5,7 +5,7 @@
 		"LSP locations inside a resource, such as a line inside a text file"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_LOCATION
@@ -20,13 +20,13 @@ inherit
 			process
 		end
 
-	LS_OPTIONAL_DEFINITION_RESULT
+	LS_DEFINITION_RESULT
 
-	LS_OPTIONAL_TYPE_DEFINITION_RESULT
+	LS_TYPE_DEFINITION_RESULT
 
-	LS_OPTIONAL_DECLARATION_RESULT
+	LS_DECLARATION_RESULT
 
-	LS_OPTIONAL_IMPLEMENTATION_RESULT
+	LS_IMPLEMENTATION_RESULT
 
 create
 

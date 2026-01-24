@@ -2,6 +2,13 @@
 
 ## Version xx.xx.xx - xxxxxxx
 
+### Gobo Eiffel Language Server Protocol Library
+
+* Added support for `textDocument/prepareCallHierarchy`,
+  `callHierarchy/incomingCalls` and `callHierarchy/outgoingCalls` requests.
+* Added support for `textDocument/prepareTypeHierarchy`,
+  `typeHierarchy/supertypes` and `typeHierarchy/subtypes` requests.
+
 ### Gobo Eiffel Tools Library
 
 * Fixed processing of pre- and postconditions in inlined agents.

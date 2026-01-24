@@ -380,6 +380,22 @@ feature {NONE} -- Implementation
 				end
 				l_text_document_capabilities.set_publish_diagnostics (l_publish_diagnostics_capabilities)
 			end
+			call_hierarchy_prepare_request_handler.build_client_capabilities
+			if attached call_hierarchy_prepare_request_handler.client_capabilities as l_call_hierarchy_prepare_capabilities then
+				if l_text_document_capabilities = Void then
+					create l_text_document_capabilities.make
+					Result.set_text_document (l_text_document_capabilities)
+				end
+				l_text_document_capabilities.set_call_hierarchy (l_call_hierarchy_prepare_capabilities)
+			end
+			type_hierarchy_prepare_request_handler.build_client_capabilities
+			if attached type_hierarchy_prepare_request_handler.client_capabilities as l_type_hierarchy_prepare_capabilities then
+				if l_text_document_capabilities = Void then
+					create l_text_document_capabilities.make
+					Result.set_text_document (l_text_document_capabilities)
+				end
+				l_text_document_capabilities.set_type_hierarchy (l_type_hierarchy_prepare_capabilities)
+			end
 			did_change_configuration_notification_handler.build_client_capabilities
 			if attached did_change_configuration_notification_handler.client_capabilities as l_did_change_configuration_capabilities then
 				if l_workspace_capabilities = Void then
