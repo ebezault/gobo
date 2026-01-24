@@ -5,7 +5,7 @@
 		"Browsable names of formal parameters"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_FORMAL_PARAMETER_NAME
@@ -67,6 +67,14 @@ feature -- Output
 			-- Append `description' to `a_string'.
 		do
 			append_formal_parameter_description_to_string (formal_parameter, a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_formal_parameter_name (Current)
 		end
 
 invariant

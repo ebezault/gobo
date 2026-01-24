@@ -5,7 +5,7 @@
 		"Browsable names of tuple labels"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_TUPLE_LABEL_NAME
@@ -93,6 +93,14 @@ feature -- Output
 			if attached labeled_parameter as l_labeled_parameter then
 				append_tuple_label_description_to_string (l_labeled_parameter, a_string)
 			end
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_tuple_label_name (Current)
 		end
 
 invariant

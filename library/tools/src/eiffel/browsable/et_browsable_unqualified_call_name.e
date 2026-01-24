@@ -5,7 +5,7 @@
 		"Browsable names of unqualified calls"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_UNQUALIFIED_CALL_NAME
@@ -82,6 +82,14 @@ feature -- Output
 			if attached call_feature as l_feature then
 				append_feature_description_to_string (l_feature, a_string)
 			end
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_unqualified_call_name (Current)
 		end
 
 end

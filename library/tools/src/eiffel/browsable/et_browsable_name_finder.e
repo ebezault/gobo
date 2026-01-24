@@ -5,7 +5,7 @@
 		"Finders of browsable names at some given positions in class texts"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_NAME_FINDER
@@ -22,11 +22,14 @@ inherit
 			make as make_ast_processor
 		redefine
 			process_assigner,
+			process_assigner_instruction,
 			process_assignment,
+			process_assignment_attempt,
 			process_attribute,
 			process_bang_instruction,
 			process_base_type_rename_constraint,
 			process_bracket_expression,
+			process_call_agent,
 			process_class,
 			process_class_type,
 			process_client,
@@ -174,7 +177,52 @@ feature {ET_AST_NODE} -- Processing
 			end
 		end
 
+	process_assigner_instruction (a_instruction: ET_ASSIGNER_INSTRUCTION)
+			-- Process `a_instruction'.
+		local
+			l_call_name: ET_IDENTIFIER
+			l_old_call_name: ET_CALL_NAME
+			l_position: ET_POSITION
+		do
+			if a_instruction.assign_symbol.contains_position (current_position) then
+				l_old_call_name := a_instruction.name
+				if not l_old_call_name.contains_position (current_position) then
+					create l_call_name.make (a_instruction.assign_symbol.text)
+					l_call_name.set_seed (l_old_call_name.seed)
+					l_call_name.set_feature_name (True)
+					l_position := a_instruction.assign_symbol.first_position
+					l_call_name.set_position (l_position.line, l_position.column)
+					a_instruction.set_name (l_call_name)
+				end
+				process_qualified_feature_call (a_instruction)
+				a_instruction.set_name (l_old_call_name)
+			end
+			if last_browsable_name = Void then
+				precursor (a_instruction)
+			end
+		end
+
 	process_assignment (a_instruction: ET_ASSIGNMENT)
+			-- Process `a_instruction'.
+		local
+			l_target: ET_WRITABLE
+			l_browsable_name: like last_browsable_name
+		do
+			l_target := a_instruction.target
+			if l_target.contains_position (current_position) then
+				if attached {ET_IDENTIFIER} l_target as l_identifier and then l_identifier.is_feature_name then
+					create {ET_BROWSABLE_UNQUALIFIED_CALL_NAME} l_browsable_name.make (l_identifier, current_closure, current_class)
+						-- Note: only writable!
+					l_browsable_name.set_only_query_expected (True)
+					last_browsable_name := l_browsable_name
+				end
+			end
+			if last_browsable_name = Void then
+				precursor (a_instruction)
+			end
+		end
+
+	process_assignment_attempt (a_instruction: ET_ASSIGNMENT_ATTEMPT)
 			-- Process `a_instruction'.
 		local
 			l_target: ET_WRITABLE
@@ -225,6 +273,31 @@ feature {ET_AST_NODE} -- Processing
 		do
 			process_qualified_feature_call (a_expression)
 			if last_browsable_name = Void then
+				precursor (a_expression)
+			end
+		end
+
+	process_call_agent (a_expression: ET_CALL_AGENT)
+			-- Process `a_expression'.
+		local
+			l_name: ET_FEATURE_NAME
+			l_target: ET_AGENT_TARGET
+			l_target_type: ET_BASE_TYPE
+		do
+			l_name := a_expression.name
+			if l_name.contains_position (current_position) then
+				if attached current_closure as l_closure then
+					l_target := a_expression.target
+					internal_type_context.reset (current_class)
+					if attached {ET_AGENT_OPEN_TARGET} l_target as l_open_target then
+						internal_type_context.put_last (l_open_target.type)
+					elseif attached {ET_EXPRESSION} l_target as l_expression_target then
+						expression_type_finder.find_expression_type_in_closure (l_expression_target, l_closure, l_closure, current_class, internal_type_context, current_universe.any_type)
+					end
+					l_target_type := internal_type_context.base_type
+					create {ET_BROWSABLE_QUALIFIED_CALL_NAME} last_browsable_name.make (l_name, l_target_type, current_class)
+				end
+			else
 				precursor (a_expression)
 			end
 		end
@@ -398,13 +471,13 @@ feature {ET_AST_NODE} -- Processing
 					if attached a_instruction.type as l_type then
 						internal_type_context.put_last (l_type)
 					elseif
-						attached {ET_IDENTIFIER} a_instruction.target as l_identifier and then
+						attached {ET_IDENTIFIER} l_target as l_identifier and then
 						attached current_class.seeded_feature (l_identifier.seed) as l_feature and then
 						attached l_feature.type as l_type
 					then
 						internal_type_context.put_last (l_type)
 					else
-						expression_type_finder.find_expression_type_in_closure (a_instruction.target, l_closure, l_closure, current_class, internal_type_context, current_universe.any_type)
+						expression_type_finder.find_expression_type_in_closure (l_target, l_closure, l_closure, current_class, internal_type_context, current_universe.any_type)
 					end
 					l_target_type := internal_type_context.base_type
 					create {ET_BROWSABLE_QUALIFIED_CALL_NAME} l_browsable_name.make (l_name, l_target_type, current_class)
@@ -1183,7 +1256,7 @@ feature {ET_AST_NODE} -- Processing
 			if not attached a_call.parent_type as l_parent_type then
 				-- Do nothing.
 			elseif l_name.contains_position (current_position) then
-				create {ET_BROWSABLE_PRECURSOR_NAME} last_browsable_name.make (l_name, l_parent_type, current_closure,current_class)
+				create {ET_BROWSABLE_PRECURSOR_NAME} last_browsable_name.make (l_name, l_parent_type, current_closure, current_class)
 			elseif attached a_call.parent_name as l_parent_name then
 				l_class_name := l_parent_name.class_name
 				if l_class_name.contains_position (current_position) then
@@ -1574,7 +1647,7 @@ feature {ET_AST_NODE} -- Processing
 feature {NONE} -- Implementation
 
 	current_position: ET_POSITION
-			-- Position of the browsable name being searched?
+			-- Position of the browsable name being searched
 
 	current_closure: detachable ET_CLOSURE
 			-- Closure (feature, invariant, inline agent)
@@ -1631,7 +1704,6 @@ feature {NONE} -- Implementation
 
 invariant
 
-	current_class_not_void: current_class /= Void
 	current_position_not_void: current_position /= Void
 	expression_type_finder_not_void: expression_type_finder /= Void
 	internal_type_context_not_void: internal_type_context /= Void

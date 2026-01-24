@@ -5,7 +5,7 @@
 		"Browsable names of object test locals"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_OBJECT_TEST_LOCAL_NAME
@@ -95,6 +95,14 @@ feature -- Output
 			a_string.append_character (':')
 			a_string.append_character (' ')
 			type.named_type (current_class).append_canonical_with_leading_type_mark_to_string (a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_object_test_local_name (Current)
 		end
 
 invariant

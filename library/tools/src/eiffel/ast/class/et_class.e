@@ -5,7 +5,7 @@
 		"Eiffel classes"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 1999-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 1999-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_CLASS
@@ -2097,6 +2097,58 @@ feature -- Ancestors
 			parents_not_void: Result /= Void
 		end
 
+	has_parent (a_class: ET_CLASS): BOOLEAN
+			-- Is `a_class' a parent of current class?
+		require
+			a_class_not_void: a_class /= Void
+		local
+			l_parent_list: ET_PARENT_LIST
+			i1, nb1: INTEGER
+			i2, nb2: INTEGER
+		do
+			nb1 := parents_count
+			from i1 := 1 until i1 > nb1 loop
+				l_parent_list := parents (i1)
+				nb2 := l_parent_list.count
+				from i2 := 1 until i2 > nb2 loop
+					if l_parent_list.parent (i2).type.base_class = a_class then
+						Result := True
+						i2 := nb2 + 1 -- Jump out of the inner loop.
+						i1 := nb1 + 1 -- Jump out of the outer loop.
+					end
+					i2 := i2 + 1
+				end
+				i1 := i1 + 1
+			end
+		end
+
+	has_conforming_parent (a_class: ET_CLASS): BOOLEAN
+			-- Is `a_class' a conforming parent of current class?
+		require
+			a_class_not_void: a_class /= Void
+		local
+			l_parent_list: ET_PARENT_LIST
+			i1, nb1: INTEGER
+			i2, nb2: INTEGER
+		do
+			nb1 := parents_count
+			from i1 := 1 until i1 > nb1 loop
+				l_parent_list := parents (i1)
+				if l_parent_list.is_conforming then
+					nb2 := l_parent_list.count
+					from i2 := 1 until i2 > nb2 loop
+						if l_parent_list.parent (i2).type.base_class = a_class then
+							Result := True
+							i2 := nb2 + 1 -- Jump out of the inner loop.
+							i1 := nb1 + 1 -- Jump out of the outer loop.
+						end
+						i2 := i2 + 1
+					end
+				end
+				i1 := i1 + 1
+			end
+		end
+
 	add_base_class_of_parents_exported_to (a_client: ET_CLASS; a_set: DS_HASH_SET [ET_CLASS])
 			-- Add to `a_set' the base class of the parents which are exported
 			-- to `a_client' (all conforming parents, and if `a_client' is "NONE"
@@ -2126,6 +2178,64 @@ feature -- Ancestors
 			end
 		ensure
 			no_void_classes: not a_set.has_void
+		end
+
+	add_heirs_exported_to (a_client: ET_CLASS; a_list: DS_ARRAYED_LIST [ET_CLASS])
+			-- Add to `a_list' the heirs of current class which are exported
+			-- to `a_client' (all conforming heirs, and if `a_client' is "NONE"
+			-- then the non-conforming heirs as well).
+		require
+			a_client_not_void: a_client /= Void
+			a_list_not_void: a_list /= Void
+			no_void_classes: not a_list.has_void
+		do
+			if is_unknown then
+					-- Class "*UNKNOWN*" has no heirs.
+			elseif is_none then
+					-- Class "NONE" has no heirs.
+			elseif not is_preparsed then
+					-- Current class is not preparsed, this means that we know nothing
+					-- about it, not even its filename. Therefore it cannot possibly
+					-- have heir classes.
+			elseif a_client.is_none then
+				current_system.classes_do_recursive (agent {ET_CLASS}.add_to_heirs (Current, a_list))
+			else
+				current_system.classes_do_recursive (agent {ET_CLASS}.add_to_conforming_heirs (Current, a_list))
+			end
+		ensure
+			no_void_classes: not a_list.has_void
+		end
+
+	add_to_heirs (a_class: ET_CLASS; a_heirs: DS_ARRAYED_LIST [ET_CLASS])
+			-- Add current class to `a_heirs' if it is an heir of `a_class'.
+		require
+			a_class_not_void: a_class /= Void
+			a_heirs_not_void: a_heirs /= Void
+			no_void_heirs: not a_heirs.has_void
+		do
+			if a_class /= Current then
+				if has_parent (a_class) then
+					a_heirs.force_last (Current)
+				end
+			end
+		ensure
+			no_void_heirs: not a_heirs.has_void
+		end
+
+	add_to_conforming_heirs (a_class: ET_CLASS; a_heirs: DS_ARRAYED_LIST [ET_CLASS])
+			-- Add current class to `a_heirs' if it is a conforming  heir of `a_class'.
+		require
+			a_class_not_void: a_class /= Void
+			a_heirs_not_void: a_heirs /= Void
+			no_void_heirs: not a_heirs.has_void
+		do
+			if a_class /= Current then
+				if has_conforming_parent (a_class) then
+					a_heirs.force_last (Current)
+				end
+			end
+		ensure
+			no_void_heirs: not a_heirs.has_void
 		end
 
 feature -- Ancestor building status

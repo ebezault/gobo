@@ -5,7 +5,7 @@
 		"Browsable 'Current' keywords"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_CURRENT_KEYWORD
@@ -16,7 +16,8 @@ inherit
 		redefine
 			name,
 			build_type_definition,
-			append_description_to_string
+			append_description_to_string,
+			process
 		end
 
 create
@@ -45,6 +46,14 @@ feature -- Output
 			a_string.append_character (':')
 			a_string.append_character (' ')
 			current_class.append_canonical_to_string (a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_current_keyword (Current)
 		end
 
 end

@@ -5,7 +5,7 @@
 		"Browsable names of formal arguments"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_ARGUMENT_NAME
@@ -88,6 +88,14 @@ feature -- Output
 			if attached formal_argument as l_formal_argument then
 				append_formal_agument_description_to_string (l_formal_argument, a_string)
 			end
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_argument_name (Current)
 		end
 
 invariant

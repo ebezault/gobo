@@ -16,7 +16,8 @@ inherit
 		redefine
 			name,
 			build_type_definition,
-			append_description_to_string
+			append_description_to_string,
+			process
 		end
 
 create
@@ -48,6 +49,14 @@ feature -- Output
 			a_string.append_character (':')
 			a_string.append_character (' ')
 			current_class.universe.boolean_type.append_canonical_to_string (a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_boolean_keyword (Current)
 		end
 
 end

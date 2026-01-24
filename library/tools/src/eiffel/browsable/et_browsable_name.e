@@ -5,7 +5,7 @@
 		"Names in the AST which can point to browsable information"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_BROWSABLE_NAME
@@ -309,6 +309,15 @@ feature -- Output
 		deferred
 		ensure
 			valid_utf8: (a_string.same_type ({STRING_8} "") and then old {UC_UTF8_ROUTINES}.valid_utf8 (a_string)) implies {UC_UTF8_ROUTINES}.valid_utf8 (a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		require
+			a_processor_not_void: a_processor /= Void
+		deferred
 		end
 
 invariant

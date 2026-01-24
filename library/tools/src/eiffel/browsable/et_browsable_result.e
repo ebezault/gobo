@@ -5,7 +5,7 @@
 		"Browsable function results"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_RESULT
@@ -17,7 +17,8 @@ inherit
 			name,
 			build_definition,
 			build_type_definition,
-			append_description_to_string
+			append_description_to_string,
+			process
 		end
 
 create
@@ -61,6 +62,14 @@ feature -- Output
 				a_string.append_character (' ')
 				l_type.named_type_with_type_mark (tokens.detachable_keyword, current_class).append_canonical_with_leading_type_mark_to_string (a_string)
 			end
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_result (Current)
 		end
 
 end
