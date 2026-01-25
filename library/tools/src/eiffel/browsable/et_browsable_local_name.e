@@ -59,24 +59,11 @@ feature -- Access
 			end
 		end
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: detachable ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
 			if attached local_variable as l_local_variable then
-				a_builder.add_local_variable (l_local_variable, Current)
-			end
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		local
-			l_base_class: ET_CLASS
-		do
-			if attached local_variable as l_local_variable then
-				l_base_class := l_local_variable.type.base_class (current_class)
-				a_builder.add_class (l_base_class, Current)
+				Result := l_local_variable.type.base_class (current_class)
 			end
 		end
 

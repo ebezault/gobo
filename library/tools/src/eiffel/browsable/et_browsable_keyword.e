@@ -26,16 +26,10 @@ feature -- Access
 	name: ET_KEYWORD
 			-- AST node corresponding to the Result
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: detachable ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		do
+			-- Result := Void
 		end
 
 feature -- Output

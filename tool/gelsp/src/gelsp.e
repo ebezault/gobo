@@ -344,7 +344,7 @@ feature -- Handling 'textDocument/definition' requests
 				l_browsable_name_finder.find_browsable_name (l_position, l_class)
 				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
 					create l_definition_builder.make (a_response, l_position, Current)
-					l_last_browsable_name.build_definition (l_definition_builder)
+					l_last_browsable_name.process (l_definition_builder)
 				end
 			end
 		end
@@ -635,7 +635,7 @@ feature -- Handling 'textDocument/implementation' requests
 				l_browsable_name_finder.find_browsable_name (l_position, l_class)
 				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
 					create l_implementation_builder.make (a_response, Current)
-					l_last_browsable_name.build_implementation (l_implementation_builder)
+					l_last_browsable_name.process (l_implementation_builder)
 				end
 			end
 		end
@@ -665,7 +665,7 @@ feature -- Handling 'textDocument/typeDefinition' requests
 				l_browsable_name_finder.find_browsable_name (l_position, l_class)
 				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
 					create l_type_definition_builder.make (a_response, l_position, Current)
-					l_last_browsable_name.build_type_definition (l_type_definition_builder)
+					l_last_browsable_name.process (l_type_definition_builder)
 				end
 			end
 		end
@@ -694,7 +694,7 @@ feature -- Handling 'textDocument/prepareTypeHierarchy' requests
 				l_browsable_name_finder.find_browsable_name (l_position, l_class)
 				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
 					create l_type_hierarchy_builder.make (a_response, Current)
-					l_last_browsable_name.build_type_definition (l_type_hierarchy_builder)
+					l_last_browsable_name.process (l_type_hierarchy_builder)
 				end
 			end
 		end

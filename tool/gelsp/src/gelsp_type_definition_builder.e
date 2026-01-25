@@ -5,14 +5,14 @@
 		"Builders for lists of type definitions"
 
 	system: "Gobo Eiffel Language Server"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class GELSP_TYPE_DEFINITION_BUILDER
 
 inherit
 
-	ET_BROWSABLE_TYPE_DEFINITION_BUILDER
+	ET_BROWSABLE_NAME_TYPE_PROCESSOR
 
 create
 
@@ -47,20 +47,22 @@ feature -- Access
 	message_manager: GELSP
 			-- Message manager
 
-feature -- Basic operations
+feature -- Processing
 
-	add_class (a_class: ET_CLASS; a_browsable_name: ET_BROWSABLE_NAME)
+	process_class (a_class: ET_CLASS; a_browsable_name: ET_BROWSABLE_NAME)
 			-- Add class `a_class` to the list of definitions.
 		do
 			add_location (a_class.name, a_class)
 		end
 
-	add_formal_parameter (a_formal_parameter: ET_FORMAL_PARAMETER; a_browsable_name: ET_BROWSABLE_NAME)
+	process_formal_parameter (a_formal_parameter: ET_FORMAL_PARAMETER; a_browsable_name: ET_BROWSABLE_NAME)
 			-- Add formal paramater `a_formal_parameter` to the list of definitions.
 		do
 			add_location (a_formal_parameter.name, a_browsable_name.current_class)
 		end
-		
+
+feature {NONE} -- Implementation
+
 	add_location (a_node: ET_AST_NODE; a_class: ET_CLASS)
 			-- Add location corresponding to `a_node` in `a_class` to `response`.
 		require

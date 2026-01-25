@@ -12,10 +12,7 @@ class GELSP_TYPE_HIERARCHY_BUILDER
 
 inherit
 
-	ET_BROWSABLE_TYPE_DEFINITION_BUILDER
-
-	ET_SHARED_TOKEN_CONSTANTS
-		export {NONE} all end
+	ET_BROWSABLE_NAME_TYPE_PROCESSOR
 
 create
 
@@ -44,9 +41,9 @@ feature -- Access
 	message_manager: GELSP
 			-- Message manager
 
-feature -- Basic operations
+feature -- Processing
 
-	add_class (a_class: ET_CLASS; a_browsable_name: ET_BROWSABLE_NAME)
+	process_class (a_class: ET_CLASS; a_browsable_name: ET_BROWSABLE_NAME)
 			-- Add class `a_class` to the list of hierarchy items.
 		do
 			if attached message_manager.type_hierarchy_item (a_class, True) as l_type_hierarchy_item then
@@ -54,7 +51,7 @@ feature -- Basic operations
 			end
 		end
 
-	add_formal_parameter (a_formal_parameter: ET_FORMAL_PARAMETER; a_browsable_name: ET_BROWSABLE_NAME)
+	process_formal_parameter (a_formal_parameter: ET_FORMAL_PARAMETER; a_browsable_name: ET_BROWSABLE_NAME)
 			-- Add formal paramater `a_formal_parameter` to the list of hierarchy items.
 		do
 		end

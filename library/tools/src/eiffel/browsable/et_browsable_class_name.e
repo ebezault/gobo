@@ -47,22 +47,12 @@ feature -- Access
 	actual_class: ET_CLASS
 			-- Class corresponding to `name'
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-			if not actual_class.is_unknown then
-				a_builder.add_class (actual_class, Current)
-			end
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		do
-			if not actual_class.is_unknown then
-				a_builder.add_class (actual_class, Current)
-			end
+			Result := actual_class
+		ensure then
+			type_base_class_not_void: Result /= Void
 		end
 
 feature -- Output

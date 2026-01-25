@@ -50,19 +50,6 @@ feature -- Access
 	message_manager: GELSP
 			-- Message manager
 
-feature -- Basic operations
-
-	report_caller (a_call_name: ET_CALL_NAME; a_caller: ET_STANDALONE_CLOSURE)
-			-- Report that `callee_feature' from `callee_class' is called
-			-- in `a_caller` from `current_class` by `a_call_name`.
-		do
-			if attached {ET_FEATURE} a_caller as l_feature then
-				if attached message_manager.call_hierarchy_item (l_feature, l_feature.implementation_class) as l_call_hierarchy_item then
-					response.add_call_hierarchy_item (l_call_hierarchy_item)
-				end
-			end
-		end
-
 feature {ET_BROWSABLE_NAME} -- Processing
 
 	process_class_name (a_name: ET_BROWSABLE_CLASS_NAME)
@@ -82,7 +69,7 @@ feature {ET_BROWSABLE_NAME} -- Processing
 			l_class: ET_CLASS
 		do
 			if attached a_name.call_feature as l_feature then
-				l_class := a_name.target_type.base_class (a_name.current_class)
+				l_class := a_name.target_base_class
 				if attached message_manager.call_hierarchy_item (l_feature, l_class) as l_call_hierarchy_item then
 					response.add_call_hierarchy_item (l_call_hierarchy_item)
 				end
@@ -95,7 +82,7 @@ feature {ET_BROWSABLE_NAME} -- Processing
 			l_class: ET_CLASS
 		do
 			if attached a_name.call_feature as l_feature then
-				l_class := a_name.target_type.base_class (a_name.current_class)
+				l_class := a_name.target_base_class
 				if attached message_manager.call_hierarchy_item (l_feature, l_class) as l_call_hierarchy_item then
 					response.add_call_hierarchy_item (l_call_hierarchy_item)
 				end

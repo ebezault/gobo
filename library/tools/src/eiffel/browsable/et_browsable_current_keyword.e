@@ -15,7 +15,7 @@ inherit
 	ET_BROWSABLE_KEYWORD
 		redefine
 			name,
-			build_type_definition,
+			type_base_class,
 			append_description_to_string,
 			process
 		end
@@ -29,12 +29,12 @@ feature -- Access
 	name: ET_CURRENT
 			-- AST node corresponding to the Result
 
-feature -- Basic operations
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
+	type_base_class: ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-			a_builder.add_class (current_class, Current)
+			Result := current_class
+		ensure then
+			type_base_class_not_void: Result /= Void
 		end
 
 feature -- Output

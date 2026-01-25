@@ -38,7 +38,15 @@ feature -- Access
 			-- AST node corresponding to the name
 
 	target_type: ET_TYPE
-			-- Base type of target
+			-- Type of target
+
+	target_base_class: ET_CLASS
+			-- Base class of target
+		do
+			Result := target_type.base_class (current_class)
+		ensure
+			target_base_class_not_void: Result /= Void
+		end
 
 feature -- Basic operations
 

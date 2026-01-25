@@ -65,23 +65,12 @@ feature -- Access
 			end
 		end
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-			if attached inline_separate_argument as l_inline_separate_argument then
-				a_builder.add_inline_separate_argument (l_inline_separate_argument, Current)
-			end
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		local
-			l_base_class: ET_CLASS
-		do
-			l_base_class := type.base_class (current_class)
-			a_builder.add_class (l_base_class, Current)
+			Result := type.base_class (current_class)
+		ensure then
+			type_base_class_not_void: Result /= Void
 		end
 
 feature -- Output

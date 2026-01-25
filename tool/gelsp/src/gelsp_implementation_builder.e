@@ -5,14 +5,21 @@
 		"Builders for lists of implementations of a given browsable name"
 
 	system: "Gobo Eiffel Language Server"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class GELSP_IMPLEMENTATION_BUILDER
 
 inherit
 
-	ET_BROWSABLE_IMPLEMENTATION_BUILDER
+	ET_BROWSABLE_NAME_NULL_PROCESSOR
+		rename
+			make as make_null_processor
+		redefine
+				process_precursor_name,
+				process_qualified_call_name,
+				process_unqualified_call_name
+		end
 
 create
 
@@ -41,22 +48,99 @@ feature -- Access
 	message_manager: GELSP
 			-- Message manager
 
-feature -- Basic operations
+feature {ET_BROWSABLE_NAME} -- Processing
 
-	add_feature (a_feature: ET_FEATURE; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add feature `a_feature` to the list of implementations of `a_browsable_name'.
+	process_precursor_name (a_name: ET_BROWSABLE_PRECURSOR_NAME)
+			-- Process `a_name`.
 		do
-			add_location (a_feature.name, a_feature.implementation_class)
+			if attached a_name.call_feature as l_feature then
+				build_feature_implementations (l_feature, a_name.target_base_class)
+			end
 		end
 
-	add_location (a_node: ET_AST_NODE; a_class: ET_CLASS)
-			-- Add location corresponding to `a_node` in `a_class` to `response`.
-		require
-			a_node_not_void: a_node /= Void
-			a_class_no_void: a_class /= Void
+	process_qualified_call_name (a_name: ET_BROWSABLE_QUALIFIED_CALL_NAME)
+			-- Process `a_name`.
 		do
-			if attached message_manager.location (a_node, a_class) as l_location then
-				response.add_location (l_location)
+			if attached a_name.call_feature as l_feature then
+				build_feature_implementations (l_feature, a_name.target_base_class)
+			end
+		end
+
+	process_unqualified_call_name (a_name: ET_BROWSABLE_UNQUALIFIED_CALL_NAME)
+			-- Process `a_name`.
+		do
+			if attached a_name.call_feature as l_feature then
+				build_feature_implementations (l_feature, a_name.current_class)
+			end
+		end
+
+feature {NONE} -- Implementation
+
+	build_feature_implementations (a_feature: ET_FEATURE; a_class: ET_CLASS)
+			-- Build list of implementations of `a_feature' from `a_class'.
+		require
+			a_feature_not_void: a_feature /= Void
+			a_class_not_void: a_class /= Void
+		local
+			l_precursors: DS_HASH_SET [ET_FEATURE]
+			l_implementations: DS_HASH_SET [ET_FEATURE]
+			l_feature: ET_FEATURE
+			l_feature_impl: ET_FEATURE
+			i, nb: INTEGER
+			l_descendants: DS_ARRAYED_LIST [ET_CLASS]
+			l_descendant: ET_CLASS
+			l_seed: INTEGER
+		do
+			create l_precursors.make (20)
+			create l_implementations.make (20)
+			l_precursors.put_last (a_feature)
+			from l_precursors.start until l_precursors.after loop
+				l_feature := l_precursors.item_for_iteration
+				l_feature_impl := l_feature.implementation_feature
+				if not l_implementations.has (l_feature_impl) and then a_feature.has_seed (l_feature.first_seed) then
+					l_implementations.force_last (l_feature_impl)
+				end
+				if attached l_feature.first_precursor as l_first_precursor then
+					if not l_precursors.has (l_first_precursor) then
+						l_precursors.force_last (l_first_precursor)
+					end
+					if attached l_feature.other_precursors as l_other_precursors then
+						nb := l_other_precursors.count
+						from i := 1 until i > nb loop
+							l_feature := l_other_precursors.item (i)
+							if not l_precursors.has (l_feature) then
+								l_precursors.force_last (l_feature)
+							end
+							i := i + 1
+						end
+					end
+				end
+				l_precursors.forth
+			end
+				-- Revert order of precursors.
+			from l_implementations.finish until l_implementations.before loop
+				l_feature := l_implementations.item_for_iteration
+				if attached message_manager.location (l_feature.name, l_feature.implementation_class) as l_location then
+					response.add_location (l_location)
+				end
+				l_implementations.back
+			end
+				-- Look for redeclarations in descendants.
+			l_seed := a_feature.first_seed
+			l_descendants := a_class.conforming_descendant_classes
+			nb := l_descendants.count
+			from i := 1 until i > nb loop
+				l_descendant := l_descendants.item (i)
+				if attached l_descendant.seeded_feature (l_seed) as l_seeded_feature then
+					l_feature_impl := l_seeded_feature.implementation_feature
+					if not l_implementations.has (l_feature_impl) then
+						l_implementations.force_last (l_feature_impl)
+						if attached message_manager.location (l_feature_impl.name, l_feature_impl.implementation_class) as l_location then
+							response.add_location (l_location)
+						end
+					end
+				end
+				i := i + 1
 			end
 		end
 

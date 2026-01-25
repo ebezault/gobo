@@ -5,14 +5,14 @@
 		"Builders for lists of definitions"
 
 	system: "Gobo Eiffel Language Server"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class GELSP_DEFINITION_BUILDER
 
 inherit
 
-	ET_BROWSABLE_DEFINITION_BUILDER
+	ET_BROWSABLE_NAME_PROCESSOR
 
 create
 
@@ -47,67 +47,144 @@ feature -- Access
 	message_manager: GELSP
 			-- Message manager
 
-feature -- Basic operations
+feature {ET_BROWSABLE_NAME} -- Processing
 
-	add_feature (a_feature: ET_FEATURE; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add feature `a_feature` to the list of definitions.
+	process_argument_name (a_name: ET_BROWSABLE_ARGUMENT_NAME)
+			-- Process `a_name`.
 		do
-			add_location (a_feature.name, a_feature.implementation_class)
+			if attached a_name.formal_argument as l_formal_argument then
+				add_location (l_formal_argument.name, a_name.current_class)
+			end
 		end
 
-	add_tuple_label (a_tuple_label: ET_LABELED_ACTUAL_PARAMETER; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add tuple label `a_tuple_label` to the list of definitions.
+	process_boolean_keyword (a_name: ET_BROWSABLE_BOOLEAN_KEYWORD)
+			-- Process `a_name`.
 		do
-			add_location (a_tuple_label.label, a_tuple_label.implementation_class)
 		end
 
-	add_formal_argument (a_argument: ET_FORMAL_ARGUMENT; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add formal argument `a_argument` to the list of definitions.
+	process_class_name (a_name: ET_BROWSABLE_CLASS_NAME)
+			-- Process `a_name`.
+		local
+			l_class: ET_CLASS
 		do
-			add_location (a_argument.name, a_browsable_name.current_class)
+			l_class := a_name.actual_class
+			add_location (l_class.name, l_class)
 		end
 
-	add_local_variable (a_local_variable: ET_LOCAL_VARIABLE; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add local variable `a_local_variable` to the list of definitions.
+	process_current_keyword (a_name: ET_BROWSABLE_CURRENT_KEYWORD)
+			-- Process `a_name`.
 		do
-			add_location (a_local_variable.name, a_browsable_name.current_class)
 		end
 
-	add_result_type (a_result_type: ET_TYPE; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add 'Result' type `a_result_type` to the list of definitions.
+	process_formal_parameter_name (a_name: ET_BROWSABLE_FORMAL_PARAMETER_NAME)
+			-- Process `a_name`.
 		do
-			add_location (a_result_type, a_browsable_name.current_class)
+			add_location (a_name.formal_parameter.name, a_name.current_class)
 		end
 
-	add_object_test_local (a_object_test: ET_NAMED_OBJECT_TEST; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add local of `a_object_test` to the list of definitions.
+	process_inline_separate_argument_name (a_name: ET_BROWSABLE_INLINE_SEPARATE_ARGUMENT_NAME)
+			-- Process `a_name`.
 		do
-			add_location (a_object_test.name, a_browsable_name.current_class)
+			if attached a_name.inline_separate_argument as l_inline_separate_argument then
+				add_location (l_inline_separate_argument.name, a_name.current_class)
+			end
 		end
 
-	add_iteration_item (a_iteration: ET_ITERATION_COMPONENT; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add iteration item of `a_iteration` to the list of definitions.
+	process_iteration_item_name (a_name: ET_BROWSABLE_ITERATION_ITEM_NAME)
+			-- Process `a_name`.
 		do
-			add_location (a_iteration.item_name, a_browsable_name.current_class)
+			if attached a_name.iteration_component as l_iteration_component then
+				add_location (l_iteration_component.item_name, a_name.current_class)
+			end
 		end
 
-	add_inline_separate_argument (a_inline_separate_argument: ET_INLINE_SEPARATE_ARGUMENT; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add argument of inline separate instruction `a_inline_separate_argument` to the list of definitions.
+	process_keyword (a_name: ET_BROWSABLE_KEYWORD)
+			-- Process `a_name`.
 		do
-			add_location (a_inline_separate_argument.name, a_browsable_name.current_class)
 		end
 
-	add_class (a_class: ET_CLASS; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add class `a_class` to the list of definitions.
+	process_local_name (a_name: ET_BROWSABLE_LOCAL_NAME)
+			-- Process `a_name`.
 		do
-			add_location (a_class.name, a_class)
+			if attached a_name.local_variable as l_local_variable then
+				add_location (l_local_variable.name, a_name.current_class)
+			end
 		end
 
-	add_formal_parameter (a_formal_parameter: ET_FORMAL_PARAMETER; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add formal paramater `a_formal_parameter` to the list of definitions.
+	process_object_test_local_name (a_name: ET_BROWSABLE_OBJECT_TEST_LOCAL_NAME)
+			-- Process `a_name`.
 		do
-			add_location (a_formal_parameter.name, a_browsable_name.current_class)
+			if attached a_name.object_test as l_object_test then
+				add_location (l_object_test.name, a_name.current_class)
+			end
 		end
+
+	process_precursor_name (a_name: ET_BROWSABLE_PRECURSOR_NAME)
+			-- Process `a_name`.
+		local
+			l_feature_impl: ET_FEATURE
+		do
+			if attached a_name.call_feature as l_feature then
+				l_feature_impl := l_feature.implementation_feature
+				add_location (l_feature_impl.name, l_feature_impl.implementation_class)
+			end
+		end
+
+	process_qualified_call_name (a_name: ET_BROWSABLE_QUALIFIED_CALL_NAME)
+			-- Process `a_name`.
+		local
+			l_feature_impl: ET_FEATURE
+		do
+			if attached a_name.call_feature as l_feature then
+				l_feature_impl := l_feature.implementation_feature
+				add_location (l_feature_impl.name, l_feature_impl.implementation_class)
+			end
+		end
+
+	process_result (a_name: ET_BROWSABLE_RESULT)
+			-- Process `a_name`.
+		do
+			if attached a_name.current_closure as l_closure and then attached l_closure.type as l_type then
+				add_location (l_type, a_name.current_class)
+			end
+		end
+
+	process_tuple_label_name (a_name: ET_BROWSABLE_TUPLE_LABEL_NAME)
+			-- Process `a_name`.
+		do
+			if attached a_name.labeled_parameter as l_labeled_parameter then
+				add_location (l_labeled_parameter.label, l_labeled_parameter.implementation_class)
+			end
+		end
+
+	process_unqualified_alias_name (a_name: ET_BROWSABLE_UNQUALIFIED_ALIAS_NAME)
+			-- Process `a_name`.
+		local
+			l_feature_impl: ET_FEATURE
+		do
+			if attached {ET_FEATURE} a_name.current_closure as l_feature then
+				l_feature_impl := l_feature.implementation_feature
+				add_location (l_feature_impl.name, l_feature_impl.implementation_class)
+			end
+		end
+
+	process_unqualified_call_name (a_name: ET_BROWSABLE_UNQUALIFIED_CALL_NAME)
+			-- Process `a_name`.
+		local
+			l_feature_impl: ET_FEATURE
+		do
+			if attached a_name.call_feature as l_feature then
+				l_feature_impl := l_feature.implementation_feature
+				add_location (l_feature_impl.name, l_feature_impl.implementation_class)
+			end
+		end
+
+	process_void_keyword (a_name: ET_BROWSABLE_VOID_KEYWORD)
+			-- Process `a_name`.
+		do
+		end
+
+feature {NONE} -- Implementation
 
 	add_location (a_node: ET_AST_NODE; a_class: ET_CLASS)
 			-- Add location corresponding to `a_node` in `a_class` to `response`.

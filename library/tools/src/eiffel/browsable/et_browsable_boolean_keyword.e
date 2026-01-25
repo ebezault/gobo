@@ -15,7 +15,7 @@ inherit
 	ET_BROWSABLE_KEYWORD
 		redefine
 			name,
-			build_type_definition,
+			type_base_class,
 			append_description_to_string,
 			process
 		end
@@ -27,17 +27,14 @@ create
 feature -- Access
 	
 	name: ET_BOOLEAN_CONSTANT
-			-- AST node corresponding to the Result
+			-- AST node corresponding to the Boolean keyword
 
-feature -- Basic operations
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		local
-			l_base_class: ET_CLASS
+	type_base_class: ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-			l_base_class := current_class.universe.boolean_type.base_class
-			a_builder.add_class (l_base_class, Current)
+			Result := current_class.universe.boolean_type.base_class
+		ensure then
+			type_base_class_not_void: Result /= Void
 		end
 
 feature -- Output

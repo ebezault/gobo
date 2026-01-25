@@ -47,18 +47,12 @@ feature -- Access
 	formal_parameter: ET_FORMAL_PARAMETER
 			-- Formal parameter
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-			a_builder.add_formal_parameter (formal_parameter, Current)
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		do
-			a_builder.add_formal_parameter (formal_parameter, Current)
+			Result := formal_parameter.base_class (current_class)
+		ensure then
+			type_base_class_not_void: Result /= Void
 		end
 
 feature -- Output
