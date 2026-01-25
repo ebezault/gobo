@@ -16,7 +16,7 @@
 	install_ise.ps1 github zig
 
 .NOTES
-	Copyright: "Copyright (c) 2021-2024, Eric Bezault and others"
+	Copyright: "Copyright (c) 2021-2026, Eric Bezault and others"
 	License: "MIT License"
 #>
 
@@ -38,8 +38,8 @@ if ($LastExitCode -ne 0) {
 	exit $LastExitCode
 }
 
-$GOBO_CI_ISE_VERSION = "25.02"
-$GOBO_CI_ISE_REVISION = "rev_98732"
+$GOBO_CI_ISE_VERSION = "25.12"
+$GOBO_CI_ISE_REVISION = "rev_98922"
 
 switch ($GOBO_CI_OS) {
 	"linux" {
