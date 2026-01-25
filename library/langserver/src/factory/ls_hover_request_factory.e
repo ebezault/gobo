@@ -5,7 +5,7 @@
 		"LSP factories for 'textDocument/hover' requests"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_HOVER_REQUEST_FACTORY
@@ -78,14 +78,14 @@ feature -- Access
 			end
 		end
 
-	new_response_result (a_response: LS_RESPONSE; a_manager: LS_MESSAGE_MANAGER): detachable LS_OPTIONAL_HOVER_RESULT
+	new_response_result (a_response: LS_RESPONSE; a_manager: LS_MESSAGE_MANAGER): detachable LS_HOVER_RESULT
 			-- Create a new response result from `a_response`.
 			-- Set `last_error` in case of error.
 		do
 			if not attached a_response.result_ as l_any then
 				last_error := {LS_RESPONSE}.result_name + ": invalid type"
-			elseif attached optional_hover_result_from_any (l_any, {LS_RESPONSE}.result_name) as l_optional_hover_result then
-				Result := l_optional_hover_result
+			elseif attached hover_result_from_any (l_any, {LS_RESPONSE}.result_name) as l_hover_result then
+				Result := l_hover_result
 			end
 		end
 

@@ -5,7 +5,7 @@
 		"LSP text document specific client capabilities"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_TEXT_DOCUMENT_CAPABILITIES
@@ -53,6 +53,12 @@ feature -- Access
 
 	publish_diagnostics: detachable LS_PUBLISH_DIAGNOSTICS_CAPABILITIES
 			-- Capabilities specific to the 'textDocument/publishDiagnostics' notification.
+
+	call_hierarchy: detachable LS_CALL_HIERARCHY_CAPABILITIES
+			-- Capabilities specific to the various call hierarchy requests.
+
+	type_hierarchy: detachable LS_TYPE_HIERARCHY_CAPABILITIES
+			-- Capabilities specific to the various type hierarchy requests.
 
 feature -- Setting
 
@@ -128,6 +134,22 @@ feature -- Setting
 			publish_diagnostics_set: publish_diagnostics = a_publish_diagnostics
 		end
 
+	set_call_hierarchy (a_call_hierarchy: like call_hierarchy)
+			-- Set `call_hierarchy` to `a_call_hierarchy`.
+		do
+			call_hierarchy := a_call_hierarchy
+		ensure
+			call_hierarchy_set: call_hierarchy = a_call_hierarchy
+		end
+
+	set_type_hierarchy (a_type_hierarchy: like type_hierarchy)
+			-- Set `type_hierarchy` to `a_type_hierarchy`.
+		do
+			type_hierarchy := a_type_hierarchy
+		ensure
+			type_hierarchy_set: type_hierarchy = a_type_hierarchy
+		end
+
 feature -- Field names
 
 	synchronization_name: STRING_8 = "synchronization"
@@ -139,6 +161,8 @@ feature -- Field names
 	implementation_name: STRING_8 = "implementation"
 	document_symbol_name: STRING_8 = "documentSymbol"
 	publish_diagnostics_name: STRING_8 = "publishDiagnostics"
+	call_hierarchy_name: STRING_8 = "callHierarchy"
+	type_hierarchy_name: STRING_8 = "typeHierarchy"
 			-- Field names
 
 feature -- Processing

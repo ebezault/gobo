@@ -5,7 +5,7 @@
 		"LSP server capabilities"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_SERVER_CAPABILITIES
@@ -53,6 +53,12 @@ feature -- Access
 
 	document_symbol_provider: detachable LS_OPTIONAL_DOCUMENT_SYMBOL_OPTIONS
 			-- The server provides document symbol support.
+
+	call_hierarchy_provider: detachable LS_OPTIONAL_CALL_HIERARCHY_OPTIONS
+			-- The server provides call hierarchy support.
+
+	type_hierarchy_provider: detachable LS_OPTIONAL_TYPE_HIERARCHY_OPTIONS
+			-- The server provides type hierarchy support.
 
 	workspace_symbol_provider: detachable LS_OPTIONAL_WORKSPACE_SYMBOL_OPTIONS
 			-- The server provides workspace symbol support.
@@ -123,6 +129,22 @@ feature -- Setting
 			document_symbol_provider_set: document_symbol_provider = a_document_symbol_provider
 		end
 
+	set_call_hierarchy_provider (a_call_hierarchy_provider: like call_hierarchy_provider)
+			-- Set `call_hierarchy_provider` to `a_call_hierarchy_provider`.
+		do
+			call_hierarchy_provider := a_call_hierarchy_provider
+		ensure
+			call_hierarchy_provider_set: call_hierarchy_provider = a_call_hierarchy_provider
+		end
+
+	set_type_hierarchy_provider (a_type_hierarchy_provider: like type_hierarchy_provider)
+			-- Set `type_hierarchy_provider` to `a_type_hierarchy_provider`.
+		do
+			type_hierarchy_provider := a_type_hierarchy_provider
+		ensure
+			type_hierarchy_provider_set: type_hierarchy_provider = a_type_hierarchy_provider
+		end
+
 	set_workspace_symbol_provider (a_workspace_symbol_provider: like workspace_symbol_provider)
 			-- Set `workspace_symbol_provider` to `a_workspace_symbol_provider`.
 		do
@@ -141,6 +163,8 @@ feature -- Field names
 	type_definition_provider_name: STRING_8 = "typeDefinitionProvider"
 	implementation_provider_name: STRING_8 = "implementationProvider"
 	document_symbol_provider_name: STRING_8 = "documentSymbolProvider"
+	call_hierarchy_provider_name: STRING_8 = "callHierarchyProvider"
+	type_hierarchy_provider_name: STRING_8 = "typeHierarchyProvider"
 	workspace_symbol_provider_name: STRING_8 = "workspaceSymbolProvider"
 			-- Field names
 

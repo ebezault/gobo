@@ -5,7 +5,7 @@
 		"Browsable names of formal arguments"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_ARGUMENT_NAME
@@ -59,24 +59,11 @@ feature -- Access
 			end
 		end
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: detachable ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
 			if attached formal_argument as l_formal_argument then
-				a_builder.add_formal_argument (l_formal_argument, Current)
-			end
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		local
-			l_base_class: ET_CLASS
-		do
-			if attached formal_argument as l_formal_argument then
-				l_base_class := l_formal_argument.type.base_class (current_class)
-				a_builder.add_class (l_base_class, Current)
+				Result := l_formal_argument.type.base_class (current_class)
 			end
 		end
 
@@ -88,6 +75,14 @@ feature -- Output
 			if attached formal_argument as l_formal_argument then
 				append_formal_agument_description_to_string (l_formal_argument, a_string)
 			end
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_argument_name (Current)
 		end
 
 invariant

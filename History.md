@@ -2,6 +2,21 @@
 
 ## Version xx.xx.xx - xxxxxxx
 
+### gelsp
+
+* Implemented `Call Hierarchy` menu/panel with callers and callees in
+  case of features, and with clients and suppliers in case of classes.
+* Implemented `Type Hierarchy` menu/panel with ancestor and descendant
+  classes.
+
+### Gobo Eiffel Language Server Protocol Library
+
+* Added support for `textDocument/prepareCallHierarchy`,
+  `callHierarchy/incomingCalls` and `callHierarchy/outgoingCalls`
+  requests.
+* Added support for `textDocument/prepareTypeHierarchy`,
+  `typeHierarchy/supertypes` and `typeHierarchy/subtypes` requests.
+
 ### Gobo Eiffel Tools Library
 
 * Fixed processing of pre- and postconditions in inlined agents.

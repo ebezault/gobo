@@ -5,7 +5,7 @@
 		"LSP handlers for 'textDocument/implementation' requests"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_IMPLEMENTATION_REQUEST_HANDLER
@@ -70,7 +70,7 @@ feature {NONE} -- Implementation
 			check False then end
 		end
 
-	response_result: LS_OPTIONAL_IMPLEMENTATION_RESULT
+	response_result: LS_IMPLEMENTATION_RESULT
 			-- Type of response result to be handled by current handler
 		do
 			check False then end

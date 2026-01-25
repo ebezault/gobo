@@ -15,8 +15,9 @@ inherit
 	ET_BROWSABLE_KEYWORD
 		redefine
 			name,
-			build_type_definition,
-			append_description_to_string
+			type_base_class,
+			append_description_to_string,
+			process
 		end
 
 create
@@ -28,16 +29,14 @@ feature -- Access
 	name: ET_VOID
 			-- AST node corresponding to the Result
 
-feature -- Basic operations
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		local
-			l_base_class: ET_CLASS
+	type_base_class: ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-			l_base_class := current_class.universe.none_type.base_class
-			a_builder.add_class (l_base_class, Current)
+			Result := current_class.universe.none_type.base_class
+		ensure then
+			type_base_class_not_void: Result /= Void
 		end
+
 feature -- Output
 
 	append_description_to_string (a_string: STRING_8)
@@ -47,6 +46,14 @@ feature -- Output
 			a_string.append_character (':')
 			a_string.append_character (' ')
 			current_class.universe.none_type.append_canonical_to_string (a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_void_keyword (Current)
 		end
 
 end

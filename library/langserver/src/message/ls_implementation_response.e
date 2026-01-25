@@ -5,7 +5,7 @@
 		"LSP reponses for 'textDocument/implementation' requests"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_IMPLEMENTATION_RESPONSE
@@ -38,7 +38,7 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	result_: detachable LS_OPTIONAL_IMPLEMENTATION_RESULT
+	result_: detachable LS_IMPLEMENTATION_RESULT
 			-- The result of a request.
 
 feature -- Setting
@@ -50,7 +50,7 @@ feature -- Setting
 			result_ := {LS_NULL}.null
 		end
 
-	set_result (a_result: LS_OPTIONAL_IMPLEMENTATION_RESULT)
+	set_result (a_result: LS_IMPLEMENTATION_RESULT)
 			-- Set `result_` to `a_result`.
 		require
 			a_result_not_void: a_result /= Void

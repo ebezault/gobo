@@ -5,7 +5,7 @@
 		"Eiffel features being flattened"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2003-2014, Eric Bezault and others"
+	copyright: "Copyright (c) 2003-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_FLATTENED_FEATURE
@@ -147,6 +147,32 @@ feature -- Access
 		deferred
 		ensure
 			flattened_feature_not_void: Result /= Void
+		end
+
+feature -- Basic operations
+
+	add_seeds_to_set (a_set: DS_HASH_SET [INTEGER])
+			-- Add all seeds to `a_set'.
+		require
+			a_set_not_void: a_set /= Void
+		local
+			l_seed: INTEGER
+			i, nb: INTEGER
+		do
+			l_seed := first_seed
+			if l_seed /= 0 then
+				a_set.force (l_seed)
+				if attached other_seeds as l_other_seeds then
+					nb := l_other_seeds.count
+					from i := 1 until i > nb loop
+						l_seed := l_other_seeds.item (i)
+						if l_seed /= 0 then
+							a_set.force (l_seed)
+						end
+						i := i + 1
+					end
+				end
+			end
 		end
 
 feature -- Conversion

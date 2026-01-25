@@ -113,6 +113,274 @@ feature {LS_ANY} -- Processing
 			end
 		end
 
+	process_call_hierarchy_capabilities (a_value: LS_CALL_HIERARCHY_CAPABILITIES)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_dynamic_registration_capabilities (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_incoming_call (a_value: LS_CALL_HIERARCHY_INCOMING_CALL)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_INCOMING_CALL}.from_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.from_.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_INCOMING_CALL}.from_ranges_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.from_ranges.process (Current)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_incoming_call_list (a_value: LS_CALL_HIERARCHY_INCOMING_CALL_LIST)
+			-- Process `a_value`.
+		do
+			process_list (a_value)
+		end
+
+	process_call_hierarchy_incoming_calls_params (a_value: LS_CALL_HIERARCHY_INCOMING_CALLS_PARAMS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_INCOMING_CALLS_PARAMS}.item_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.item.process (Current)
+			process_work_done_progress_params (a_value)
+			process_partial_result_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_incoming_calls_request (a_value: LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_jsonrpc_version
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST}.id_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.id.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST}.method_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.method.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST}.params_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			process_call_hierarchy_incoming_calls_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_item (a_value: LS_CALL_HIERARCHY_ITEM)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_ITEM}.name_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.name.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_ITEM}.kind_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.kind.process (Current)
+			if attached a_value.tags as l_tags then
+				utf8_string.append_character (',')
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_CALL_HIERARCHY_ITEM}.tags_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_tags.process (Current)
+			end
+			if attached a_value.detail as l_detail then
+				utf8_string.append_character (',')
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_CALL_HIERARCHY_ITEM}.detail_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_detail.process (Current)
+			end
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_ITEM}.uri_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.uri.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_ITEM}.range_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.range.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_ITEM}.selection_range_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.selection_range.process (Current)
+			if attached a_value.data as l_data then
+				utf8_string.append_character (',')
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_CALL_HIERARCHY_ITEM}.data_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_data.process (Current)
+			end
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_item_list (a_value: LS_CALL_HIERARCHY_ITEM_LIST)
+			-- Process `a_value`.
+		do
+			process_list (a_value)
+		end
+
+	process_call_hierarchy_options (a_value: LS_CALL_HIERARCHY_OPTIONS)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_work_done_progress_options (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_outgoing_call (a_value: LS_CALL_HIERARCHY_OUTGOING_CALL)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_OUTGOING_CALL}.to_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.to.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_OUTGOING_CALL}.from_ranges_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.from_ranges.process (Current)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_outgoing_call_list (a_value: LS_CALL_HIERARCHY_OUTGOING_CALL_LIST)
+			-- Process `a_value`.
+		do
+			process_list (a_value)
+		end
+
+	process_call_hierarchy_outgoing_calls_params (a_value: LS_CALL_HIERARCHY_OUTGOING_CALLS_PARAMS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_OUTGOING_CALLS_PARAMS}.item_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.item.process (Current)
+			process_work_done_progress_params (a_value)
+			process_partial_result_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_outgoing_calls_request (a_value: LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_jsonrpc_version
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST}.id_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.id.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST}.method_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.method.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST}.params_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			process_call_hierarchy_outgoing_calls_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_prepare_params (a_value: LS_CALL_HIERARCHY_PREPARE_PARAMS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		do
+			utf8_string.append_character ('{')
+			process_text_document_location_params (a_value)
+			process_work_done_progress_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_prepare_request (a_value: LS_CALL_HIERARCHY_PREPARE_REQUEST)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_jsonrpc_version
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_PREPARE_REQUEST}.id_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.id.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_PREPARE_REQUEST}.method_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.method.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_CALL_HIERARCHY_PREPARE_REQUEST}.params_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			process_call_hierarchy_prepare_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_call_hierarchy_registration_options (a_value: LS_CALL_HIERARCHY_REGISTRATION_OPTIONS)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_text_document_registration_options (a_value)
+			process_work_done_progress_options (a_value)
+			if attached a_value.id as l_id then
+				process_comma_if_not_first
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_CALL_HIERARCHY_REGISTRATION_OPTIONS}.id_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_id.process (Current)
+			end
+			utf8_string.append_character ('}')
+		end
+
 	process_cancel_params (a_value: LS_CANCEL_PARAMS)
 			-- Process `a_value`.
 		require
@@ -795,6 +1063,8 @@ feature {LS_ANY} -- Processing
 
 	process_completion_params (a_value: LS_COMPLETION_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			if attached a_value.context as l_context then
@@ -906,6 +1176,8 @@ feature {LS_ANY} -- Processing
 
 	process_configuration_params (a_value: LS_CONFIGURATION_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			utf8_string.append_character ('"')
@@ -990,6 +1262,8 @@ feature {LS_ANY} -- Processing
 
 	process_declaration_params (a_value: LS_DECLARATION_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			process_text_document_location_params (a_value)
@@ -1067,6 +1341,8 @@ feature {LS_ANY} -- Processing
 
 	process_definition_params (a_value: LS_DEFINITION_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			process_text_document_location_params (a_value)
@@ -1747,6 +2023,8 @@ feature {LS_ANY} -- Processing
 
 	process_document_symbol_params (a_value: LS_DOCUMENT_SYMBOL_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			utf8_string.append_character ('"')
@@ -1896,6 +2174,18 @@ feature {LS_ANY} -- Processing
 			utf8_string.append_character ('}')
 		end
 
+	process_hover (a_value: LS_HOVER)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_HOVER}.contents_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.contents.process (Current)
+			utf8_string.append_character ('}')
+		end
+
 	process_hover_capabilities (a_value: LS_HOVER_CAPABILITIES)
 			-- Process `a_value`.
 		do
@@ -1922,6 +2212,8 @@ feature {LS_ANY} -- Processing
 
 	process_hover_params (a_value: LS_HOVER_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			process_text_document_location_params (a_value)
@@ -1964,18 +2256,6 @@ feature {LS_ANY} -- Processing
 			utf8_string.append_character ('}')
 		end
 
-	process_hover_result (a_value: LS_HOVER_RESULT)
-			-- Process `a_value`.
-		do
-			utf8_string.append_character ('{')
-			utf8_string.append_character ('"')
-			utf8_string.append_string ({LS_HOVER_RESULT}.contents_name)
-			utf8_string.append_character ('"')
-			utf8_string.append_character (':')
-			a_value.contents.process (Current)
-			utf8_string.append_character ('}')
-		end
-
 	process_implementation_capabilities (a_value: LS_IMPLEMENTATION_CAPABILITIES)
 			-- Process `a_value`.
 		do
@@ -2002,6 +2282,8 @@ feature {LS_ANY} -- Processing
 
 	process_implementation_params (a_value: LS_IMPLEMENTATION_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			process_text_document_location_params (a_value)
@@ -2584,6 +2866,8 @@ feature {LS_ANY} -- Processing
 
 	process_progress_params (a_value: LS_PROGRESS_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			utf8_string.append_character ('"')
@@ -2712,6 +2996,12 @@ feature {LS_ANY} -- Processing
 			utf8_string.append_character ('}')
 		end
 
+	process_range_list (a_value: LS_RANGE_LIST)
+			-- Process `a_value`.
+		do
+			process_list (a_value)
+		end
+
 	process_register_capability_request (a_value: LS_REGISTER_CAPABILITY_REQUEST)
 			-- Process `a_value`.
 		do
@@ -2772,6 +3062,8 @@ feature {LS_ANY} -- Processing
 
 	process_registration_params (a_value: LS_REGISTRATION_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			utf8_string.append_character ('"')
@@ -2933,6 +3225,22 @@ feature {LS_ANY} -- Processing
 				utf8_string.append_character ('"')
 				utf8_string.append_character (':')
 				l_document_symbol_provider.process (Current)
+			end
+			if attached a_value.call_hierarchy_provider as l_call_hierarchy_provider then
+				process_comma_if_not_first
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_SERVER_CAPABILITIES}.call_hierarchy_provider_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_call_hierarchy_provider.process (Current)
+			end
+			if attached a_value.type_hierarchy_provider as l_type_hierarchy_provider then
+				process_comma_if_not_first
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_SERVER_CAPABILITIES}.type_hierarchy_provider_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_type_hierarchy_provider.process (Current)
 			end
 			if attached a_value.workspace_symbol_provider as l_workspace_symbol_provider then
 				process_comma_if_not_first
@@ -3179,6 +3487,22 @@ feature {LS_ANY} -- Processing
 				utf8_string.append_character ('"')
 				utf8_string.append_character (':')
 				l_publish_diagnostics.process (Current)
+			end
+			if attached a_value.call_hierarchy as l_call_hierarchy then
+				process_comma_if_not_first
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_TEXT_DOCUMENT_CAPABILITIES}.call_hierarchy_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_call_hierarchy.process (Current)
+			end
+			if attached a_value.type_hierarchy as l_type_hierarchy then
+				process_comma_if_not_first
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_TEXT_DOCUMENT_CAPABILITIES}.type_hierarchy_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_type_hierarchy.process (Current)
 			end
 			utf8_string.append_character ('}')
 		end
@@ -3447,6 +3771,8 @@ feature {LS_ANY} -- Processing
 
 	process_type_definition_params (a_value: LS_TYPE_DEFINITION_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			process_text_document_location_params (a_value)
@@ -3495,6 +3821,226 @@ feature {LS_ANY} -- Processing
 			utf8_string.append_character ('"')
 			utf8_string.append_character (':')
 			process_type_definition_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_capabilities (a_value: LS_TYPE_HIERARCHY_CAPABILITIES)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_dynamic_registration_capabilities (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_item (a_value: LS_TYPE_HIERARCHY_ITEM)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_ITEM}.name_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.name.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_ITEM}.kind_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.kind.process (Current)
+			if attached a_value.tags as l_tags then
+				utf8_string.append_character (',')
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_TYPE_HIERARCHY_ITEM}.tags_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_tags.process (Current)
+			end
+			if attached a_value.detail as l_detail then
+				utf8_string.append_character (',')
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_TYPE_HIERARCHY_ITEM}.detail_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_detail.process (Current)
+			end
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_ITEM}.uri_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.uri.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_ITEM}.range_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.range.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_ITEM}.selection_range_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.selection_range.process (Current)
+			if attached a_value.data as l_data then
+				utf8_string.append_character (',')
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_TYPE_HIERARCHY_ITEM}.data_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_data.process (Current)
+			end
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_item_list (a_value: LS_TYPE_HIERARCHY_ITEM_LIST)
+			-- Process `a_value`.
+		do
+			process_list (a_value)
+		end
+
+	process_type_hierarchy_options (a_value: LS_TYPE_HIERARCHY_OPTIONS)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_work_done_progress_options (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_prepare_params (a_value: LS_TYPE_HIERARCHY_PREPARE_PARAMS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		do
+			utf8_string.append_character ('{')
+			process_text_document_location_params (a_value)
+			process_work_done_progress_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_prepare_request (a_value: LS_TYPE_HIERARCHY_PREPARE_REQUEST)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_jsonrpc_version
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_PREPARE_REQUEST}.id_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.id.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_PREPARE_REQUEST}.method_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.method.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_PREPARE_REQUEST}.params_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			process_type_hierarchy_prepare_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_registration_options (a_value: LS_TYPE_HIERARCHY_REGISTRATION_OPTIONS)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_text_document_registration_options (a_value)
+			process_work_done_progress_options (a_value)
+			if attached a_value.id as l_id then
+				process_comma_if_not_first
+				utf8_string.append_character ('"')
+				utf8_string.append_string ({LS_TYPE_HIERARCHY_REGISTRATION_OPTIONS}.id_name)
+				utf8_string.append_character ('"')
+				utf8_string.append_character (':')
+				l_id.process (Current)
+			end
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_subtypes_params (a_value: LS_TYPE_HIERARCHY_SUBTYPES_PARAMS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_SUBTYPES_PARAMS}.item_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.item.process (Current)
+			process_work_done_progress_params (a_value)
+			process_partial_result_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_subtypes_request (a_value: LS_TYPE_HIERARCHY_SUBTYPES_REQUEST)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_jsonrpc_version
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_SUBTYPES_REQUEST}.id_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.id.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_SUBTYPES_REQUEST}.method_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.method.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_SUBTYPES_REQUEST}.params_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			process_type_hierarchy_subtypes_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_supertypes_params (a_value: LS_TYPE_HIERARCHY_SUPERTYPES_PARAMS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		do
+			utf8_string.append_character ('{')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_SUPERTYPES_PARAMS}.item_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.item.process (Current)
+			process_work_done_progress_params (a_value)
+			process_partial_result_params (a_value)
+			utf8_string.append_character ('}')
+		end
+
+	process_type_hierarchy_supertypes_request (a_value: LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST)
+			-- Process `a_value`.
+		do
+			utf8_string.append_character ('{')
+			process_jsonrpc_version
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST}.id_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.id.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST}.method_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			a_value.method.process (Current)
+			utf8_string.append_character (',')
+			utf8_string.append_character ('"')
+			utf8_string.append_string ({LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST}.params_name)
+			utf8_string.append_character ('"')
+			utf8_string.append_character (':')
+			process_type_hierarchy_supertypes_params (a_value)
 			utf8_string.append_character ('}')
 		end
 
@@ -3576,6 +4122,8 @@ feature {LS_ANY} -- Processing
 
 	process_unregistration_params (a_value: LS_UNREGISTRATION_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			utf8_string.append_character ('"')
@@ -3912,6 +4460,8 @@ feature {LS_ANY} -- Processing
 
 	process_workspace_symbol_params (a_value: LS_WORKSPACE_SYMBOL_PARAMS)
 			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
 		do
 			utf8_string.append_character ('{')
 			utf8_string.append_character ('"')

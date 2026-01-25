@@ -5,7 +5,7 @@
 		"LSP reponses for 'textDocument/willSaveWaitUntil' requests"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_WILL_SAVE_WAIT_UNTIL_TEXT_DOCUMENT_RESPONSE
@@ -38,7 +38,7 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	result_: detachable LS_OPTIONAL_WILL_SAVE_WAIT_UNTIL_TEXT_DOCUMENT_RESULT
+	result_: detachable LS_WILL_SAVE_WAIT_UNTIL_TEXT_DOCUMENT_RESULT
 			-- The result of a request.
 
 feature -- Setting

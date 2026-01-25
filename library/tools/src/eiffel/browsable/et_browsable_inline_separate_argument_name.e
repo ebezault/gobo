@@ -5,7 +5,7 @@
 		"Browsable names of inline separate arguments"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_INLINE_SEPARATE_ARGUMENT_NAME
@@ -65,23 +65,12 @@ feature -- Access
 			end
 		end
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-			if attached inline_separate_argument as l_inline_separate_argument then
-				a_builder.add_inline_separate_argument (l_inline_separate_argument, Current)
-			end
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		local
-			l_base_class: ET_CLASS
-		do
-			l_base_class := type.base_class (current_class)
-			a_builder.add_class (l_base_class, Current)
+			Result := type.base_class (current_class)
+		ensure then
+			type_base_class_not_void: Result /= Void
 		end
 
 feature -- Output
@@ -95,6 +84,14 @@ feature -- Output
 			a_string.append_character (':')
 			a_string.append_character (' ')
 			type.named_type (current_class).append_canonical_with_leading_type_mark_to_string (a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_inline_separate_argument_name (Current)
 		end
 
 invariant

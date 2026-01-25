@@ -5,7 +5,7 @@
 		"LSP reponses for 'textDocument/hover' requests"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_HOVER_RESPONSE
@@ -38,7 +38,7 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	result_: detachable LS_OPTIONAL_HOVER_RESULT
+	result_: detachable LS_HOVER_RESULT
 			-- The result of a request.
 
 feature -- Setting
@@ -67,7 +67,7 @@ feature -- Setting
 			a_markup_content_not_void: a_markup_content /= Void
 		do
 			error := Void
-			create {LS_HOVER_RESULT} result_.make (a_markup_content)
+			create {LS_HOVER} result_.make (a_markup_content)
 		end
 
 	set_string (a_text: READABLE_STRING_GENERAL)
@@ -79,7 +79,7 @@ feature -- Setting
 		do
 			error := Void
 			create l_contents.make_from_string (a_text)
-			create {LS_HOVER_RESULT} result_.make (l_contents)
+			create {LS_HOVER} result_.make (l_contents)
 		end
 
 	set_string_utf8 (a_text: STRING_8)
@@ -93,7 +93,7 @@ feature -- Setting
 		do
 			error := Void
 			create l_contents.make_from_utf8 (a_text)
-			create {LS_HOVER_RESULT} result_.make (l_contents)
+			create {LS_HOVER} result_.make (l_contents)
 		end
 
 	set_plaintext (a_text: READABLE_STRING_GENERAL; a_manager: LS_MESSAGE_MANAGER)
@@ -107,7 +107,7 @@ feature -- Setting
 		do
 			error := Void
 			create l_contents.make ({LS_MARKUP_KINDS}.plaintext, create {LS_STRING}.make_from_string (a_text))
-			create {LS_HOVER_RESULT} result_.make (l_contents)
+			create {LS_HOVER} result_.make (l_contents)
 		end
 
 	set_plaintext_utf8 (a_text: STRING_8; a_manager: LS_MESSAGE_MANAGER)
@@ -123,7 +123,7 @@ feature -- Setting
 		do
 			error := Void
 			create l_contents.make ({LS_MARKUP_KINDS}.plaintext, create {LS_STRING}.make_from_utf8 (a_text))
-			create {LS_HOVER_RESULT} result_.make (l_contents)
+			create {LS_HOVER} result_.make (l_contents)
 		end
 
 	set_markdown (a_text: READABLE_STRING_GENERAL; a_manager: LS_MESSAGE_MANAGER)
@@ -137,7 +137,7 @@ feature -- Setting
 		do
 			error := Void
 			create l_contents.make ({LS_MARKUP_KINDS}.markdown, create {LS_STRING}.make_from_string (a_text))
-			create {LS_HOVER_RESULT} result_.make (l_contents)
+			create {LS_HOVER} result_.make (l_contents)
 		end
 
 	set_markdown_utf8 (a_text: STRING_8; a_manager: LS_MESSAGE_MANAGER)
@@ -153,7 +153,7 @@ feature -- Setting
 		do
 			error := Void
 			create l_contents.make ({LS_MARKUP_KINDS}.markdown, create {LS_STRING}.make_from_utf8 (a_text))
-			create {LS_HOVER_RESULT} result_.make (l_contents)
+			create {LS_HOVER} result_.make (l_contents)
 		end
 
 end

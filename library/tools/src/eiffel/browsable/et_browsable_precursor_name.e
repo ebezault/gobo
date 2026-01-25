@@ -5,7 +5,7 @@
 		"Browsable names of precursor calls"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_PRECURSOR_NAME
@@ -49,7 +49,15 @@ feature -- Access
 			-- AST node corresponding to the name
 
 	target_type: ET_TYPE
-			-- Base type of target
+			-- Type of target
+
+	target_base_class: ET_CLASS
+			-- Base class of target
+		do
+			Result := target_type.base_class (current_class)
+		ensure
+			target_base_class_not_void: Result /= Void
+		end
 
 	call_feature: detachable ET_FEATURE
 			-- Feature of the call, if any
@@ -58,36 +66,21 @@ feature -- Access
 		do
 			l_seed := name.seed
 			if l_seed /= 0 then
-				Result := target_type.base_class (current_class).seeded_feature (l_seed)
+				Result := target_base_class.seeded_feature (l_seed)
 			end
 		end
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
-		local
-			l_feature_impl: ET_FEATURE
-		do
-			if attached call_feature as l_feature then
-				l_feature_impl := l_feature.implementation_feature
-				a_builder.add_feature (l_feature_impl, Current)
-			end
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
+	type_base_class: detachable ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		local
 			l_nested_type_context: ET_NESTED_TYPE_CONTEXT
-			l_base_class: ET_CLASS
 		do
 			if not attached call_feature as l_feature then
-				-- No type definition.
+				-- No type.
 			elseif attached l_feature.type as l_type then
 				create l_nested_type_context.make_with_capacity (current_class, 1)
 				l_nested_type_context.put_last (target_type)
-				l_base_class := l_type.base_class (l_nested_type_context)
-				a_builder.add_class (l_base_class, Current)
+				Result := l_type.base_class (l_nested_type_context)
 			end
 		end
 
@@ -129,6 +122,14 @@ feature -- Output
 			end
 		ensure
 			valid_utf8: (a_string.same_type ({STRING_8} "") and then old {UC_UTF8_ROUTINES}.valid_utf8 (a_string)) implies {UC_UTF8_ROUTINES}.valid_utf8 (a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_precursor_name (Current)
 		end
 
 end

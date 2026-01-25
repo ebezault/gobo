@@ -5,7 +5,7 @@
 		"Browsable names of local variables"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_LOCAL_NAME
@@ -59,24 +59,11 @@ feature -- Access
 			end
 		end
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: detachable ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
 			if attached local_variable as l_local_variable then
-				a_builder.add_local_variable (l_local_variable, Current)
-			end
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		local
-			l_base_class: ET_CLASS
-		do
-			if attached local_variable as l_local_variable then
-				l_base_class := l_local_variable.type.base_class (current_class)
-				a_builder.add_class (l_base_class, Current)
+				Result := l_local_variable.type.base_class (current_class)
 			end
 		end
 
@@ -88,6 +75,14 @@ feature -- Output
 			if attached local_variable as l_local_variable then
 				append_local_variable_description_to_string (l_local_variable, a_string)
 			end
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_local_name (Current)
 		end
 
 invariant

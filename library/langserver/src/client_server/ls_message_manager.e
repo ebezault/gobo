@@ -133,6 +133,30 @@ feature -- Basic operations
 
 feature -- Handlers
 
+	call_hierarchy_incoming_calls_request_handler: LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST_HANDLER
+			-- Handler for 'callHierarchy/incomingCalls' requests
+		once ("OBJECT")
+			create Result.make
+		ensure
+			call_hierarchy_incoming_calls_request_handler_not_void: Result /= Void
+		end
+
+	call_hierarchy_outgoing_calls_request_handler: LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST_HANDLER
+			-- Handler for 'callHierarchy/outgoingCalls' requests
+		once ("OBJECT")
+			create Result.make
+		ensure
+			call_hierarchy_outgoing_calls_request_handler_not_void: Result /= Void
+		end
+
+	call_hierarchy_prepare_request_handler: LS_CALL_HIERARCHY_PREPARE_REQUEST_HANDLER
+			-- Handler for 'textDocument/prepareCallHierarchy' requests
+		once ("OBJECT")
+			create Result.make
+		ensure
+			call_hierarchy_prepare_request_handler_not_void: Result /= Void
+		end
+
 	completion_request_handler: LS_COMPLETION_REQUEST_HANDLER
 			-- Handler for 'textDocument/completion' requests
 		once ("OBJECT")
@@ -283,6 +307,30 @@ feature -- Handlers
 			create Result.make
 		ensure
 			type_definition_request_handler_not_void: Result /= Void
+		end
+
+	type_hierarchy_prepare_request_handler: LS_TYPE_HIERARCHY_PREPARE_REQUEST_HANDLER
+			-- Handler for 'textDocument/prepareTypeHierarchy' requests
+		once ("OBJECT")
+			create Result.make
+		ensure
+			type_hierarchy_prepare_request_handler_not_void: Result /= Void
+		end
+
+	type_hierarchy_subtypes_request_handler: LS_TYPE_HIERARCHY_SUBTYPES_REQUEST_HANDLER
+			-- Handler for 'typeHierarchy/subtypes' requests
+		once ("OBJECT")
+			create Result.make
+		ensure
+			type_hierarchy_subtypes_request_handler_not_void: Result /= Void
+		end
+
+	type_hierarchy_supertypes_request_handler: LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST_HANDLER
+			-- Handler for 'typeHierarchy/supertypes' requests
+		once ("OBJECT")
+			create Result.make
+		ensure
+			type_hierarchy_supertypes_request_handler_not_void: Result /= Void
 		end
 
 	will_save_text_document_notification_handler: LS_WILL_SAVE_TEXT_DOCUMENT_NOTIFICATION_HANDLER
@@ -589,6 +637,9 @@ feature {LS_RESPONSE_HANDLER, LS_REQUEST_HANDLER} -- Implementation
 			-- Message factories, indexed by methods
 		once ("OBJECT")
 			create Result.make (100)
+			Result.force (create {LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST_FACTORY}.make, {LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST}.method)
+			Result.force (create {LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST_FACTORY}.make, {LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST}.method)
+			Result.force (create {LS_CALL_HIERARCHY_PREPARE_REQUEST_FACTORY}.make, {LS_CALL_HIERARCHY_PREPARE_REQUEST}.method)
 			Result.force (create {LS_COMPLETION_REQUEST_FACTORY}.make, {LS_COMPLETION_REQUEST}.method)
 			Result.force (create {LS_COMPLETION_ITEM_RESOLVE_REQUEST_FACTORY}.make, {LS_COMPLETION_ITEM_RESOLVE_REQUEST}.method)
 			Result.force (create {LS_CONFIGURATION_REQUEST_FACTORY}.make, {LS_CONFIGURATION_REQUEST}.method)
@@ -614,6 +665,9 @@ feature {LS_RESPONSE_HANDLER, LS_REQUEST_HANDLER} -- Implementation
 			Result.force (create {LS_SET_TRACE_NOTIFICATION_FACTORY}.make, {LS_SET_TRACE_NOTIFICATION}.method)
 			Result.force (create {LS_SHUTDOWN_REQUEST_FACTORY}.make, {LS_SHUTDOWN_REQUEST}.method)
 			Result.force (create {LS_TYPE_DEFINITION_REQUEST_FACTORY}.make, {LS_TYPE_DEFINITION_REQUEST}.method)
+			Result.force (create {LS_TYPE_HIERARCHY_PREPARE_REQUEST_FACTORY}.make, {LS_TYPE_HIERARCHY_PREPARE_REQUEST}.method)
+			Result.force (create {LS_TYPE_HIERARCHY_SUBTYPES_REQUEST_FACTORY}.make, {LS_TYPE_HIERARCHY_SUBTYPES_REQUEST}.method)
+			Result.force (create {LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST_FACTORY}.make, {LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST}.method)
 			Result.force (create {LS_UNREGISTER_CAPABILITY_REQUEST_FACTORY}.make, {LS_UNREGISTER_CAPABILITY_REQUEST}.method)
 			Result.force (create {LS_WILL_SAVE_TEXT_DOCUMENT_NOTIFICATION_FACTORY}.make, {LS_WILL_SAVE_TEXT_DOCUMENT_NOTIFICATION}.method)
 			Result.force (create {LS_WILL_SAVE_WAIT_UNTIL_TEXT_DOCUMENT_REQUEST_FACTORY}.make, {LS_WILL_SAVE_WAIT_UNTIL_TEXT_DOCUMENT_REQUEST}.method)

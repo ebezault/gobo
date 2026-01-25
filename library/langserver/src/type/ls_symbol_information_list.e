@@ -5,7 +5,7 @@
 		"LSP lists of symbol informations"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_SYMBOL_INFORMATION_LIST
@@ -14,9 +14,9 @@ inherit
 
 	LS_LIST [LS_SYMBOL_INFORMATION]
 
-	LS_OPTIONAL_DOCUMENT_SYMBOL_RESULT
+	LS_DOCUMENT_SYMBOL_RESULT
 
-	LS_OPTIONAL_WORKSPACE_SYMBOL_RESULT
+	LS_WORKSPACE_SYMBOL_RESULT
 
 create
 

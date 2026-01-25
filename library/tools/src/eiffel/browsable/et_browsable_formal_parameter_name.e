@@ -5,7 +5,7 @@
 		"Browsable names of formal parameters"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_FORMAL_PARAMETER_NAME
@@ -47,18 +47,12 @@ feature -- Access
 	formal_parameter: ET_FORMAL_PARAMETER
 			-- Formal parameter
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
-			a_builder.add_formal_parameter (formal_parameter, Current)
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		do
-			a_builder.add_formal_parameter (formal_parameter, Current)
+			Result := formal_parameter.base_class (current_class)
+		ensure then
+			type_base_class_not_void: Result /= Void
 		end
 
 feature -- Output
@@ -67,6 +61,14 @@ feature -- Output
 			-- Append `description' to `a_string'.
 		do
 			append_formal_parameter_description_to_string (formal_parameter, a_string)
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_formal_parameter_name (Current)
 		end
 
 invariant

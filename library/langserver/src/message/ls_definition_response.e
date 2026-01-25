@@ -38,7 +38,7 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	result_: detachable LS_OPTIONAL_DEFINITION_RESULT
+	result_: detachable LS_DEFINITION_RESULT
 			-- The result of a request.
 
 feature -- Setting
@@ -50,7 +50,7 @@ feature -- Setting
 			result_ := {LS_NULL}.null
 		end
 
-	set_result (a_result: LS_OPTIONAL_DEFINITION_RESULT)
+	set_result (a_result: LS_DEFINITION_RESULT)
 			-- Set `result_` to `a_result`.
 		require
 			a_result_not_void: a_result /= Void

@@ -47,6 +47,90 @@ feature {LS_ANY} -- Processing
 		deferred
 		end
 
+	process_call_hierarchy_capabilities (a_value: LS_CALL_HIERARCHY_CAPABILITIES)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_incoming_call (a_value: LS_CALL_HIERARCHY_INCOMING_CALL)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_incoming_call_list (a_value: LS_CALL_HIERARCHY_INCOMING_CALL_LIST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_incoming_calls_request (a_value: LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_item (a_value: LS_CALL_HIERARCHY_ITEM)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_item_list (a_value: LS_CALL_HIERARCHY_ITEM_LIST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_options (a_value: LS_CALL_HIERARCHY_OPTIONS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_outgoing_call (a_value: LS_CALL_HIERARCHY_OUTGOING_CALL)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_outgoing_call_list (a_value: LS_CALL_HIERARCHY_OUTGOING_CALL_LIST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_outgoing_calls_request (a_value: LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_prepare_request (a_value: LS_CALL_HIERARCHY_PREPARE_REQUEST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_call_hierarchy_registration_options (a_value: LS_CALL_HIERARCHY_REGISTRATION_OPTIONS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
 	process_cancel_request_notification (a_value: LS_CANCEL_REQUEST_NOTIFICATION)
 			-- Process `a_value`.
 		require
@@ -593,7 +677,7 @@ feature {LS_ANY} -- Processing
 		deferred
 		end
 
-	process_hover_result (a_value: LS_HOVER_RESULT)
+	process_hover (a_value: LS_HOVER)
 			-- Process `a_value`.
 		require
 			a_value_not_void: a_value /= Void
@@ -818,6 +902,13 @@ feature {LS_ANY} -- Processing
 		end
 
 	process_range (a_value: LS_RANGE)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_range_list (a_value: LS_RANGE_LIST)
 			-- Process `a_value`.
 		require
 			a_value_not_void: a_value /= Void
@@ -1049,6 +1140,62 @@ feature {LS_ANY} -- Processing
 		end
 
 	process_type_definition_request (a_value: LS_TYPE_DEFINITION_REQUEST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_type_hierarchy_capabilities (a_value: LS_TYPE_HIERARCHY_CAPABILITIES)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_type_hierarchy_item (a_value: LS_TYPE_HIERARCHY_ITEM)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_type_hierarchy_item_list (a_value: LS_TYPE_HIERARCHY_ITEM_LIST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_type_hierarchy_options (a_value: LS_TYPE_HIERARCHY_OPTIONS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_type_hierarchy_prepare_request (a_value: LS_TYPE_HIERARCHY_PREPARE_REQUEST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_type_hierarchy_registration_options (a_value: LS_TYPE_HIERARCHY_REGISTRATION_OPTIONS)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_type_hierarchy_subtypes_request (a_value: LS_TYPE_HIERARCHY_SUBTYPES_REQUEST)
+			-- Process `a_value`.
+		require
+			a_value_not_void: a_value /= Void
+		deferred
+		end
+
+	process_type_hierarchy_supertypes_request (a_value: LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST)
 			-- Process `a_value`.
 		require
 			a_value_not_void: a_value /= Void

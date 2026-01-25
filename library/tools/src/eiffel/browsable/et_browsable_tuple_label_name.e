@@ -5,7 +5,7 @@
 		"Browsable names of tuple labels"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_BROWSABLE_TUPLE_LABEL_NAME
@@ -64,24 +64,11 @@ feature -- Access
 			end
 		end
 
-feature -- Basic operations
-
-	build_definition (a_builder: ET_BROWSABLE_DEFINITION_BUILDER)
-			-- Build list of definitions.
+	type_base_class: detachable ET_CLASS
+			-- Base class of the type of the browsable name, if any
 		do
 			if attached labeled_parameter as l_labeled_parameter then
-				a_builder.add_tuple_label (l_labeled_parameter, Current)
-			end
-		end
-
-	build_type_definition (a_builder: ET_BROWSABLE_TYPE_DEFINITION_BUILDER)
-			-- Build list of type definitions.
-		local
-			l_base_class: ET_CLASS
-		do
-			if attached labeled_parameter as l_labeled_parameter then
-				l_base_class := l_labeled_parameter.type.base_class (current_class)
-				a_builder.add_class (l_base_class, Current)
+				Result := l_labeled_parameter.type.base_class (current_class)
 			end
 		end
 
@@ -93,6 +80,14 @@ feature -- Output
 			if attached labeled_parameter as l_labeled_parameter then
 				append_tuple_label_description_to_string (l_labeled_parameter, a_string)
 			end
+		end
+
+feature -- Processing
+
+	process (a_processor: ET_BROWSABLE_NAME_PROCESSOR)
+			-- Process current name.
+		do
+			a_processor.process_tuple_label_name (Current)
 		end
 
 invariant

@@ -5,7 +5,7 @@
 		"LSP factories for 'textDocument/willSaveWaitUntil' requests"
 
 	library: "Gobo Eiffel Language Server Protocol Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class LS_WILL_SAVE_WAIT_UNTIL_TEXT_DOCUMENT_REQUEST_FACTORY
@@ -69,14 +69,14 @@ feature -- Access
 			end
 		end
 
-	new_response_result (a_response: LS_RESPONSE; a_manager: LS_MESSAGE_MANAGER): detachable LS_OPTIONAL_WILL_SAVE_WAIT_UNTIL_TEXT_DOCUMENT_RESULT
+	new_response_result (a_response: LS_RESPONSE; a_manager: LS_MESSAGE_MANAGER): detachable LS_WILL_SAVE_WAIT_UNTIL_TEXT_DOCUMENT_RESULT
 			-- Create a new response result from `a_response`.
 			-- Set `last_error` in case of error.
 		do
 			if not attached a_response.result_ as l_any then
 				last_error := {LS_RESPONSE}.result_name + ": invalid type"
-			elseif attached optional_will_save_wait_until_text_document_result_from_any (l_any, {LS_RESPONSE}.result_name) as l_optional_will_save_wait_until_text_document_result then
-				Result := l_optional_will_save_wait_until_text_document_result
+			elseif attached will_save_wait_until_text_document_result_from_any (l_any, {LS_RESPONSE}.result_name) as l_will_save_wait_until_text_document_result then
+				Result := l_will_save_wait_until_text_document_result
 			end
 		end
 

@@ -18,6 +18,9 @@ inherit
 			make,
 			server_name,
 			server_description,
+			call_hierarchy_incoming_calls_request_handler,
+			call_hierarchy_outgoing_calls_request_handler,
+			call_hierarchy_prepare_request_handler,
 			completion_request_handler,
 			definition_request_handler,
 			did_change_configuration_notification_handler,
@@ -29,7 +32,13 @@ inherit
 			hover_request_handler,
 			implementation_request_handler,
 			type_definition_request_handler,
+			type_hierarchy_prepare_request_handler,
+			type_hierarchy_subtypes_request_handler,
+			type_hierarchy_supertypes_request_handler,
 			workspace_symbol_request_handler,
+			on_call_hierarchy_prepare_request,
+			on_call_hierarchy_incoming_calls_request ,
+			on_call_hierarchy_outgoing_calls_request,
 			on_completion_request,
 			on_configuration_response,
 			on_definition_request,
@@ -44,6 +53,9 @@ inherit
 			on_initialized_notification,
 			on_shutdown_request,
 			on_type_definition_request,
+			on_type_hierarchy_prepare_request,
+			on_type_hierarchy_subtypes_request,
+			on_type_hierarchy_supertypes_request,
 			on_workspace_symbol_request,
 			add_other_options,
 			process_other_options,
@@ -55,6 +67,9 @@ inherit
 	ET_GOBO_CLI
 
 	ET_SHARED_TOKEN_CONSTANTS
+		export {NONE} all end
+
+	ET_SHARED_CLASS_COMPARATOR_BY_NAME
 		export {NONE} all end
 
 	UT_SHARED_ISE_VARIABLES
@@ -123,6 +138,157 @@ feature -- Access
 			end
 		end
 
+feature -- Handling 'textDocument/prepareCallHierarchy' requests
+
+	on_call_hierarchy_prepare_request (a_request: LS_CALL_HIERARCHY_PREPARE_REQUEST; a_response: LS_CALL_HIERARCHY_PREPARE_RESPONSE)
+			-- Handle 'textDocument/prepareCallHierarchy' request `a_request`.
+			-- Build `a_response` accordingly.
+		local
+			l_browsable_name_finder: ET_BROWSABLE_NAME_FINDER
+			l_request_position: LS_POSITION
+			l_position: ET_COMPRESSED_POSITION
+			l_call_hierarchy_builder: GELSP_CALL_HIERARCHY_BUILDER
+		do
+			if attached class_from_uri (a_request.text_document.uri) as l_class then
+				l_request_position := a_request.position
+				create l_position.make (l_request_position.line.value.to_integer_32 + 1, l_request_position.character.value.to_integer_32 + 1)
+				create l_browsable_name_finder.make (system_processor)
+				l_browsable_name_finder.find_browsable_name (l_position, l_class)
+				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
+					create l_call_hierarchy_builder.make (a_response, Current)
+					l_last_browsable_name.process (l_call_hierarchy_builder)
+				end
+			end
+		end
+
+	on_call_hierarchy_incoming_calls_request (a_request: LS_CALL_HIERARCHY_INCOMING_CALLS_REQUEST; a_response: LS_CALL_HIERARCHY_INCOMING_CALLS_RESPONSE)
+			-- Handle 'callHierarchy/incomingCalls' request `a_request`.
+			-- Build `a_response` accordingly.
+		local
+			l_caller_finder: GELSP_FEATURE_CALLER_FINDER
+		do
+			if attached {LS_STRING} a_request.item.data as l_data then
+				if attached class_mapping.value (l_data.utf8_value) as l_class then
+					on_client_hierarchy (l_class, a_response)
+				end
+			elseif not attached {LS_OBJECT} a_request.item.data as l_data then
+				-- Missing information.
+			elseif not attached {LS_STRING} l_data.value ("class") as l_filename then
+				-- Missing information.
+			elseif not attached {LS_NUMBER} l_data.value ("seed") as l_seed then
+				-- Missing information.
+			elseif not l_seed.is_integer then
+				-- Unknown seed.
+			elseif not attached class_mapping.value (l_filename.utf8_value) as l_class then
+				-- Unknown class
+			elseif attached l_class.seeded_feature (l_seed.to_integer) as l_feature then
+				create l_caller_finder.make (a_response, Current, system_processor)
+				l_caller_finder.find_callers_in_system (l_feature, l_class, l_class.current_system)
+			end
+		end
+
+	on_client_hierarchy (a_class: ET_CLASS; a_response: LS_CALL_HIERARCHY_INCOMING_CALLS_RESPONSE)
+			-- Handle 'callHierarchy/incomingCalls' request with the clients of `a_class`.
+			-- Build `a_response` accordingly.
+		local
+			l_all_classes: DS_ARRAYED_LIST [ET_CLASS]
+			l_client: ET_CLASS
+			l_clients: DS_ARRAYED_LIST [ET_CLASS]
+			l_sorter: DS_QUICK_SORTER [ET_CLASS]
+			i, nb: INTEGER
+		do
+			create l_all_classes.make (3000)
+			a_class.current_system.classes_do_recursive (agent l_all_classes.force_last)
+			create l_clients.make (300)
+			nb := l_all_classes.count
+			from i := 1 until i > nb loop
+				l_client := l_all_classes.item (i)
+				if attached l_client.supplier_classes as l_supplier_classes and then l_supplier_classes.has (a_class) then
+					l_clients.force_last (l_client)
+				end
+				i := i + 1
+			end
+			nb := l_clients.count
+			if nb > 1 then
+				create l_sorter.make (class_comparator_by_name)
+				l_clients.sort (l_sorter)
+			end
+			from i := 1 until i > nb loop
+				if attached client_hierarchy_item (l_clients.item (i)) as l_client_hierarchy_item then
+					a_response.add_call_hierarchy_incoming_call (l_client_hierarchy_item)
+				end
+				i := i + 1
+			end
+		end
+
+	on_call_hierarchy_outgoing_calls_request (a_request: LS_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST; a_response: LS_CALL_HIERARCHY_OUTGOING_CALLS_RESPONSE)
+			-- Handle 'callHierarchy/incomingCalls' request `a_request`.
+			-- Build `a_response` accordingly.
+		local
+			l_callee_finder: GELSP_FEATURE_CALLEE_FINDER
+		do
+			if attached {LS_STRING} a_request.item.data as l_data then
+				if attached class_mapping.value (l_data.utf8_value) as l_class then
+					on_supplier_hierarchy (l_class, a_response)
+				end
+			elseif not attached {LS_OBJECT} a_request.item.data as l_data then
+				-- Missing information.
+			elseif not attached {LS_STRING} l_data.value ("class") as l_filename then
+				-- Missing information.
+			elseif not attached {LS_NUMBER} l_data.value ("seed") as l_seed then
+				-- Missing information.
+			elseif not l_seed.is_integer then
+				-- Unknown seed.
+			elseif not attached class_mapping.value (l_filename.utf8_value) as l_class then
+				-- Unknown class
+			elseif attached l_class.seeded_feature (l_seed.to_integer) as l_feature then
+				create l_callee_finder.make (a_response, Current, system_processor)
+				l_callee_finder.find_callees (l_feature)
+			end
+		end
+
+	on_supplier_hierarchy (a_class: ET_CLASS; a_response: LS_CALL_HIERARCHY_OUTGOING_CALLS_RESPONSE)
+			-- Handle 'callHierarchy/incomingCalls' request with the suppliers of `a_class`.
+			-- Build `a_response` accordingly.
+		local
+			l_suppliers: DS_ARRAYED_LIST [ET_CLASS]
+			l_sorter: DS_QUICK_SORTER [ET_CLASS]
+			i, nb: INTEGER
+		do
+			if attached a_class.supplier_classes as l_supplier_classes then
+				create l_suppliers.make_from_linear (l_supplier_classes)
+				nb := l_suppliers.count
+				if nb > 1 then
+					create l_sorter.make (class_comparator_by_name)
+					l_suppliers.sort (l_sorter)
+				end
+				from i := 1 until i > nb loop
+					if attached supplier_hierarchy_item (l_suppliers.item (i)) as l_supplier_hierarchy_item then
+						a_response.add_call_hierarchy_outgoing_call (l_supplier_hierarchy_item)
+					end
+					i := i + 1
+				end
+			end
+		end
+
+	call_hierarchy_incoming_calls_request_handler: LS_SERVER_CALL_HIERARCHY_INCOMING_CALLS_REQUEST_HANDLER
+			-- Handler for 'callHierarchy/incomingCalls' requests
+		once ("OBJECT")
+			create Result.make
+		end
+
+	call_hierarchy_outgoing_calls_request_handler: LS_SERVER_CALL_HIERARCHY_OUTGOING_CALLS_REQUEST_HANDLER
+			-- Handler for 'callHierarchy/outgoingCalls' requests
+		once ("OBJECT")
+			create Result.make
+		end
+
+	call_hierarchy_prepare_request_handler: LS_SERVER_CALL_HIERARCHY_PREPARE_REQUEST_HANDLER
+			-- Handler for 'textDocument/prepareCallHierarchy' requests
+		once ("OBJECT")
+			create Result.make
+		end
+
 feature -- Handling 'textDocument/completion' requests
 
 	on_completion_request (a_request: LS_COMPLETION_REQUEST; a_response: LS_COMPLETION_RESPONSE)
@@ -178,7 +344,7 @@ feature -- Handling 'textDocument/definition' requests
 				l_browsable_name_finder.find_browsable_name (l_position, l_class)
 				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
 					create l_definition_builder.make (a_response, l_position, Current)
-					l_last_browsable_name.build_definition (l_definition_builder)
+					l_last_browsable_name.process (l_definition_builder)
 				end
 			end
 		end
@@ -469,7 +635,7 @@ feature -- Handling 'textDocument/implementation' requests
 				l_browsable_name_finder.find_browsable_name (l_position, l_class)
 				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
 					create l_implementation_builder.make (a_response, Current)
-					l_last_browsable_name.build_implementation (l_implementation_builder)
+					l_last_browsable_name.process (l_implementation_builder)
 				end
 			end
 		end
@@ -499,13 +665,125 @@ feature -- Handling 'textDocument/typeDefinition' requests
 				l_browsable_name_finder.find_browsable_name (l_position, l_class)
 				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
 					create l_type_definition_builder.make (a_response, l_position, Current)
-					l_last_browsable_name.build_type_definition (l_type_definition_builder)
+					l_last_browsable_name.process (l_type_definition_builder)
 				end
 			end
 		end
 
 	type_definition_request_handler: LS_SERVER_TYPE_DEFINITION_REQUEST_HANDLER
 			-- Handler for 'textDocument/typeDefinition' requests
+		once ("OBJECT")
+			create Result.make
+		end
+
+feature -- Handling 'textDocument/prepareTypeHierarchy' requests
+
+	on_type_hierarchy_prepare_request (a_request: LS_TYPE_HIERARCHY_PREPARE_REQUEST; a_response: LS_TYPE_HIERARCHY_PREPARE_RESPONSE)
+			-- Handle 'textDocument/prepareTypeHierarchy' request `a_request`.
+			-- Build `a_response` accordingly.
+		local
+			l_browsable_name_finder: ET_BROWSABLE_NAME_FINDER
+			l_request_position: LS_POSITION
+			l_position: ET_COMPRESSED_POSITION
+			l_type_hierarchy_builder: GELSP_TYPE_HIERARCHY_BUILDER
+		do
+			if attached class_from_uri (a_request.text_document.uri) as l_class then
+				l_request_position := a_request.position
+				create l_position.make (l_request_position.line.value.to_integer_32 + 1, l_request_position.character.value.to_integer_32 + 1)
+				create l_browsable_name_finder.make (system_processor)
+				l_browsable_name_finder.find_browsable_name (l_position, l_class)
+				if attached l_browsable_name_finder.last_browsable_name as l_last_browsable_name then
+					create l_type_hierarchy_builder.make (a_response, Current)
+					l_last_browsable_name.process (l_type_hierarchy_builder)
+				end
+			end
+		end
+
+	on_type_hierarchy_subtypes_request (a_request: LS_TYPE_HIERARCHY_SUBTYPES_REQUEST; a_response: LS_TYPE_HIERARCHY_SUBTYPES_RESPONSE)
+			-- Handle 'typeHierarchy/subtypes' request `a_request`.
+			-- Build `a_response` accordingly.
+		local
+			l_heirs: DS_ARRAYED_LIST [ET_CLASS]
+			l_heir: ET_CLASS
+			l_none: ET_CLASS
+			i, nb: INTEGER
+			l_sorter: DS_QUICK_SORTER [ET_CLASS]
+		do
+			if not attached {LS_STRING} a_request.item.data as l_data then
+				-- No information.
+			elseif attached class_mapping.value (l_data.utf8_value) as l_class then
+				l_none := l_class.current_system.none_type.base_class
+				create l_heirs.make (20)
+				l_class.add_heirs_exported_to (l_none, l_heirs)
+				nb := l_heirs.count
+				if nb > 1 then
+					create l_sorter.make (class_comparator_by_name)
+					l_heirs.sort (l_sorter)
+				end
+				from i := 1 until i > nb loop
+					l_heir := l_heirs.item (i)
+					if attached type_hierarchy_item (l_heir, l_heir.has_conforming_parent (l_class)) as l_type_hierarchy_item then
+						a_response.add_type_hierarchy_item (l_type_hierarchy_item)
+					end
+					i := i + 1
+				end
+			end
+		end
+
+	on_type_hierarchy_supertypes_request (a_request: LS_TYPE_HIERARCHY_SUPERTYPES_REQUEST; a_response: LS_TYPE_HIERARCHY_SUPERTYPES_RESPONSE)
+			-- Handle 'typeHierarchy/supertypes' request `a_request`.
+			-- Build `a_response` accordingly.
+		local
+			l_set: DS_HASH_SET [ET_CLASS]
+			l_parents: DS_ARRAYED_LIST [ET_CLASS]
+			l_parent: ET_CLASS
+			l_none: ET_CLASS
+			i, nb: INTEGER
+			l_sorter: DS_QUICK_SORTER [ET_CLASS]
+		do
+			if not attached {LS_STRING} a_request.item.data as l_data then
+				-- No information.
+			elseif attached class_mapping.value (l_data.utf8_value) as l_class then
+				l_none := l_class.current_system.none_type.base_class
+				create l_set.make (20)
+				l_class.add_base_class_of_parents_exported_to (l_none, l_set)
+				nb := l_set.count
+				if nb = 0 then
+					-- No parents
+				elseif nb = 1 then
+					l_parent := l_set.first
+					if attached type_hierarchy_item (l_parent, l_class.has_conforming_parent (l_parent)) as l_type_hierarchy_item then
+						a_response.add_type_hierarchy_item (l_type_hierarchy_item)
+					end
+				else
+					create l_parents.make_from_linear (l_set)
+					create l_sorter.make (class_comparator_by_name)
+					l_parents.sort (l_sorter)
+					from i := 1 until i > nb loop
+						l_parent := l_parents.item (i)
+						if attached type_hierarchy_item (l_parent, l_class.has_conforming_parent (l_parent)) as l_type_hierarchy_item then
+							a_response.add_type_hierarchy_item (l_type_hierarchy_item)
+						end
+						i := i + 1
+					end
+				end
+			end
+		end
+
+	type_hierarchy_prepare_request_handler: LS_SERVER_TYPE_HIERARCHY_PREPARE_REQUEST_HANDLER
+			-- Handler for 'textDocument/prepareTypeHierarchy' requests
+		once ("OBJECT")
+			create Result.make
+		end
+
+	type_hierarchy_subtypes_request_handler: LS_SERVER_TYPE_HIERARCHY_SUBTYPES_REQUEST_HANDLER
+			-- Handler for 'typeHierarchy/suntypes' requests
+		once ("OBJECT")
+			create Result.make
+		end
+
+	type_hierarchy_supertypes_request_handler: LS_SERVER_TYPE_HIERARCHY_SUPERTYPES_REQUEST_HANDLER
+			-- Handler for 'typeHierarchy/supertypes' requests
 		once ("OBJECT")
 			create Result.make
 		end
@@ -1332,6 +1610,274 @@ feature -- Helper
 				l_uri := {UT_FILE_URI_ROUTINES}.filename_to_uri (l_filename)
 				create l_string.make_from_string (l_uri.full_reference)
 				create Result.make (l_string, range (a_node, a_class))
+			end
+		end
+
+	type_hierarchy_item (a_class: ET_CLASS; a_is_conforming_inheritance: BOOLEAN): detachable LS_TYPE_HIERARCHY_ITEM
+			-- Type hierarchy item for `a_class`.
+		require
+			a_class_not_void: a_class /= Void
+		local
+			l_range: LS_RANGE
+			l_uri: UT_URI
+			l_document_uri: LS_STRING
+			l_data: LS_STRING
+		do
+			if attached a_class.filename as l_filename then
+				l_uri := {UT_FILE_URI_ROUTINES}.filename_to_uri (l_filename)
+				create l_document_uri.make_from_string (l_uri.full_reference)
+				l_range := range (a_class.name, a_class)
+				create l_data.make_from_utf8 (l_filename)
+				create Result.make (class_name (a_class), {LS_SYMBOL_KINDS}.class_, Void, class_status (a_class, a_is_conforming_inheritance), l_document_uri, l_range, l_range, l_data)
+			end
+		end
+
+	call_hierarchy_item (a_closure: ET_STANDALONE_CLOSURE; a_class: ET_CLASS): detachable LS_CALL_HIERARCHY_ITEM
+			-- Call hierarchy item for `a_closure` from `a_class`.
+		require
+			a_closure_not_void: a_closure /= Void
+			a_class_not_void: a_class /= Void
+		local
+			l_class_impl: ET_CLASS
+			l_closure_impl: ET_STANDALONE_CLOSURE
+			l_range: LS_RANGE
+			l_uri: UT_URI
+			l_document_uri: LS_STRING
+			l_name: LS_STRING
+			l_detail: LS_STRING
+			l_class_filename: LS_STRING
+			l_seed: LS_INTEGER
+			l_data: detachable LS_OBJECT
+			l_kind: LS_SYMBOL_KIND
+		do
+			l_closure_impl := a_closure.implementation_feature
+			l_class_impl := l_closure_impl.implementation_class
+			if attached l_class_impl.filename as l_filename then
+				create l_name.make_from_utf8 (a_closure.lower_name)
+				create l_detail.make_from_utf8 ("(from " + a_class.upper_name + ")")
+				l_uri := {UT_FILE_URI_ROUTINES}.filename_to_uri (l_filename)
+				create l_document_uri.make_from_string (l_uri.full_reference)
+				l_range := range (l_closure_impl.name, l_class_impl)
+				if attached {ET_FEATURE} a_closure as l_feature then
+					if l_feature.is_attribute then
+						l_kind := {LS_SYMBOL_KINDS}.field
+					else
+						l_kind := {LS_SYMBOL_KINDS}.method
+					end
+					create l_class_filename.make_from_utf8 (l_filename)
+					l_seed := a_closure.first_seed
+					create l_data.make_with_capacity (2)
+					l_data.put_value (l_class_filename, "class")
+					l_data.put_value (l_seed, "seed")
+				else
+					l_kind := {LS_SYMBOL_KINDS}.property
+				end
+				create Result.make (l_name, l_kind, Void, l_detail, l_document_uri, l_range, l_range, l_data)
+			end
+		end
+
+	call_hierarchy_incoming_call (a_call_name: ET_CALL_NAME; a_caller: ET_STANDALONE_CLOSURE): detachable LS_CALL_HIERARCHY_INCOMING_CALL
+			-- Call hierarchy incoming call where a given feature is called by `a_caller`.
+		require
+			a_call_name_not_void: a_call_name /= Void
+			a_caller_not_void: a_caller /= Void
+		local
+			l_ranges: LS_RANGE_LIST
+			l_range: LS_RANGE
+		do
+			if attached call_hierarchy_item (a_caller, a_caller.implementation_class) as l_item then
+				create l_ranges.make_with_capacity (2)
+				l_range := range (a_call_name, a_caller.implementation_class)
+				l_ranges.put_last (l_range)
+				create Result.make (l_item, l_ranges)
+			end
+		end
+
+	call_hierarchy_outgoing_call (a_call_name: ET_CALL_NAME; a_callee_feature: ET_FEATURE; a_callee_class, a_caller_class: ET_CLASS): detachable LS_CALL_HIERARCHY_OUTGOING_CALL
+			-- Call hierarchy outgoing call where a given feature is called by `a_caller`.
+		require
+			a_call_name_not_void: a_call_name /= Void
+			a_callee_feature_not_void: a_callee_feature /= Void
+			a_callee_class_not_void: a_callee_class /= Void
+			a_caller_class_not_void: a_caller_class /= Void
+		local
+			l_item: LS_CALL_HIERARCHY_ITEM
+			l_ranges: LS_RANGE_LIST
+			l_range: LS_RANGE
+			l_uri: UT_URI
+			l_document_uri: LS_STRING
+			l_name: LS_STRING
+			l_detail: LS_STRING
+			l_class_filename: LS_STRING
+			l_seed: LS_INTEGER
+			l_data: detachable LS_OBJECT
+			l_kind: LS_SYMBOL_KIND
+		do
+			if attached a_caller_class.filename as l_filename then
+				create l_name.make_from_utf8 (a_callee_feature.lower_name)
+				create l_detail.make_from_utf8 ("(from " + a_callee_class.upper_name + ")")
+				l_uri := {UT_FILE_URI_ROUTINES}.filename_to_uri (l_filename)
+				create l_document_uri.make_from_string (l_uri.full_reference)
+				if a_callee_feature.is_attribute then
+					l_kind := {LS_SYMBOL_KINDS}.field
+				else
+					l_kind := {LS_SYMBOL_KINDS}.method
+				end
+				create l_class_filename.make_from_utf8 (l_filename)
+				l_seed := a_callee_feature.first_seed
+				create l_data.make_with_capacity (2)
+				l_data.put_value (l_class_filename, "class")
+				l_data.put_value (l_seed, "seed")
+				l_range := range (a_call_name, a_caller_class)
+				create l_item.make (l_name, l_kind, Void, l_detail, l_document_uri, l_range, l_range, l_data)
+				create l_ranges.make_with_capacity (2)
+				l_ranges.put_last (l_range)
+				create Result.make (l_item, l_ranges)
+			end
+		end
+
+	client_supplier_hierarchy_item (a_class: ET_CLASS): detachable LS_CALL_HIERARCHY_ITEM
+			-- CLient/supplier hierarchy item for `a_class`.
+		require
+			a_class_not_void: a_class /= Void
+		local
+			l_range: LS_RANGE
+			l_uri: UT_URI
+			l_document_uri: LS_STRING
+			l_data: LS_STRING
+		do
+			if attached a_class.filename as l_filename then
+				l_uri := {UT_FILE_URI_ROUTINES}.filename_to_uri (l_filename)
+				create l_document_uri.make_from_string (l_uri.full_reference)
+				l_range := range (a_class.name, a_class)
+				create l_data.make_from_utf8 (l_filename)
+				create Result.make (class_name (a_class), {LS_SYMBOL_KINDS}.class_, Void, class_status (a_class, True), l_document_uri, l_range, l_range, l_data)
+			end
+		end
+
+	client_hierarchy_item (a_client: ET_CLASS): detachable LS_CALL_HIERARCHY_INCOMING_CALL
+			-- CLient hierarchy item for `a_client`.
+		require
+			a_client_not_void: a_client /= Void
+		local
+			l_ranges: LS_RANGE_LIST
+		do
+			if attached client_supplier_hierarchy_item (a_client) as l_item then
+				create l_ranges.make_with_capacity (1)
+				l_ranges.put_last (l_item.range)
+				create Result.make (l_item, l_ranges)
+			end
+		end
+
+	supplier_hierarchy_item (a_supplier: ET_CLASS): detachable LS_CALL_HIERARCHY_OUTGOING_CALL
+			-- Supplier hierarchy item for `a_supplier`.
+		require
+			a_supplier_not_void: a_supplier /= Void
+		local
+			l_ranges: LS_RANGE_LIST
+		do
+			if attached client_supplier_hierarchy_item (a_supplier) as l_item then
+				create l_ranges.make_with_capacity (1)
+				l_ranges.put_last (l_item.range)
+				create Result.make (l_item, l_ranges)
+			end
+		end
+
+	class_name (a_class: ET_CLASS): LS_STRING
+			-- Name of `a_class`, with its formal parameters if any
+		require
+			a_class_not_void: a_class /= Void
+		local
+			l_string: STRING_8
+			l_printer: ET_AST_PRETTY_PRINTER
+			l_stream: KL_STRING_OUTPUT_STREAM
+			i, nb: INTEGER
+			l_formal_parameter: ET_FORMAL_PARAMETER
+		do
+			create l_string.make (50)
+			l_string.append_string (a_class.upper_name)
+			if attached a_class.formal_parameters as l_formal_parameters and then l_formal_parameters.count > 0 then
+				l_string.append_character (' ')
+				l_string.append_character ('[')
+				nb := l_formal_parameters.count
+				from i := 1 until i > nb loop
+					if i /= 1 then
+						l_string.append_character (',')
+						l_string.append_character (' ')
+					end
+					l_formal_parameter := l_formal_parameters.formal_parameter (i)
+					l_string.append_string (l_formal_parameter.upper_name)
+					if attached l_formal_parameter.constraint as l_constraint then
+						l_string.append_character (' ')
+						l_string.append_string (tokens.arrow_symbol.text)
+						l_string.append_character (' ')
+						if l_printer = Void then
+							create l_stream.make (l_string)
+							create l_printer.make (l_stream)
+						end
+						l_constraint.process (l_printer)
+						if attached l_formal_parameter.creation_procedures as l_creation_procedures then
+							l_string.append_character (' ')
+							l_creation_procedures.process (l_printer)
+						end
+					end
+					i := i + 1
+				end
+				l_string.append_character (']')
+			end
+			create Result.make_from_utf8 (l_string)
+		ensure
+			class_name_not_void: Result /= Void
+		end
+
+	class_status (a_class: ET_CLASS; a_is_conforming_inheritance: BOOLEAN): detachable LS_STRING
+			-- Status of `a_class` (deferred, expanded, separate, frozen, non-conforming)
+		require
+			a_class_not_void: a_class /= Void
+		local
+			l_string: STRING_8
+		do
+			if a_class.is_deferred then
+				l_string := "deferred"
+			end
+			if a_class.is_frozen then
+				if l_string = Void then
+					create l_string.make (20)
+				end
+				if not l_string.is_empty then
+					l_string.append_string (", ")
+				end
+				l_string.append_string ("frozen")
+			end
+			if a_class.is_expanded then
+				if l_string = Void then
+					create l_string.make (20)
+				end
+				if not l_string.is_empty then
+					l_string.append_string (", ")
+				end
+				l_string.append_string ("expanded")
+			end
+			if a_class.is_separate then
+				if l_string = Void then
+					create l_string.make (20)
+				end
+				if not l_string.is_empty then
+					l_string.append_string (", ")
+				end
+				l_string.append_string ("separate")
+			end
+			if not a_is_conforming_inheritance then
+				if l_string = Void then
+					create l_string.make (20)
+				end
+				if not l_string.is_empty then
+					l_string.append_string (", ")
+				end
+				l_string.append_string ("non-conforming")
+			end
+			if l_string /= Void then
+				create Result.make_from_utf8 ("(" + l_string + ")")
 			end
 		end
 
