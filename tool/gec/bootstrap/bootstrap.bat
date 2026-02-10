@@ -157,7 +157,7 @@ goto exit
 	set LFLAGS=-lm -pthread -fno-strict-aliasing -O2 -DNDEBUG
 	set LFLAG_OUT=-o 
 	set LLIBS=
-	set OBJ=.obj
+	set OBJ=.o
 	echo clang > "%GOBO%\tool\gec\backend\c\config\default.cfg"
 	goto c_compilation
 
