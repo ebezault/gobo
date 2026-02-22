@@ -20,6 +20,8 @@
 ### Gobo Eiffel Tools Library
 
 * Fixed processing of pre- and postconditions in inlined agents.
+* Implemented fault tolerant Eiffel parser and improved syntax
+  error messages.
 
 ## Version 26.01.11 - 11 January 2026
 

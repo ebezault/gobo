@@ -1238,6 +1238,8 @@ feature {NONE} -- Eiffel processing
 			reset_class_mapping (False)
 			error_handler.syntax_error_actions.wipe_out
 			error_handler.syntax_error_actions.extend (agent report_syntax_error)
+			error_handler.syntax_warning_actions.wipe_out
+			error_handler.syntax_warning_actions.extend (agent report_syntax_warning)
 			error_handler.validity_error_actions.wipe_out
 			error_handler.validity_error_actions.extend (agent report_validity_error)
 		end
@@ -1429,6 +1431,7 @@ feature {NONE} -- Eiffel processing
 			l_last_position_plus_one: ET_COMPRESSED_POSITION
 			l_message: STRING
 			l_error_message: LS_STRING
+			l_code: LS_STRING
 		do
 			l_filename := a_error.filename
 			l_position := a_error.position
@@ -1437,11 +1440,55 @@ feature {NONE} -- Eiffel processing
 				create l_diagnostic_list.make_with_capacity (10)
 				diagnostics.force (l_diagnostic_list, l_filename)
 			end
-			create l_last_position_plus_one.make (l_position.line, l_position.column + 1)
-			create l_range.make (position (l_position, tokens.unknown_class), position (l_last_position_plus_one, tokens.unknown_class))
-			l_message := "Syntax error"
+			if attached a_error.ast_node as l_ast_node then
+				l_range := range (l_ast_node, tokens.unknown_class)
+			else
+				create l_last_position_plus_one.make (l_position.line, l_position.column + 1)
+				create l_range.make (position (l_position, tokens.unknown_class), position (l_last_position_plus_one, tokens.unknown_class))
+			end
+			l_message := a_error.message ("Syntax error: $2")
+			l_message.replace_substring_all ("%R%N", "\n")
+			l_message.replace_substring_all ("%N", "\n")
 			create l_error_message.make_from_utf8 (l_message)
-			create l_diagnostic.make (l_range, {LS_DIAGNOSTIC_SEVERITIES}.error, Void, Void, "Eiffel", l_error_message, Void, Void, Void)
+			l_code := "SERR"
+			create l_diagnostic.make (l_range, {LS_DIAGNOSTIC_SEVERITIES}.error, l_code, Void, "Eiffel", l_error_message, Void, Void, Void)
+			l_diagnostic_list.put_last (l_diagnostic)
+		end
+
+	report_syntax_warning (a_error: ET_SYNTAX_ERROR)
+			-- Report syntax warning.
+		require
+			a_error_not_void: a_error /= Void
+		local
+			l_filename: STRING_8
+			l_diagnostic_list: detachable LS_DIAGNOSTIC_LIST
+			l_diagnostic: LS_DIAGNOSTIC
+			l_range: LS_RANGE
+			l_position: ET_POSITION
+			l_last_position_plus_one: ET_COMPRESSED_POSITION
+			l_message: STRING
+			l_error_message: LS_STRING
+			l_code: LS_STRING
+		do
+			l_filename := a_error.filename
+			l_position := a_error.position
+			l_diagnostic_list := diagnostics.value (l_filename)
+			if l_diagnostic_list = Void then
+				create l_diagnostic_list.make_with_capacity (10)
+				diagnostics.force (l_diagnostic_list, l_filename)
+			end
+			if attached a_error.ast_node as l_ast_node then
+				l_range := range (l_ast_node, tokens.unknown_class)
+			else
+				create l_last_position_plus_one.make (l_position.line, l_position.column + 1)
+				create l_range.make (position (l_position, tokens.unknown_class), position (l_last_position_plus_one, tokens.unknown_class))
+			end
+			l_message := a_error.message ("Syntax warning: $2")
+			l_message.replace_substring_all ("%R%N", "\n")
+			l_message.replace_substring_all ("%N", "\n")
+			create l_error_message.make_from_utf8 (l_message)
+			l_code := "SWRN"
+			create l_diagnostic.make (l_range, {LS_DIAGNOSTIC_SEVERITIES}.warning, l_code, Void, "Eiffel", l_error_message, Void, Void, Void)
 			l_diagnostic_list.put_last (l_diagnostic)
 		end
 

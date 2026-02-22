@@ -5,7 +5,7 @@
 		"Eiffel null error handlers"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2004-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2004-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_NULL_ERROR_HANDLER
@@ -14,6 +14,8 @@ inherit
 
 	ET_ERROR_HANDLER
 		redefine
+			report_syntax_error,
+			report_syntax_warning,
 			reportable_gaaaa_error,
 			reportable_gazzz_error,
 			reportable_gcaaa_error,
@@ -264,6 +266,18 @@ feature -- .NET assembly error status
 			-- appears in `an_assembly'?
 		do
 			Result := False
+		end
+
+feature -- Syntax errors
+
+	report_syntax_error (a_filename: STRING; a_position: ET_POSITION; a_ast_node: detachable ET_AST_NODE; a_message: STRING)
+			-- Report a syntax error.
+		do
+		end
+
+	report_syntax_warning (a_filename: STRING; a_position: ET_POSITION; a_ast_node: detachable ET_AST_NODE; a_message: STRING)
+			-- Report a syntax warning.
+		do
 		end
 
 feature -- System error status

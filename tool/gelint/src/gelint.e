@@ -4,7 +4,7 @@
 
 		"Gobo Eiffel Lint"
 
-	copyright: "Copyright (c) 1999-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 1999-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class GELINT
@@ -183,7 +183,7 @@ feature {NONE} -- Eiffel config file parsing
 			create l_parser.make (l_system_processor)
 			l_time_stamp := a_file.time_stamp
 			l_parser.parse_file (a_file, a_file.name, l_time_stamp, l_cluster)
-			if not l_parser.syntax_error then
+			if not l_parser.has_syntax_error then
 				create l_classes.make (1)
 				l_system.classes_do_if_recursive (agent l_classes.force_last, agent {ET_CLASS}.is_parsed)
 				if l_classes.is_empty then

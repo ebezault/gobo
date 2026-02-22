@@ -6547,6 +6547,18 @@ feature -- System
 			default_ast_factory_not_void: Result /= Void
 		end
 
+	decorated_ast_factory: ET_DECORATED_AST_FACTORY
+			-- Shared Eiffel decorated AST factory
+		once
+			create Result.make
+		ensure
+			instance_free: class
+			decorated_ast_factory_not_void: Result /= Void
+			do_not_keep_breaks: not Result.keep_all_breaks
+			do_not_keep_comments: not Result.keep_all_comments
+			do_not_keep_header_comments: not Result.keep_header_comments
+		end
+
 	empty_actual_parameters: ET_ACTUAL_PARAMETER_LIST
 			-- Empty actual generic parameter list "[]"
 		once

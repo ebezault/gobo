@@ -5,7 +5,7 @@
 	<description>
 		description: "Eiffel Ant file for the Gobo Eiffel Tools Library"
 		library: "Gobo Eiffel Tools Library"
-		copyright: "Copyright (c) 2001-2025, Eric Bezault and others"
+		copyright: "Copyright (c) 2001-2026, Eric Bezault and others"
 		license: "MIT License"
 	</description>
 
@@ -41,7 +41,7 @@
 
 		<geant target="clean"/>
 		<delete file="eiffel/parser/et_eiffel_scanner.e"/>
-		<delete file="eiffel/parser/et_eiffel_parser.e"/>
+		<delete file="eiffel/parser/et_stop_on_first_error_eiffel_parser.e"/>
 		<delete file="eiffel/parser/et_eiffel_tokens.e"/>
 		<delete file="eiffel/parser/et_eiffel_preparser.e"/>
 		<delete file="lace/parser/et_lace_scanner.e"/>
@@ -59,7 +59,7 @@
 	</target>
 
 	<target name="eiffel_parser" dir="eiffel/parser" export="NONE">
-		<geyacc input="et_eiffel_parser.y" tokens="ET_EIFFEL_TOKENS" output="et_eiffel_parser.e" separate_actions="true"/>
+		<geyacc input="et_stop_on_first_error_eiffel_parser.y" tokens="ET_EIFFEL_TOKENS" output="et_stop_on_first_error_eiffel_parser.e" separate_actions="true"/>
 	</target>
 
 	<target name="eiffel_preparser" dir="eiffel/parser" export="NONE">

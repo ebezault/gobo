@@ -5,7 +5,7 @@
 		"Eiffel preparsers"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2002-2021, Eric Bezault and others"
+	copyright: "Copyright (c) 2002-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_EIFFEL_PREPARSER
@@ -707,7 +707,7 @@ end
 					-- of special character specification %/code/.
 				column := column + text_count
 				set_syntax_error
-				error_handler.report_SCAS_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "missing character / at end of special character specification %%/code/")
 				column := column - text_count
 				last_token := E_CHARERR
 			
@@ -722,7 +722,7 @@ end
 					-- special character specification %/code/.
 				column := column + 3
 				set_syntax_error
-				error_handler.report_SCAC_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "missing character code in special character specification %%/code/")
 				column := column - 3
 				last_token := E_CHARERR
 			
@@ -736,7 +736,7 @@ end
 					-- Syntax error: missing character between quotes.
 				column := column + 1
 				set_syntax_error
-				error_handler.report_SCQQ_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "missing character between quotes")
 				column := column - 1
 				last_token := E_CHARERR
 			
@@ -751,7 +751,7 @@ end
 					-- end of character constant.
 				column := column + text_count
 				set_syntax_error
-				error_handler.report_SCEQ_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "missing quote at end of character constant")
 				column := column - text_count
 				last_token := E_CHARERR
 			
@@ -797,7 +797,7 @@ end
 
 					-- No final brace-double-quote.
 				last_token := E_STRERR
-				report_syntax_error (current_position)
+				report_syntax_error (current_position, Void, "missing closing quote")
 				set_start_condition (INITIAL)
 			
 when 83 then
@@ -857,7 +857,7 @@ end
 
 					-- No final brace-double-quote.
 				last_token := E_STRERR
-				report_syntax_error (current_position)
+				report_syntax_error (current_position, Void, "missing closing quote")
 				set_start_condition (INITIAL)
 			
 when 88 then
@@ -893,7 +893,7 @@ end
 
 					-- No final brace-double-quote.
 				last_token := E_STRERR
-				report_syntax_error (current_position)
+				report_syntax_error (current_position, Void, "missing closing quote")
 				set_start_condition (INITIAL)
 			
 when 91 then
@@ -953,7 +953,7 @@ end
 				column := yy_column
 				line := yy_line
 --				set_syntax_error
---				error_handler.report_SSAS_error (filename, current_position)
+--				error_handler.report_syntax_error (filename, current_position, Void, "missing character / at end of special character specification %%/code/ in manifest string")
 				column := ms_column
 				line := ms_line
 --				last_token := E_STRERR
@@ -971,7 +971,7 @@ end
 				column := yy_column
 				line := yy_line
 --				set_syntax_error
---				error_handler.report_SSAC_error (filename, current_position)
+--				error_handler.report_syntax_error (filename, current_position, Void, "missing ASCII code in special character specification %%/code/ in manifest string")
 				column := ms_column
 				line := ms_line
 --				last_token := E_STRERR
@@ -990,7 +990,7 @@ end
 				column := yy_column
 				line := yy_line
 --				set_syntax_error
---				error_handler.report_SSCU_error (filename, current_position)
+--				error_handler.report_syntax_error (filename, current_position, Void, "special character specification %%l where l is a letter code should be in upper-case in manifest strings")
 				column := ms_column
 				line := ms_line
 --				last_token := E_STRERR
@@ -1021,12 +1021,12 @@ debug ("GELEX")
 	std.error.put_line ("Executing scanner user-code from file 'et_eiffel_preparser.l' at line 402")
 end
 
-					-- Syntax error: Invalid special character
+					-- Syntax error: invalid special character
 					-- in manifest strings.
 				column := yy_column - 1
 				line := yy_line
 --				set_syntax_error
---				error_handler.report_SSSC_error (filename, current_position)
+--				error_handler.report_syntax_error (filename, current_position, Void, "invalid special character in manifest strings")
 				column := ms_column
 				line := ms_line
 				more
@@ -1043,7 +1043,7 @@ end
 				column := yy_column
 				line := yy_line
 				set_syntax_error
-				error_handler.report_SSSC_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "invalid special character %%l in manifest strings")
 				column := ms_column
 				line := ms_line
 				last_token := E_STRERR
@@ -1057,11 +1057,11 @@ debug ("GELEX")
 	std.error.put_line ("Executing scanner user-code from file 'et_eiffel_preparser.l' at line 425")
 end
 
-					-- Syntax error: Invalid new-line in manifest string.
+					-- Syntax error: invalid new-line in manifest string.
 				column := 1
 				line := yy_line
 				set_syntax_error
-				error_handler.report_SSNL_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "invalid new-line in manifest string")
 				column := ms_column
 				line := ms_line
 				last_token := E_STRERR
@@ -1087,7 +1087,7 @@ end
 
 					-- Should never happen.
 				last_token := E_STRERR
-				report_syntax_error (current_position)
+				report_syntax_error (current_position, Void, "malformed string")
 				set_start_condition (INITIAL)
 			
 when 105 then
@@ -1113,7 +1113,7 @@ end
 				column := 1
 				line := yy_line - 1
 --				set_syntax_error
---				error_handler.report_SSEL_error (filename, current_position)
+--				error_handler.report_syntax_error (filename, current_position, Void, "empty line in middle of multi-line manifest string")
 				column := ms_column
 				line := ms_line
 				more
@@ -1130,7 +1130,7 @@ end
 				column := yy_column - 1
 				line := yy_line
 				set_syntax_error
-				error_handler.report_SSNP_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "missing character %% at beginning of line in multi-line manifest string")
 				column := ms_column
 				line := ms_line
 				last_token := E_STRERR
@@ -1162,7 +1162,7 @@ end
 					-- Syntax error: an underscore may not be
 					-- the first character of an integer.
 				set_syntax_error
-				error_handler.report_SIFU_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "an underscore may not be the first character of an integer")
 				last_token := E_INTEGER
 			
 when 111 then
@@ -1175,7 +1175,7 @@ end
 					-- Syntax error: an underscore may not be
 					-- the last character of an integer.
 				set_syntax_error
-				error_handler.report_SILU_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "an underscore may not be the last character of an integer")
 				last_token := E_INTEGER
 			
 when 112 then
@@ -1196,7 +1196,7 @@ end
 					-- Syntax error: an underscore may not be
 					-- the first character of an integer.
 				set_syntax_error
-				error_handler.report_SIFU_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "an underscore may not be the first character of an integer")
 				last_token := E_INTEGER
 			
 when 114 then
@@ -1209,7 +1209,7 @@ end
 					-- Syntax error: an underscore may not be
 					-- the last character of an integer.
 				set_syntax_error
-				error_handler.report_SILU_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "an underscore may not be the last character of an intege")
 				last_token := E_INTEGER
 			
 when 115 then
@@ -1230,7 +1230,7 @@ end
 					-- Syntax error: an underscore may not be
 					-- the first character of an integer.
 				set_syntax_error
-				error_handler.report_SIFU_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "an underscore may not be the first character of an integer")
 				last_token := E_INTEGER
 			
 when 117 then
@@ -1243,7 +1243,7 @@ end
 					-- Syntax error: an underscore may not be
 					-- the last character of an integer.
 				set_syntax_error
-				error_handler.report_SILU_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "an underscore may not be the last character of an integer")
 				last_token := E_INTEGER
 			
 when 118 then
@@ -1264,7 +1264,7 @@ end
 					-- Syntax error: an underscore may not be
 					-- the first character of an integer.
 				set_syntax_error
-				error_handler.report_SIFU_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "an underscore may not be the first character of an integer")
 				last_token := E_INTEGER
 			
 when 120 then
@@ -1277,7 +1277,7 @@ end
 					-- Syntax error: an underscore may not be
 					-- the last character of an integer.
 				set_syntax_error
-				error_handler.report_SILU_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "an underscore may not be the last character of an integer")
 				last_token := E_INTEGER
 			
 when 121 then
@@ -1374,7 +1374,7 @@ end
 				column := yy_column
 				line := yy_line
 				set_syntax_error
-				error_handler.report_SSEQ_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "missing double quote at end of manifest string")
 				column := ms_column
 				line := ms_line
 				last_token := E_STRERR
@@ -1391,7 +1391,7 @@ end
 				column := yy_column
 				line := yy_line
 				set_syntax_error
-				error_handler.report_SSNP_error (filename, current_position)
+				error_handler.report_syntax_error (filename, current_position, Void, "missing character %% at beginning of line in multi-line manifest string")
 				column := ms_column
 				line := ms_line
 				last_token := E_STRERR
@@ -1405,7 +1405,7 @@ end
 
 					-- Should never happen.
 				last_token := E_STRERR
-				report_syntax_error (current_position)
+				report_syntax_error (current_position, Void, "malformed string")
 				set_start_condition (INITIAL)
 			
 when 4 then
@@ -1416,7 +1416,7 @@ end
 
 					-- No final brace-double-quote.
 				last_token := E_STRERR
-				report_syntax_error (current_position)
+				report_syntax_error (current_position, Void, "missing closing quote")
 				set_start_condition (INITIAL)
 			
 when 5 then
@@ -1427,7 +1427,7 @@ end
 
 					-- No final brace-double-quote.
 				last_token := E_STRERR
-				report_syntax_error (current_position)
+				report_syntax_error (current_position, Void, "missing closing quote")
 				set_start_condition (INITIAL)
 			
 when 6 then
@@ -1438,7 +1438,7 @@ end
 
 					-- No final brace-double-quote.
 				last_token := E_STRERR
-				report_syntax_error (current_position)
+				report_syntax_error (current_position, Void, "missing closing quote")
 				set_start_condition (INITIAL)
 			
 			else

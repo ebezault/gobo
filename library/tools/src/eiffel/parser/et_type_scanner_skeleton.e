@@ -5,7 +5,7 @@
 		"Scanner skeletons for Eiffel type parsers"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_TYPE_SCANNER_SKELETON
@@ -150,7 +150,7 @@ feature -- Error handling
 			-- A fatal error occurred.
 			-- Print error message.
 		do
-			report_syntax_error (current_position)
+			report_syntax_error (current_position, a_message)
 		end
 
 	report_invalid_unicode_character_error (a_code: NATURAL_32)
@@ -158,16 +158,17 @@ feature -- Error handling
 			-- with code `a_code' has been read from the input
 			-- buffer and caused the scanner to fail.
 		do
-			report_syntax_error (current_position)
+			report_syntax_error (current_position, "invalid Unicode character with code " + a_code.out)
 		end
 
-	report_syntax_error (a_position: ET_POSITION)
+	report_syntax_error (a_position: ET_POSITION; a_message: STRING)
 			-- Report a syntax error at position `a_position'.
 		require
 			a_position_not_void: a_position /= Void
+			a_message_not_void: a_message /= Void
 		do
 			set_syntax_error
-			error_handler.report_syntax_error (filename, a_position)
+			error_handler.report_syntax_error (filename, a_position, Void, a_message)
 		end
 
 	set_syntax_error

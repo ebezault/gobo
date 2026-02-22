@@ -4,7 +4,7 @@
 
 		"Tool to replace !! creation instructions by create keywords"
 
-	copyright: "Copyright (c) 2002-2019, Eric Bezault and others"
+	copyright: "Copyright (c) 2002-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class BANG2CREATE
@@ -58,7 +58,7 @@ feature -- Execution
 					Exceptions.die (1)
 				end
 			end
-			if a_parser.syntax_error then
+			if a_parser.has_syntax_error then
 				Exceptions.die (1)
 			else
 				if out_filename.is_equal ("-") then
