@@ -201,6 +201,7 @@ feature {NONE} -- Initialization
 			last_compound := Void
 			last_feature_name := Void
 			last_extended_feature_name := Void
+			last_semicolon := Void
 			last_is_dot_call_target := False
 			last_is_bracket_call_target := False
 			last_tokens.wipe_out
@@ -358,6 +359,8 @@ feature {NONE} -- Parsing
 			l_old_is_error_recovering: BOOLEAN
 			l_old_last_note_items_count: INTEGER
 			l_old_last_note_term_items_count: INTEGER
+			l_create_expression: detachable ET_CREATE_EXPRESSION
+			l_settings: detachable ET_MANIFEST_TUPLE
 		do
 			last_notes := Void
 			if last_token = E_NOTE or last_token = E_INDEXING then
@@ -371,8 +374,8 @@ feature {NONE} -- Parsing
 					is_error_recovering := l_old_is_error_recovering
 				end
 				if last_token = Semicolon_code then
-					l_first_semicolon := ast_factory.new_first_semicolon (last_detachable_et_semicolon_symbol_value)
-					read_token
+					parse_optional_semicolon
+					l_first_semicolon := ast_factory.new_first_semicolon (last_semicolon)
 				end
 				l_old_last_note_items_count := last_note_items.count
 				l_old_last_note_term_items_count := last_note_term_items.count
@@ -406,6 +409,19 @@ feature {NONE} -- Parsing
 						parse_attribute_constant
 						if attached {ET_NOTE_TERM} last_attribute_constant as l_attribute_constant then
 							l_note_term := l_attribute_constant
+						end
+					when E_CREATE then
+						parse_create_expression
+						l_create_expression := last_create_expression
+						if last_token = Left_bracket_code then
+							parse_manifest_tuple
+							l_settings := last_manifest_tuple
+						end
+						if last_token = E_END then
+							l_note_term := ast_factory.new_custom_attribute (l_create_expression, l_settings, last_detachable_et_keyword_value)
+							read_token
+						else
+							report_syntax_error (last_position, last_value, end_keyword_expected)
 						end
 					else
 						if is_string_token (last_token) then
@@ -453,8 +469,8 @@ feature {NONE} -- Parsing
 								l_note := ast_factory.new_note (l_note_terms)
 							end
 							if last_token = Semicolon_code then
-								last_note_items.force (ast_factory.new_note_semicolon (l_note, last_detachable_et_semicolon_symbol_value))
-								read_token
+								parse_optional_semicolon
+								last_note_items.force (ast_factory.new_note_semicolon (l_note, last_semicolon))
 							else
 								last_note_items.force (l_note)
 							end
@@ -767,8 +783,8 @@ feature {NONE} -- Parsing
 				l_first_parameter := True
 				if last_token = Semicolon_code then
 					l_first_parameter := False
-					l_first_semicolon := ast_factory.new_first_semicolon (last_detachable_et_semicolon_symbol_value)
-					read_token
+					parse_optional_semicolon
+					l_first_semicolon := ast_factory.new_first_semicolon (last_semicolon)
 				end
 				from until l_done loop
 					if is_identifier_token (last_token) then
@@ -793,8 +809,8 @@ feature {NONE} -- Parsing
 							last_labels.keep (l_old_last_labels_count)
 							l_labeled_actual_parameter := ast_factory.new_labeled_actual_parameter (l_identifier, ast_factory.new_colon_type (l_colon_symbol, l_type), last_class)
 							if last_token = Semicolon_code then
-								last_actual_parameter_items.force (ast_factory.new_labeled_actual_parameter_semicolon (l_labeled_actual_parameter, last_detachable_et_semicolon_symbol_value))
-								read_token
+								parse_optional_semicolon
+								last_actual_parameter_items.force (ast_factory.new_labeled_actual_parameter_semicolon (l_labeled_actual_parameter, last_semicolon))
 							else
 								last_actual_parameter_items.force (l_labeled_actual_parameter)
 							end
@@ -1344,8 +1360,8 @@ feature {NONE} -- Parsing
 				l_first_parameter := True
 				if last_token = Semicolon_code then
 					l_first_parameter := False
-					l_first_semicolon := ast_factory.new_first_semicolon (last_detachable_et_semicolon_symbol_value)
-					read_token
+					parse_optional_semicolon
+					l_first_semicolon := ast_factory.new_first_semicolon (last_semicolon)
 				end
 				from until l_done loop
 					if is_identifier_token (last_token) then
@@ -1380,8 +1396,8 @@ feature {NONE} -- Parsing
 							last_labels.keep (l_old_last_labels_count)
 							l_labeled_actual_parameter := ast_factory.new_constraint_labeled_actual_parameter (l_identifier, l_colon_symbol, l_type, last_class)
 							if last_token = Semicolon_code then
-								last_constraint_actual_parameter_items.force (ast_factory.new_constraint_labeled_actual_parameter_semicolon (l_labeled_actual_parameter, last_detachable_et_semicolon_symbol_value))
-								read_token
+								parse_optional_semicolon
+								last_constraint_actual_parameter_items.force (ast_factory.new_constraint_labeled_actual_parameter_semicolon (l_labeled_actual_parameter, last_semicolon))
 							else
 								last_constraint_actual_parameter_items.force (l_labeled_actual_parameter)
 							end
@@ -1681,8 +1697,8 @@ feature {NONE} -- Parsing
 					end
 				end
 				if last_token = Semicolon_code then
-					l_first_semicolon_symbol := ast_factory.new_first_semicolon (last_detachable_et_semicolon_symbol_value)
-					read_token
+					parse_optional_semicolon
+					l_first_semicolon_symbol := ast_factory.new_first_semicolon (last_semicolon)
 				end
 				l_old_last_parent_items_count := last_parent_items.count
 				from
@@ -1691,8 +1707,8 @@ feature {NONE} -- Parsing
 				loop
 					parse_optional_parent
 					if last_token = Semicolon_code then
-						last_parent_items.force (ast_factory.new_parent_semicolon (last_parent, last_detachable_et_semicolon_symbol_value))
-						read_token
+						parse_optional_semicolon
+						last_parent_items.force (ast_factory.new_parent_semicolon (last_parent, last_semicolon))
 					else
 						last_parent_items.force (last_parent)
 					end
@@ -2455,8 +2471,8 @@ feature {NONE} -- Parsing
 					last_client_list := new_any_clients (l_feature_keyword)
 				end
 				if last_token = Semicolon_code then
-					l_semicolon_symbol := ast_factory.new_first_semicolon (last_detachable_et_semicolon_symbol_value)
-					read_token
+					parse_optional_semicolon
+					l_semicolon_symbol := ast_factory.new_first_semicolon (last_semicolon)
 				end
 				l_feature_clause := ast_factory.new_feature_clause (l_feature_keyword, last_client_list)
 				if l_feature_clause /= Void then
@@ -2628,10 +2644,8 @@ feature {NONE} -- Parsing
 					if last_token = E_END then
 						l_end_keyword := last_detachable_et_keyword_value
 						read_token
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 					else
 						report_syntax_error (last_position, last_value, end_keyword_expected)
 						create l_end_keyword.make_end
@@ -2663,10 +2677,8 @@ feature {NONE} -- Parsing
 					if last_token = E_END then
 						l_end_keyword := last_detachable_et_keyword_value
 						read_token
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 					else
 						report_syntax_error (last_position, last_value, end_keyword_expected)
 						create l_end_keyword.make_end
@@ -2692,10 +2704,8 @@ feature {NONE} -- Parsing
 					if last_token = E_END then
 						l_end_keyword := last_detachable_et_keyword_value
 						read_token
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 					else
 						report_syntax_error (last_position, last_value, end_keyword_expected)
 						create l_end_keyword.make_end
@@ -2735,10 +2745,8 @@ feature {NONE} -- Parsing
 					if last_token = E_END then
 						l_end_keyword := last_detachable_et_keyword_value
 						read_token
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 					else
 						report_syntax_error (last_position, last_value, end_keyword_expected)
 						create l_end_keyword.make_end
@@ -2762,10 +2770,8 @@ feature {NONE} -- Parsing
 					if last_token = E_END then
 						l_end_keyword := last_detachable_et_keyword_value
 						read_token
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 					else
 						report_syntax_error (last_position, last_value, end_keyword_expected)
 						create l_end_keyword.make_end
@@ -2790,27 +2796,21 @@ feature {NONE} -- Parsing
 					if last_token = E_UNIQUE then
 						l_unique_keyword := last_detachable_et_keyword_value
 						read_token
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 						l_query := ast_factory.new_unique_attribute (l_extended_feature_name, l_type, l_assigner, l_equal_symbol, l_unique_keyword, l_semicolon_symbol, last_client_list, last_feature_clause, last_class)
 						l_feature := l_query
 					else
 						parse_attribute_constant
 						l_constant := last_attribute_constant
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 						l_query := ast_factory.new_constant_attribute (l_extended_feature_name, l_type, l_assigner, l_equal_symbol, l_constant, l_semicolon_symbol, last_client_list, last_feature_clause, last_class)
 						l_feature := l_query
 					end
 				else
-					if last_token = Semicolon_code then
-						l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-						read_token
-					end
+					parse_optional_semicolon
+					l_semicolon_symbol := last_semicolon
 					l_query := ast_factory.new_attribute (l_extended_feature_name, l_type, l_assigner, l_semicolon_symbol, last_client_list, last_feature_clause, last_class)
 					l_feature := l_query
 				end
@@ -2873,8 +2873,8 @@ feature {NONE} -- Parsing
 				read_token
 				l_old_last_formal_argument_items_count := last_formal_argument_items.count
 				if last_token = Semicolon_code then
-					l_first_semicolon := ast_factory.new_first_semicolon (last_detachable_et_semicolon_symbol_value)
-					read_token
+					parse_optional_semicolon
+					l_first_semicolon := ast_factory.new_first_semicolon (last_semicolon)
 				end
 				from until l_done loop
 					if is_identifier_token (last_token) then
@@ -2900,8 +2900,8 @@ feature {NONE} -- Parsing
 							nb := 0
 							l_formal_argument := ast_factory.new_formal_argument (l_identifier, ast_factory.new_colon_type (l_colon_symbol, l_type))
 							if last_token = Semicolon_code then
-								last_formal_argument_items.force (ast_factory.new_formal_argument_semicolon (l_formal_argument, last_detachable_et_semicolon_symbol_value))
-								read_token
+								parse_optional_semicolon
+								last_formal_argument_items.force (ast_factory.new_formal_argument_semicolon (l_formal_argument, last_semicolon))
 							else
 								last_formal_argument_items.force (l_formal_argument)
 							end
@@ -2961,8 +2961,8 @@ feature {NONE} -- Parsing
 				l_old_last_local_variable_items_count := last_local_variable_items.count
 				read_token
 				if last_token = Semicolon_code then
-					l_first_semicolon := ast_factory.new_first_semicolon (last_detachable_et_semicolon_symbol_value)
-					read_token
+					parse_optional_semicolon
+					l_first_semicolon := ast_factory.new_first_semicolon (last_semicolon)
 				end
 				from until l_done loop
 					if is_identifier_token (last_token) then
@@ -2988,8 +2988,8 @@ feature {NONE} -- Parsing
 							nb := 0
 							l_local_variable := ast_factory.new_local_variable (l_identifier, ast_factory.new_colon_type (l_colon_symbol, l_type))
 							if last_token = Semicolon_code then
-								last_local_variable_items.force (ast_factory.new_local_variable_semicolon (l_local_variable, last_detachable_et_semicolon_symbol_value))
-								read_token
+								parse_optional_semicolon
+								last_local_variable_items.force (ast_factory.new_local_variable_semicolon (l_local_variable, last_semicolon))
 							else
 								last_local_variable_items.force (l_local_variable)
 							end
@@ -3896,6 +3896,7 @@ feature {NONE} -- Parsing
 			l_variant: detachable ET_VARIANT
 			l_across_header: detachable ET_ACROSS_EXPRESSION
 			l_last_expression: detachable ET_EXPRESSION
+			l_is_all: BOOLEAN
 		do
 			last_expression := Void
 			if last_token = E_ACROSS then
@@ -3918,6 +3919,7 @@ feature {NONE} -- Parsing
 						l_until_conditional := ast_factory.new_conditional (l_until_keyword, last_expression)
 					end
 					if last_token = E_ALL or last_token = E_SOME then
+						l_is_all := last_token = E_ALL
 						l_all_some_keyword := last_detachable_et_keyword_value
 						read_token
 						parse_expression
@@ -3925,7 +3927,7 @@ feature {NONE} -- Parsing
 						parse_optional_variant
 						l_variant := last_variant
 						if last_token = E_END then
-							if last_token = E_ALL then
+							if l_is_all then
 								l_last_expression := new_across_all_expression (l_across_header, l_loop_invariants, l_until_conditional, l_all_some_conditional, l_variant, last_detachable_et_keyword_value)
 							else
 								l_last_expression := new_across_some_expression (l_across_header, l_loop_invariants, l_until_conditional, l_all_some_conditional, l_variant, last_detachable_et_keyword_value)
@@ -5395,10 +5397,8 @@ feature {NONE} -- Parsing
 				if last_token = E_CLASS then
 					l_class_keyword := last_detachable_et_keyword_value
 					read_token
-					if last_token = Semicolon_code then
-						l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-						read_token
-					end
+					parse_optional_semicolon
+					l_semicolon_symbol := last_semicolon
 					if assertion_kind = assertion_kind_postcondition then
 							-- 'class' assertions only allowed in postconditions.
 						add_class_assertion (ast_factory.new_class_assertion (l_class_keyword), l_semicolon_symbol)
@@ -5412,29 +5412,23 @@ feature {NONE} -- Parsing
 					if last_token = Colon_code then
 						l_colon_symbol := last_detachable_et_symbol_value
 						read_token
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 						add_tagged_assertion (l_identifier, l_colon_symbol, l_semicolon_symbol)
 					else
 						unread_token
 						set_last_identifier_token (l_identifier_code, l_identifier)
 						parse_expression
 						l_expression := last_expression
-						if last_token = Semicolon_code then
-							l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-							read_token
-						end
+						parse_optional_semicolon
+						l_semicolon_symbol := last_semicolon
 						add_expression_assertion (l_expression, l_semicolon_symbol)
 					end
 				elseif is_expression_first_token (last_token) then
 					parse_expression
 					l_expression := last_expression
-					if last_token = Semicolon_code then
-						l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-						read_token
-					end
+					parse_optional_semicolon
+					l_semicolon_symbol := last_semicolon
 					add_expression_assertion (l_expression, l_semicolon_symbol)
 				else
 					l_done := True
@@ -5459,10 +5453,8 @@ feature {NONE} -- Parsing
 					l_else_keyword := last_detachable_et_keyword_value
 					read_token
 				end
-				if last_token = Semicolon_code then
-					l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-					read_token
-				end
+				parse_optional_semicolon
+				l_semicolon_symbol := last_semicolon
 				parse_optional_assertions
 				last_preconditions := new_preconditions (l_require_keyword, l_else_keyword, l_semicolon_symbol)
 			end
@@ -5485,10 +5477,8 @@ feature {NONE} -- Parsing
 					l_then_keyword := last_detachable_et_keyword_value
 					read_token
 				end
-				if last_token = Semicolon_code then
-					l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-					read_token
-				end
+				parse_optional_semicolon
+				l_semicolon_symbol := last_semicolon
 				parse_optional_assertions
 				last_postconditions := new_postconditions (l_ensure_keyword, l_then_keyword, l_semicolon_symbol)
 			end
@@ -5508,10 +5498,8 @@ feature {NONE} -- Parsing
 				start_invariant
 				l_invariant_keyword := last_detachable_et_invariant_keyword_value
 				read_token
-				if last_token = Semicolon_code then
-					l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-					read_token
-				end
+				parse_optional_semicolon
+				l_semicolon_symbol := last_semicolon
 				parse_optional_assertions
 				l_invariants := new_invariants (l_invariant_keyword, l_semicolon_symbol)
 			end
@@ -5560,10 +5548,8 @@ feature {NONE} -- Parsing
 				start_loop_invariant
 				l_invariant_keyword := last_detachable_et_invariant_keyword_value
 				read_token
-				if last_token = Semicolon_code then
-					l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-					read_token
-				end
+				parse_optional_semicolon
+				l_semicolon_symbol := last_semicolon
 				parse_optional_assertions
 				last_loop_invariants := new_loop_invariants (l_invariant_keyword, l_semicolon_symbol)
 			end
@@ -6301,7 +6287,7 @@ feature {NONE} -- Parsing
 							end
 							if end_indentation_mismatch = Void and l_end_keyword /= Void and l_from_keyword /= Void then
 								if l_end_keyword.line /= l_from_keyword.line and l_end_keyword.column /= l_from_keyword.column then
-									end_indentation_mismatch := last_instruction
+									end_indentation_mismatch := l_instruction
 								end
 							end
 						else
@@ -6378,7 +6364,7 @@ feature {NONE} -- Parsing
 							l_instruction := new_across_instruction (l_across_header, l_from_compound, l_loop_invariants, l_until_conditional, l_loop_compound, l_variant, l_end_keyword)
 							if end_indentation_mismatch = Void and l_end_keyword /= Void and l_across_keyword /= Void then
 								if l_end_keyword.line /= l_across_keyword.line and l_end_keyword.column /= l_across_keyword.column then
-									end_indentation_mismatch := last_instruction
+									end_indentation_mismatch := l_instruction
 								end
 							end
 						else
@@ -6508,7 +6494,7 @@ feature {NONE} -- Parsing
 						l_instruction := ast_factory.new_if_instruction (ast_factory.new_conditional (l_if_keyword, l_conditional_expression), l_then_compound, l_elseif_part_list, l_else_compound, l_end_keyword)
 						if end_indentation_mismatch = Void and l_end_keyword /= Void and l_if_keyword /= Void then
 							if l_end_keyword.line /= l_if_keyword.line and l_end_keyword.column /= l_if_keyword.column then
-								end_indentation_mismatch := last_instruction
+								end_indentation_mismatch := l_instruction
 							end
 						end
 					else
@@ -6581,7 +6567,7 @@ feature {NONE} -- Parsing
 					l_instruction := ast_factory.new_inspect_instruction (ast_factory.new_conditional (l_inspect_keyword, l_conditional_expression), l_when_part_list, l_else_compound, l_end_keyword)
 					if end_indentation_mismatch = Void and l_end_keyword /= Void and l_inspect_keyword /= Void then
 						if l_end_keyword.line /= l_inspect_keyword.line and l_end_keyword.column /= l_inspect_keyword.column then
-							end_indentation_mismatch := last_instruction
+							end_indentation_mismatch := l_instruction
 						end
 					end
 				else
@@ -6662,10 +6648,8 @@ feature {NONE} -- Parsing
 				start_check_instruction
 				l_check_keyword := last_detachable_et_keyword_value
 				read_token
-				if last_token = Semicolon_code then
-					l_semicolon_symbol := last_detachable_et_semicolon_symbol_value
-					read_token
-				end
+				parse_optional_semicolon
+				l_semicolon_symbol := last_semicolon
 				parse_optional_assertions
 				if last_token = E_THEN then
 					l_then_keyword := last_detachable_et_keyword_value
@@ -6679,7 +6663,7 @@ feature {NONE} -- Parsing
 					l_instruction := new_check_instruction (l_check_keyword, l_semicolon_symbol, l_then_compound, l_end_keyword)
 					if end_indentation_mismatch = Void and l_end_keyword /= Void and l_check_keyword /= Void then
 						if l_end_keyword.line /= l_check_keyword.line and l_end_keyword.column /= l_check_keyword.column then
-							end_indentation_mismatch := last_instruction
+							end_indentation_mismatch := l_instruction
 						end
 					end
 				else
@@ -6715,7 +6699,7 @@ feature {NONE} -- Parsing
 					l_instruction := ast_factory.new_debug_instruction (l_keys, l_debug_compound, l_end_keyword)
 					if end_indentation_mismatch = Void and l_end_keyword /= Void and l_debug_keyword /= Void then
 						if l_end_keyword.line /= l_debug_keyword.line and l_end_keyword.column /= l_debug_keyword.column then
-							end_indentation_mismatch := last_instruction
+							end_indentation_mismatch := l_instruction
 						end
 					end
 				else
@@ -6811,7 +6795,7 @@ feature {NONE} -- Parsing
 						l_instruction := new_inline_separate_instruction (l_inline_separate_arguments, l_do_compound, l_end_keyword)
 						if end_indentation_mismatch = Void and l_end_keyword /= Void and l_separate_keyword /= Void then
 							if l_end_keyword.line /= l_separate_keyword.line and l_end_keyword.column /= l_separate_keyword.column then
-								end_indentation_mismatch := last_instruction
+								end_indentation_mismatch := l_instruction
 							end
 						end
 					else
@@ -6842,6 +6826,30 @@ feature {NONE} -- Parsing
 			end
 		end
 
+	parse_optional_semicolon
+			-- Parse a optional semicolon.
+			-- Make the result available in `last_semicolon`.
+		local
+			l_semicolon: detachable ET_SEMICOLON_SYMBOL
+			l_last_semicolon: detachable ET_SEMICOLON_SYMBOL
+		do
+			last_semicolon := Void
+			from until
+				last_token /= Semicolon_code
+			loop
+				l_semicolon := last_detachable_et_semicolon_symbol_value
+				read_token
+				if last_semicolon = Void then
+					last_semicolon := l_semicolon
+				elseif l_last_semicolon /= Void and then l_last_semicolon /= tokens.semicolon_symbol then
+					l_last_semicolon.set_other (l_semicolon)
+				end
+				if l_semicolon /= Void then
+					l_last_semicolon := l_semicolon
+				end
+			end
+		end
+
 	parse_extended_feature_name
 			-- Parse an extended feature name.
 			-- Make the result available in `last_extended_feature_name`.
@@ -6853,6 +6861,7 @@ feature {NONE} -- Parsing
 			l_identifier: detachable ET_IDENTIFIER
 			l_old_last_alias_name_items_count: INTEGER
 			nb: INTEGER
+			l_old_is_error_recovering: BOOLEAN
 		do
 			last_extended_feature_name := Void
 			parse_feature_name_identifier
@@ -6925,7 +6934,11 @@ feature {NONE} -- Parsing
 				when E_STRPARENTHESIS then
 					l_alias_name := ast_factory.new_alias_parenthesis_name (l_alias_keyword, last_detachable_et_manifest_string_value, Void)
 				when E_STRING then
-					l_alias_name := new_invalid_alias_name (l_alias_keyword, last_detachable_et_manifest_string_value, Void)
+					l_alias_name := ast_factory.new_alias_free_name (l_alias_keyword, last_detachable_et_manifest_string_value, Void)
+					l_old_is_error_recovering := is_error_recovering
+					is_error_recovering := False
+					report_syntax_error (last_position, last_value, alias_name_invalid)
+					is_error_recovering := l_old_is_error_recovering
 				else
 					report_syntax_error (last_position, last_value, alias_name_expected)
 					l_has_alias_error := True
@@ -7180,6 +7193,9 @@ feature {NONE} -- Access
 
 	last_extended_feature_name: detachable ET_EXTENDED_FEATURE_NAME
 			-- Last extended feature name parsed
+
+	last_semicolon: detachable ET_SEMICOLON_SYMBOL
+			-- Last semicolon parsed
 
 	last_is_dot_call_target: BOOLEAN
 			-- Can the last expression parsed be used as target of a dot call?
@@ -8105,6 +8121,7 @@ feature {NONE} -- Constants
 	across_keyword_expected: STRING = "'across' keyword expected"
 	agent_keyword_expected: STRING = "'agent' keyword expected"
 	alias_name_expected: STRING = "alias name expected"
+	alias_name_invalid: STRING = "invalid alias name"
 	all_or_some_keyword_expected: STRING = "'all' or 'some' keyword expected"
 	as_keyword_expected: STRING = "'as' keyword expected"
 	attached_keyword_expected: STRING = "'attached' keyword expected"

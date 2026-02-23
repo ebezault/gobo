@@ -1522,21 +1522,6 @@ feature {NONE} -- AST factory
 			end
 		end
 
-	new_alias_free_name (an_alias: detachable ET_KEYWORD;
-		a_string: detachable ET_MANIFEST_STRING; a_convert: detachable ET_KEYWORD): detachable ET_ALIAS_FREE_NAME
-			-- New alias free feature name
-		do
-			if a_string /= Void then
-				if a_string.value.count > 0 then
-					Result := ast_factory.new_alias_free_name (an_alias, a_string, a_convert)
-				else
-					-- TODO: error.
-				end
-			else
-				Result := ast_factory.new_alias_free_name (an_alias, a_string, a_convert)
-			end
-		end
-
 	new_any_clients (a_keyword: detachable ET_KEYWORD): detachable ET_CLIENT_LIST
 			-- Implicit client list (when preceded by `a_keyword')
 			-- with only one client: "ANY"
@@ -1903,15 +1888,13 @@ feature {NONE} -- AST factory
 		local
 			l_position: ET_POSITION
 		do
-				-- Do not mark this error as a fatal error.
-				-- It will be a fatal error when using this free operator.
 			if a_string /= Void then
 				create {ET_FILE_POSITION} l_position.make (filename, a_string.position.line, a_string.position.column)
 			else
 				l_position := current_position
 			end
-			error_handler.report_syntax_error (filename, l_position, a_string, "invalid alias name")
-			Result := new_alias_free_name (an_alias, a_string, a_convert)
+			report_syntax_error (l_position, a_string, "invalid alias name")
+			Result := ast_factory.new_alias_free_name (an_alias, a_string, a_convert)
 		end
 
 	new_invariants (an_invariant: detachable ET_INVARIANT_KEYWORD; a_semicolon: detachable ET_SEMICOLON_SYMBOL): detachable ET_INVARIANTS
@@ -3017,10 +3000,8 @@ invariant
 	eiffel_buffer_not_void: eiffel_buffer /= Void
 	queries_not_void: queries /= Void
 	no_void_query: not queries.has_void
-	queries_registered: across queries as f all f.is_registered end
 	procedures_not_void: procedures /= Void
 	no_void_procedure: not procedures.has_void
-	procedures_registered: across procedures as f all f.is_registered end
 	providers_not_void: providers /= Void
 	no_void_provider: not providers.has_void
 	constraints_not_void: constraints /= Void

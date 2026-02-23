@@ -1,7 +1,14 @@
-Syntax error:
+[SERR] Syntax error: 'end' keyword expected
 line 15 column 11 in aa.e
 			a := Current
 			i := a ¦ 2
 			       ^
 			print ("Failed")
+----
+[SERR] Syntax error: invalid alias name
+line 19 column 10 in aa.e
+
+	f alias "¦" (i: INTEGER): INTEGER
+	        ^
+		do
 ----
