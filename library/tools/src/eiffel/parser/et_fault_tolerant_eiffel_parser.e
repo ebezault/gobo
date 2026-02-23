@@ -6486,7 +6486,7 @@ feature {NONE} -- Parsing
 						l_else_keyword := last_detachable_et_keyword_value
 						read_token
 						parse_optional_compound (False)
-						l_else_compound := ast_factory.new_then_compound (l_then_keyword, last_compound)
+						l_else_compound := ast_factory.new_then_compound (l_else_keyword, last_compound)
 					end
 					if last_token = E_END then
 						l_end_keyword := last_detachable_et_keyword_value
