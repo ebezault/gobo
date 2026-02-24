@@ -5,7 +5,7 @@
 		"Eiffel class feature flatteners"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2001-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2001-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_FEATURE_FLATTENER
@@ -130,13 +130,21 @@ feature {NONE} -- Processing
 			i1, nb1: INTEGER
 			i2, nb2: INTEGER
 			l_parent_clause: ET_PARENT_LIST
+			l_has_ancestor_error: BOOLEAN
+			l_has_flattening_error: BOOLEAN
+			l_old_error_handler: detachable ET_ERROR_HANDLER
 		do
 			old_class := current_class
 			current_class := a_class
 			if not current_class.features_flattened then
 					-- Build ancestors of `current_class' if not already done.
 				current_class.process (system_processor.ancestor_builder)
-				if current_class.ancestors_built_successfully then
+				l_has_ancestor_error := not current_class.ancestors_built_successfully
+				if not l_has_ancestor_error or system_processor.is_fault_tolerant then
+					if l_has_ancestor_error then
+						l_old_error_handler := system_processor.error_handler
+						system_processor.set_error_handler_only (tokens.null_error_handler)
+					end
 					current_class.set_features_flattened
 						-- Process parents first.
 					nb1 := current_class.parents_count
@@ -161,7 +169,12 @@ feature {NONE} -- Processing
 						end
 						i1 := i1 + 1
 					end
-					if not current_class.has_flattening_error then
+					l_has_flattening_error := current_class.has_flattening_error
+					if not l_has_flattening_error or system_processor.is_fault_tolerant then
+						if l_has_flattening_error and l_old_error_handler = Void then
+							l_old_error_handler := system_processor.error_handler
+							system_processor.set_error_handler_only (tokens.null_error_handler)
+						end
 						error_handler.report_compilation_status (Current, current_class, system_processor)
 							-- Check validity rules of the parents and of formal
 							-- generic parameters of `current_class'.
@@ -170,9 +183,18 @@ feature {NONE} -- Processing
 							check_formal_parameters_validity
 							check_parents_validity
 						end
-						if not current_class.has_flattening_error then
+						l_has_flattening_error := current_class.has_flattening_error
+						if not l_has_flattening_error or system_processor.is_fault_tolerant then
+							if l_has_flattening_error and l_old_error_handler = Void then
+								l_old_error_handler := system_processor.error_handler
+								system_processor.set_error_handler_only (tokens.null_error_handler)
+							end
 							flatten_features
 						end
+					end
+					if l_old_error_handler /= Void then
+						system_processor.set_error_handler_only (l_old_error_handler)
+						set_fatal_error (current_class)
 					end
 				else
 					set_fatal_error (current_class)
@@ -251,10 +273,17 @@ feature {NONE} -- Feature flattening
 			j, l_alias_names_count: INTEGER
 			l_attribute_count: INTEGER
 			l_declared_attribute_count: INTEGER
+			l_has_flattening_error: BOOLEAN
+			l_old_error_handler: detachable ET_ERROR_HANDLER
 		do
 			has_signature_error := False
 			resolve_feature_adaptations
-			if not current_class.has_flattening_error then
+			l_has_flattening_error := current_class.has_flattening_error
+			if not l_has_flattening_error or system_processor.is_fault_tolerant then
+				if l_has_flattening_error then
+					l_old_error_handler := system_processor.error_handler
+					system_processor.set_error_handler_only (tokens.null_error_handler)
+				end
 				nb := named_features.count
 				from named_features.finish until named_features.before loop
 					a_named_feature := named_features.item_for_iteration
@@ -699,6 +728,10 @@ feature {NONE} -- Feature flattening
 				check_creators_validity
 				check_convert_validity
 				check_kernel_features_validity
+				if l_old_error_handler /= Void then
+					system_processor.set_error_handler_only (l_old_error_handler)
+					set_fatal_error (current_class)
+				end
 			end
 			named_features.wipe_out
 		ensure

@@ -2052,7 +2052,7 @@ feature -- Argument parsing
 			a_option_not_void: a_option /= Void
 			a_parser_not_void: a_parser /= Void
 		do
-			override_variables :=  variables_from_cli_value (a_option.parameters, True, False)
+			override_variables := variables_from_cli_value (a_option.parameters, True, False)
 		end
 
 	set_system_processor
@@ -2072,6 +2072,7 @@ feature -- Argument parsing
 			system_processor.set_cluster_dependence_enabled (False)
 			system_processor.set_flat_mode (False)
 			system_processor.set_flat_dbc_mode (False)
+			system_processor.set_fault_tolerant (True)
 			configure_error_handler
 			configure_ast_factory
 		end

@@ -5,7 +5,7 @@
 		"Eiffel system processors"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2017-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2017-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_SYSTEM_PROCESSOR
@@ -65,6 +65,15 @@ feature {NONE} -- Initialization
 
 feature -- Status report
 
+	is_fault_tolerant: BOOLEAN
+			-- Are classes checked (although without reporting
+			-- errors) in the current compilation stage even
+			-- when errors have been detected in one of the
+			-- previous stages?
+			-- (Useful in order to decorate the AST with useful
+			-- information such as the seed of the feature in
+			-- call instructions.)
+
 	benchmark_shown: BOOLEAN
 			-- Should benchmark be shown for each Degree?
 
@@ -84,6 +93,25 @@ feature -- Status report
 		end
 
 feature -- Status setting
+
+	set_fault_tolerant_only (b: BOOLEAN)
+			-- Set `is_fault_tolerant' to `b'.
+			-- Contrary to `set_fault_tolerant', do not set it
+			-- in other system processors in case of a multiprocessor.
+		do
+			is_fault_tolerant := b
+		ensure
+			fault_tolerant_set: is_fault_tolerant = b
+		end
+
+	set_fault_tolerant (b: BOOLEAN)
+			-- Set `is_fault_tolerant' to `b' in current system processor
+			-- and all other system processors in case of a multiprocessor.
+		do
+			set_fault_tolerant_only (b)
+		ensure
+			fault_tolerant_set: is_fault_tolerant = b
+		end
 
 	set_benchmark_shown_only (b: BOOLEAN)
 			-- Set `benchmark_shown' to `b'.

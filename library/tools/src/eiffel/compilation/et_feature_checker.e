@@ -263,6 +263,7 @@ feature -- Validity checking
 			l_class: ET_CLASS
 			l_old_has_error: BOOLEAN
 			old_in_static_feature: BOOLEAN
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			l_feature_impl := a_feature.implementation_feature
@@ -299,7 +300,8 @@ feature -- Validity checking
 				current_class_impl := l_class_impl
 					-- First, make sure that the interface of `current_type' is valid.
 				current_class.process (system_processor.interface_checker)
-				if not current_class.interface_checked or else current_class.has_interface_error then
+				l_has_interface_error := not current_class.interface_checked_successfully
+				if l_has_interface_error and not system_processor.is_fault_tolerant then
 						-- The error should have already been reported.
 					set_fatal_error
 				elseif current_class.implementation_checked and then current_class.has_implementation_error and then not current_class.is_checking_implementation then
@@ -333,6 +335,9 @@ feature -- Validity checking
 							a_feature.set_validity_error
 						end
 					end
+				end
+				if l_has_interface_error then
+					set_fatal_error
 				end
 				from current_object_test_types.start until current_object_test_types.after loop
 					free_context (current_object_test_types.item_for_iteration)
@@ -406,6 +411,7 @@ feature -- Validity checking
 			l_feature_impl: ET_FEATURE
 			l_class_impl: ET_CLASS
 			l_current_class: ET_CLASS
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			l_feature_impl := a_current_feature_impl.implementation_feature
@@ -444,7 +450,8 @@ feature -- Validity checking
 				in_feature_precondition := True
 					-- First, make sure that the interface of `current_type' is valid.
 				current_class.process (system_processor.interface_checker)
-				if not current_class.interface_checked or else current_class.has_interface_error then
+				l_has_interface_error := not current_class.interface_checked_successfully
+				if l_has_interface_error and not system_processor.is_fault_tolerant then
 						-- The error should have already been reported.
 					set_fatal_error
 				else
@@ -457,6 +464,9 @@ feature -- Validity checking
 							a_preconditions.set_validity_error
 						end
 					end
+				end
+				if l_has_interface_error then
+					set_fatal_error
 				end
 				in_feature_precondition := old_in_feature_precondition
 				in_static_feature := old_in_static_feature
@@ -516,6 +526,7 @@ feature -- Validity checking
 			l_class_impl: ET_CLASS
 			l_current_class: ET_CLASS
 			l_old_has_error: BOOLEAN
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			l_feature_impl := a_current_feature_impl.implementation_feature
@@ -554,7 +565,8 @@ feature -- Validity checking
 				in_feature_postcondition := True
 					-- First, make sure that the interface of `current_type' is valid.
 				current_class.process (system_processor.interface_checker)
-				if not current_class.interface_checked or else current_class.has_interface_error then
+				l_has_interface_error := not current_class.interface_checked_successfully
+				if l_has_interface_error and not system_processor.is_fault_tolerant then
 						-- The error should have already been reported.
 					set_fatal_error
 				else
@@ -579,6 +591,9 @@ feature -- Validity checking
 							a_postconditions.set_validity_error
 						end
 					end
+				end
+				if l_has_interface_error then
+					set_fatal_error
 				end
 				in_feature_postcondition := old_in_feature_postcondition
 				in_static_feature := old_in_static_feature
@@ -637,6 +652,7 @@ feature -- Validity checking
 			l_class_impl: ET_CLASS
 			l_current_class: ET_CLASS
 			l_old_object_test_scope: INTEGER
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			l_class_impl := an_invariants.implementation_class
@@ -672,7 +688,8 @@ feature -- Validity checking
 				in_invariant := True
 					-- First, make sure that the interface of `current_type' is valid.
 				current_class.process (system_processor.interface_checker)
-				if not current_class.interface_checked or else current_class.has_interface_error then
+				l_has_interface_error := not current_class.interface_checked_successfully
+				if l_has_interface_error and not system_processor.is_fault_tolerant then
 						-- The error should have already been reported.
 					set_fatal_error
 				else
@@ -714,6 +731,9 @@ feature -- Validity checking
 							an_invariants.set_validity_error
 						end
 					end
+				end
+				if l_has_interface_error then
+					set_fatal_error
 				end
 				in_invariant := old_in_invariant
 				from current_object_test_types.start until current_object_test_types.after loop
@@ -12584,6 +12604,7 @@ feature {NONE} -- Parenthesis call validity
 			l_adapted_base_classes: DS_ARRAYED_LIST [ET_ADAPTED_CLASS]
 			l_has_multiple_constraints: BOOLEAN
 			l_parenthesis: ET_PARENTHESIS_SYMBOL
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			create l_parenthesis.make
@@ -12600,7 +12621,8 @@ feature {NONE} -- Parenthesis call validity
 				l_base_class := l_adapted_base_class.base_class
 					-- Look for a feature with 'alias "()"' in `l_adapted_base_class'.
 				l_base_class.process (system_processor.interface_checker)
-				if not l_base_class.interface_checked_successfully then
+				l_has_interface_error := not l_base_class.interface_checked_successfully
+				if l_has_interface_error and not system_processor.is_fault_tolerant then
 					set_fatal_error
 					check_orphan_actual_arguments_validity (a_call)
 				elseif attached l_adapted_base_class.named_feature (l_parenthesis) as l_unfolded_feature then
@@ -12731,6 +12753,7 @@ feature {NONE} -- Parenthesis call validity
 			l_parenthesis: ET_PARENTHESIS_SYMBOL
 			l_qualified_unfolded_target: ET_QUALIFIED_CALL_EXPRESSION
 			l_unqualified_unfolded_target: ET_UNQUALIFIED_CALL_EXPRESSION
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			if attached {ET_REGULAR_FEATURE_CALL} a_call as l_regular_call then
@@ -12752,7 +12775,8 @@ feature {NONE} -- Parenthesis call validity
 						l_base_class := l_adapted_base_class.base_class
 							-- Look for a feature with 'alias "()"' in `l_adapted_base_class'.
 						l_base_class.process (system_processor.interface_checker)
-						if not l_base_class.interface_checked_successfully then
+						l_has_interface_error := not l_base_class.interface_checked_successfully
+						if l_has_interface_error and not system_processor.is_fault_tolerant then
 							set_fatal_error
 							check_orphan_actual_arguments_validity (a_call)
 						elseif attached l_adapted_base_class.named_feature (l_parenthesis) as l_unfolded_feature then
@@ -12887,6 +12911,7 @@ feature {NONE} -- Parenthesis call validity
 			l_has_multiple_constraints: BOOLEAN
 			l_parenthesis: ET_PARENTHESIS_SYMBOL
 			l_unfolded_target: ET_PRECURSOR_EXPRESSION
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			l_actuals := a_call.arguments
@@ -12907,7 +12932,8 @@ feature {NONE} -- Parenthesis call validity
 					l_base_class := l_adapted_base_class.base_class
 						-- Look for a feature with 'alias "()"' in `l_adapted_base_class'.
 					l_base_class.process (system_processor.interface_checker)
-					if not l_base_class.interface_checked_successfully then
+					l_has_interface_error := not l_base_class.interface_checked_successfully
+					if l_has_interface_error and not system_processor.is_fault_tolerant then
 						set_fatal_error
 						check_orphan_actual_arguments_validity (a_call)
 					elseif attached l_adapted_base_class.named_feature (l_parenthesis) as l_unfolded_feature then
@@ -12966,6 +12992,7 @@ feature {NONE} -- Parenthesis call validity
 			l_has_multiple_constraints: BOOLEAN
 			l_parenthesis: ET_PARENTHESIS_SYMBOL
 			l_unfolded_target: ET_STATIC_CALL_EXPRESSION
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			l_actuals := a_call.arguments
@@ -12986,7 +13013,8 @@ feature {NONE} -- Parenthesis call validity
 					l_base_class := l_adapted_base_class.base_class
 						-- Look for a feature with 'alias "()"' in `l_adapted_base_class'.
 					l_base_class.process (system_processor.interface_checker)
-					if not l_base_class.interface_checked_successfully then
+					l_has_interface_error := not l_base_class.interface_checked_successfully
+					if l_has_interface_error and not system_processor.is_fault_tolerant then
 						set_fatal_error
 						check_orphan_actual_arguments_validity (a_call)
 					elseif attached l_adapted_base_class.named_feature (l_parenthesis) as l_unfolded_feature then
@@ -13050,6 +13078,7 @@ feature {NONE} -- Parenthesis call validity
 			l_has_multiple_constraints: BOOLEAN
 			l_parenthesis: ET_PARENTHESIS_SYMBOL
 			l_unfolded_target: ET_QUALIFIED_CALL_EXPRESSION
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			l_name := a_call.name
@@ -13082,7 +13111,8 @@ feature {NONE} -- Parenthesis call validity
 						l_base_class := l_adapted_base_class.base_class
 							-- Look for a feature with 'alias "()"' in `l_adapted_base_class'.
 						l_base_class.process (system_processor.interface_checker)
-						if not l_base_class.interface_checked_successfully then
+						l_has_interface_error := not l_base_class.interface_checked_successfully
+						if l_has_interface_error and not system_processor.is_fault_tolerant then
 							set_fatal_error
 							check_orphan_actual_arguments_validity (a_call)
 						elseif attached l_adapted_base_class.named_feature (l_parenthesis) as l_unfolded_feature then
@@ -13166,6 +13196,7 @@ feature {NONE} -- Agent validity
 			a_name: ET_FEATURE_NAME
 			a_seed: INTEGER
 			l_had_error: BOOLEAN
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			if in_static_feature then
@@ -13188,7 +13219,8 @@ feature {NONE} -- Agent validity
 					end
 				else
 					current_class.process (system_processor.interface_checker)
-					if not current_class.interface_checked_successfully then
+					l_has_interface_error := not current_class.interface_checked_successfully
+					if l_has_interface_error and not system_processor.is_fault_tolerant then
 						set_fatal_error
 					elseif attached current_class.named_procedure (a_name) as l_procedure then
 						a_name.set_seed (l_procedure.first_seed)
@@ -13209,7 +13241,8 @@ feature {NONE} -- Agent validity
 				end
 			else
 				current_class.process (system_processor.interface_checker)
-				if not current_class.interface_checked_successfully then
+				l_has_interface_error := not current_class.interface_checked_successfully
+				if l_has_interface_error and not system_processor.is_fault_tolerant then
 					set_fatal_error
 				elseif an_expression.is_procedure then
 					if not attached current_class.seeded_procedure (a_seed) as l_procedure then
@@ -15470,6 +15503,7 @@ feature {NONE} -- Conversion
 			l_convert_to_expression: ET_CONVERT_TO_EXPRESSION
 			l_target_named_type: ET_NAMED_TYPE
 			l_had_error: BOOLEAN
+			l_has_flattening_error: BOOLEAN
 		do
 			has_fatal_error := False
 			if current_class /= current_class_impl then
@@ -15497,7 +15531,8 @@ feature {NONE} -- Conversion
 					if l_convert_feature.is_convert_from then
 						l_convert_class := a_target_type.base_class
 						l_convert_class.process (system_processor.feature_flattener)
-						if not l_convert_class.features_flattened or else l_convert_class.has_flattening_error then
+						l_has_flattening_error := not l_convert_class.features_flattened_successfully
+						if l_has_flattening_error and not system_processor.is_fault_tolerant then
 								-- Error already reported by the feature flattener.
 							set_fatal_error
 						else
@@ -15535,7 +15570,8 @@ feature {NONE} -- Conversion
 					elseif l_convert_feature.is_convert_to then
 						l_convert_class := a_source_type.base_class
 						l_convert_class.process (system_processor.feature_flattener)
-						if not l_convert_class.features_flattened or else l_convert_class.has_flattening_error then
+						l_has_flattening_error := not l_convert_class.features_flattened_successfully
+						if l_has_flattening_error and not system_processor.is_fault_tolerant then
 								-- Error already reported by the feature flattener.
 							set_fatal_error
 						else

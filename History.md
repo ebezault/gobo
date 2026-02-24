@@ -8,6 +8,8 @@
   case of features, and with clients and suppliers in case of classes.
 * Implemented `Type Hierarchy` menu/panel with ancestor and descendant
   classes.
+* Class analysis is now fault tolerant, which allows class texts to
+  be fully browsable even when they contain syntax or compilation errors.
 
 ### Gobo Eiffel Language Server Protocol Library
 
@@ -22,6 +24,11 @@
 * Fixed processing of pre- and postconditions in inlined agents.
 * Implemented fault tolerant Eiffel parser and improved syntax
   error messages.
+* Added option to make Degree 4 and 3 fault tolerant: classes
+  are checked (although without reporting errors) even when errors
+  have been detected in one of the previous Degrees.
+  Useful in order to decorate the AST with useful information such
+  as the seed of the feature in call instructions.
 
 ## Version 26.01.11 - 11 January 2026
 

@@ -5,7 +5,7 @@
 		"Eiffel class ancestor builders"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2003-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2003-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_ANCESTOR_BUILDER
@@ -105,23 +105,32 @@ feature {NONE} -- Processing
 			old_class: ET_CLASS
 			i, nb: INTEGER
 			i2, nb2: INTEGER
+			l_has_syntax_error: BOOLEAN
+			l_old_error_handler: detachable ET_ERROR_HANDLER
+			l_old_other_error_handler: detachable ET_ERROR_HANDLER
 		do
 			old_class := current_class
 			current_class := a_class
 			if not current_class.ancestors_built then
 				current_class.process (system_processor.eiffel_parser)
-				if not current_class.is_parsed or else current_class.has_syntax_error then
-					set_fatal_error (current_class)
-				else
+				l_has_syntax_error := not current_class.is_parsed_successfully
+				if not l_has_syntax_error or system_processor.is_fault_tolerant then
+					if l_has_syntax_error then
+						l_old_error_handler := system_processor.error_handler
+						system_processor.set_error_handler_only (tokens.null_error_handler)
+					end
 					add_class_to_sorter (current_class)
 					class_sorter.sort
 					check postcondition_of_sort: attached class_sorter.sorted_items as l_sorted_ancestors then
 						nb := l_sorted_ancestors.count
 						from i := 1 until i > nb loop
 							current_class := l_sorted_ancestors.item (i)
-							if not current_class.is_parsed or else current_class.has_syntax_error then
-								set_fatal_error (current_class)
-							else
+							l_has_syntax_error := not current_class.is_parsed_successfully
+							if not l_has_syntax_error or system_processor.is_fault_tolerant then
+								if l_has_syntax_error then
+									l_old_other_error_handler := system_processor.error_handler
+									system_processor.set_error_handler_only (tokens.null_error_handler)
+								end
 								current_class.set_ancestors_built
 								error_handler.report_compilation_status (Current, current_class, system_processor)
 								set_ancestors
@@ -130,6 +139,12 @@ feature {NONE} -- Processing
 									check_formal_parameters_validity
 									check_parents_validity
 								end
+								if l_old_other_error_handler /= Void then
+									system_processor.set_error_handler_only (l_old_other_error_handler)
+									set_fatal_error (current_class)
+								end
+							else
+								set_fatal_error (current_class)
 							end
 							i := i + 1
 						end
@@ -155,6 +170,13 @@ feature {NONE} -- Processing
 							class_sorter.wipe_out
 						end
 					end
+					if l_old_error_handler /= Void then
+						current_class := a_class
+						system_processor.set_error_handler_only (l_old_error_handler)
+						set_fatal_error (current_class)
+					end
+				else
+					set_fatal_error (current_class)
 				end
 			end
 			current_class := old_class
@@ -180,6 +202,8 @@ feature {NONE} -- Topological sort
 			i, nb: INTEGER
 			l_has_conforming_parent: BOOLEAN
 			l_parent_list: ET_PARENT_LIST
+			l_current_class_has_syntax_error: BOOLEAN
+			l_any_class_has_syntax_error: BOOLEAN
 		do
 			if a_class.is_none then
 				-- The validity error will be reported in `set_ancestors'.
@@ -192,7 +216,8 @@ feature {NONE} -- Topological sort
 				current_class := a_class
 				if not current_class.ancestors_built then
 					current_class.process (system_processor.eiffel_parser)
-					if not current_class.is_parsed or else current_class.has_syntax_error then
+					l_current_class_has_syntax_error := not current_class.is_parsed_successfully
+					if l_current_class_has_syntax_error and not system_processor.is_fault_tolerant then
 							-- This error has already been reported
 							-- somewhere else (during the parsing).
 						set_fatal_error (current_class)
@@ -233,21 +258,32 @@ feature {NONE} -- Topological sort
 							else
 								l_any_class := current_universe.any_type.base_class
 								l_any_class.process (system_processor.eiffel_parser)
+								l_any_class_has_syntax_error := not l_any_class.is_parsed_successfully
 								if not l_any_class.is_preparsed then
 										-- Error: class "ANY" not in universe (VHAY, ETL2 p.88).
 										-- The validity error will be reported in `set_ancestors'
 										-- (for that to work we need to add `current_class' to the
 										-- class sorter despite the error).
 									set_fatal_error (l_any_class)
-								elseif not l_any_class.is_parsed or else l_any_class.has_syntax_error then
+								elseif l_any_class_has_syntax_error and not system_processor.is_fault_tolerant then
 										-- This error has already been reported
 										-- somewhere else (during the parsing).
 									set_fatal_error (l_any_class)
 								else
 									add_parents_to_sorter (current_class, current_universe.any_parents)
 								end
+								if l_any_class_has_syntax_error then
+										-- This error has already been reported
+										-- somewhere else (during the parsing).
+									set_fatal_error (l_any_class)
+								end
 							end
 						end
+					end
+					if l_current_class_has_syntax_error then
+							-- This error has already been reported
+							-- somewhere else (during the parsing).
+						set_fatal_error (current_class)
 					end
 				end
 				current_class := old_class
@@ -337,6 +373,8 @@ feature {NONE} -- Ancestors
 						if l_parent_clause = system_object_parents and not a_parent_class.is_dotnet then
 								-- Error: class "SYSTEM_OBJECT" not a .NET class (GVHSO-2, not in ETL2).
 							error_handler.report_gvhso2a_error (current_class)
+						elseif system_processor.is_fault_tolerant then
+							add_parent_to_ancestors (a_parent, l_is_conforming)
 						end
 						has_error := True
 					elseif a_parent_class.is_frozen and l_is_conforming then
@@ -344,7 +382,7 @@ feature {NONE} -- Ancestors
 						set_fatal_error (current_class)
 						error_handler.report_vhpr2a_error (current_class, a_type)
 						has_error := True
-					elseif not has_error then
+					elseif not has_error or system_processor.is_fault_tolerant then
 						add_parent_to_ancestors (a_parent, l_is_conforming)
 						if current_class.has_ancestors_error then
 							has_error := True

@@ -186,6 +186,8 @@ feature {NONE} -- Processing
 			i2, nb2: INTEGER
 			l_parent_clause: ET_PARENT_LIST
 			l_parent_not_checked: BOOLEAN
+			l_has_interface_error: BOOLEAN
+			l_old_error_handler: detachable ET_ERROR_HANDLER
 		do
 			old_class := current_class
 			current_class := a_class
@@ -201,7 +203,12 @@ feature {NONE} -- Processing
 				elseif not current_class.implementation_checked then
 						-- Check interface of `current_class' if not already done.
 					current_class.process (system_processor.interface_checker)
-					if current_class.interface_checked_successfully then
+					l_has_interface_error := not current_class.interface_checked_successfully
+					if not l_has_interface_error or system_processor.is_fault_tolerant then
+						if l_has_interface_error then
+							l_old_error_handler := system_processor.error_handler
+--							system_processor.set_error_handler_only (tokens.null_error_handler)
+						end
 						current_class.set_checking_implementation (True)
 							-- Process parents first.
 						nb1 := current_class.parents_count
@@ -266,6 +273,10 @@ feature {NONE} -- Processing
 							system_processor.report_class_processed (current_class)
 						end
 						current_class.set_checking_implementation (False)
+						if l_old_error_handler /= Void then
+							system_processor.set_error_handler_only (l_old_error_handler)
+							set_fatal_error (current_class)
+						end
 					else
 						set_fatal_error (current_class)
 					end
