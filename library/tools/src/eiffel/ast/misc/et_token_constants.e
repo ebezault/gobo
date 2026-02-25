@@ -5,7 +5,7 @@
 		"Eiffel token and symbol constants"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2004-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2004-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_TOKEN_CONSTANTS
@@ -6244,7 +6244,7 @@ feature -- Keyword and symbol names
 	xor_symbol_name: STRING once Result := {UC_UTF8_ROUTINES}.string_to_utf8 ({STRING_32} "⊻") end
 			-- Eiffel symbol names
 
-	unknown_name: STRING = "***unknown_name***"
+	unknown_name: STRING = "*unknown*"
 			-- Unknown name
 
 feature -- Keyword and symbol names (used for compatibility with 5.6.0610, to be removed later)
@@ -6482,7 +6482,7 @@ feature -- System
 	unknown_system: ET_SYSTEM
 			-- Shared unknown Eiffel system
 		once
-			create Result.make ("*unknown*")
+			create Result.make (unknown_name)
 		ensure
 			instance_free: class
 			unknown_system_not_void: Result /= Void
@@ -6491,7 +6491,7 @@ feature -- System
 	unknown_library: ET_LIBRARY
 			-- Shared unknown Eiffel class library
 		once
-			create Result.make ("*unknown*", unknown_system)
+			create Result.make (unknown_name, unknown_system)
 		ensure
 			instance_free: class
 			unknown_library_not_void: Result /= Void
@@ -6500,7 +6500,7 @@ feature -- System
 	unknown_dotnet_assembly: ET_DOTNET_ASSEMBLY
 			-- Shared unknown .NET assembly
 		once
-			create Result.make ("*unknown*", Void, unknown_system)
+			create Result.make (unknown_name, Void, unknown_system)
 		ensure
 			instance_free: class
 			unknown_dotnet_assembly_not_void: Result /= Void
@@ -6511,7 +6511,7 @@ feature -- System
 		local
 			l_name: ET_IDENTIFIER
 		once
-			create l_name.make ("*unknown*")
+			create l_name.make (unknown_name)
 			create {ET_DO_PROCEDURE} Result.make (l_name, Void, unknown_class)
 		ensure
 			instance_free: class

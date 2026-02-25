@@ -5,7 +5,7 @@
 		"Constants used to read Storable files"
 
 	library: "Gobo Eiffel Storable Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class SB_CONSTANTS
@@ -349,7 +349,7 @@ feature -- Empty containers
 
 feature -- Class names
 
-	unknown_class_name: STRING = "**UNKNOWN**"
+	unknown_class_name: STRING = "*UNKNOWN*"
 			-- Dummy name of an unknown class
 
 	boolean_class_name: STRING = "BOOLEAN"

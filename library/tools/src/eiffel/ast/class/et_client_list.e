@@ -141,15 +141,13 @@ feature -- Status report
 					--
 					-- Search ancestors of `a_class' first.
 				a_class.process (a_system_processor.ancestor_builder)
-				if a_class.ancestors_built_successfully or a_system_processor.is_fault_tolerant then
-					nb := count - 1
-					from i := 0 until i > nb loop
-						if a_class.has_ancestor (storage.item (i).base_class) then
-							Result := True
-							i := nb + 1 -- Jump out of the loop.
-						else
-							i := i + 1
-						end
+				nb := count - 1
+				from i := 0 until i > nb loop
+					if a_class.has_ancestor (storage.item (i).base_class) then
+						Result := True
+						i := nb + 1 -- Jump out of the loop.
+					else
+						i := i + 1
 					end
 				end
 			end

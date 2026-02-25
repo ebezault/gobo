@@ -3641,6 +3641,7 @@ feature {NONE} -- Parsing
 			-- Make the result available in `last_parenthesized_expression`.
 		local
 			l_left_parenthesis_symbol: detachable ET_SYMBOL
+			l_right_parenthesis_symbol: detachable ET_SYMBOL
 		do
 			last_parenthesized_expression := Void
 			if last_token = Left_parenthesis_code then
@@ -3648,11 +3649,12 @@ feature {NONE} -- Parsing
 				read_token
 				parse_expression
 				if last_token = Right_parenthesis_code then
-					last_parenthesized_expression := ast_factory.new_parenthesized_expression (l_left_parenthesis_symbol, last_expression, last_detachable_et_symbol_value)
+					l_right_parenthesis_symbol := last_detachable_et_symbol_value
 					read_token
 				else
 					report_syntax_error (last_position, last_value, right_parenthesis_symbol_expected)
 				end
+				last_parenthesized_expression := ast_factory.new_parenthesized_expression (l_left_parenthesis_symbol, last_expression, l_right_parenthesis_symbol)
 			else
 				report_syntax_error (last_position, last_value, left_parenthesis_symbol_expected)
 			end
@@ -3897,6 +3899,7 @@ feature {NONE} -- Parsing
 			l_across_header: detachable ET_ACROSS_EXPRESSION
 			l_last_expression: detachable ET_EXPRESSION
 			l_is_all: BOOLEAN
+			l_end_keyword: detachable ET_KEYWORD
 		do
 			last_expression := Void
 			if last_token = E_ACROSS then
@@ -3909,38 +3912,40 @@ feature {NONE} -- Parsing
 					read_token
 					parse_cursor_name_identifier
 					l_identifier := last_cursor_name_identifier
-					l_across_header := new_across_expression_header (l_across_keyword, l_iterable_expression, l_as_keyword, l_identifier)
-					parse_optional_loop_invariants
-					l_loop_invariants := last_loop_invariants
-					if last_token = E_UNTIL then
-						l_until_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_expression
-						l_until_conditional := ast_factory.new_conditional (l_until_keyword, last_expression)
-					end
-					if last_token = E_ALL or last_token = E_SOME then
-						l_is_all := last_token = E_ALL
-						l_all_some_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_expression
-						l_all_some_conditional := ast_factory.new_conditional (l_all_some_keyword, last_expression)
-						parse_optional_variant
-						l_variant := last_variant
-						if last_token = E_END then
-							if l_is_all then
-								l_last_expression := new_across_all_expression (l_across_header, l_loop_invariants, l_until_conditional, l_all_some_conditional, l_variant, last_detachable_et_keyword_value)
-							else
-								l_last_expression := new_across_some_expression (l_across_header, l_loop_invariants, l_until_conditional, l_all_some_conditional, l_variant, last_detachable_et_keyword_value)
-							end
-							read_token
-						else
-							report_syntax_error (last_position, last_value, end_keyword_expected)
-						end
-					else
-						report_syntax_error (last_position, last_value, all_or_some_keyword_expected)
-					end
+				else
+					report_syntax_error (last_position, last_value, all_or_some_keyword_expected)
+					create l_identifier.make (tokens.unknown_name)
+				end
+				l_across_header := new_across_expression_header (l_across_keyword, l_iterable_expression, l_as_keyword, l_identifier)
+				parse_optional_loop_invariants
+				l_loop_invariants := last_loop_invariants
+				if last_token = E_UNTIL then
+					l_until_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_expression
+					l_until_conditional := ast_factory.new_conditional (l_until_keyword, last_expression)
+				end
+				if last_token = E_ALL or last_token = E_SOME then
+					l_is_all := last_token = E_ALL
+					l_all_some_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_expression
+					l_all_some_conditional := ast_factory.new_conditional (l_all_some_keyword, last_expression)
 				else
 					report_syntax_error (last_position, last_value, as_keyword_expected)
+				end
+				parse_optional_variant
+				l_variant := last_variant
+				if last_token = E_END then
+					l_end_keyword := last_detachable_et_keyword_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				if l_is_all then
+					l_last_expression := new_across_all_expression (l_across_header, l_loop_invariants, l_until_conditional, l_all_some_conditional, l_variant, l_end_keyword)
+				else
+					l_last_expression := new_across_some_expression (l_across_header, l_loop_invariants, l_until_conditional, l_all_some_conditional, l_variant, l_end_keyword)
 				end
 			else
 				report_syntax_error (last_position, last_value, across_keyword_expected)
@@ -3974,13 +3979,14 @@ feature {NONE} -- Parsing
 					if last_token = E_BAR then
 						l_bar_symbol := last_detachable_et_symbol_value
 						read_token
-						l_quantifier_expression_header := new_for_all_quantifier_expression_header (l_for_all_symbol, l_identifier, l_colon_symbol, l_expression, l_bar_symbol)
-						parse_expression
-						l_last_expression := new_quantifier_expression (l_quantifier_expression_header, last_expression)
 					else
 						report_syntax_error (last_position, last_value, bar_symbol_expected)
 					end
+					l_quantifier_expression_header := new_for_all_quantifier_expression_header (l_for_all_symbol, l_identifier, l_colon_symbol, l_expression, l_bar_symbol)
+					parse_expression
+					l_expression := last_expression
 				end
+				l_last_expression := new_quantifier_expression (l_quantifier_expression_header, l_expression)
 			else
 				report_syntax_error (last_position, last_value, for_all_symbol_expected)
 			end
@@ -4013,13 +4019,14 @@ feature {NONE} -- Parsing
 					if last_token = E_BAR then
 						l_bar_symbol := last_detachable_et_symbol_value
 						read_token
-						l_quantifier_expression_header := new_there_exists_quantifier_expression_header (l_for_all_symbol, l_identifier, l_colon_symbol, l_expression, l_bar_symbol)
-						parse_expression
-						l_last_expression := new_quantifier_expression (l_quantifier_expression_header, last_expression)
 					else
 						report_syntax_error (last_position, last_value, bar_symbol_expected)
 					end
+					l_quantifier_expression_header := new_there_exists_quantifier_expression_header (l_for_all_symbol, l_identifier, l_colon_symbol, l_expression, l_bar_symbol)
+					parse_expression
+					l_expression := last_expression
 				end
+				l_last_expression := new_quantifier_expression (l_quantifier_expression_header, l_expression)
 			else
 				report_syntax_error (last_position, last_value, there_exists_symbol_expected)
 			end
@@ -4033,6 +4040,7 @@ feature {NONE} -- Parsing
 			l_if_keyword: detachable ET_KEYWORD
 			l_then_keyword: detachable ET_KEYWORD
 			l_else_keyword: detachable ET_KEYWORD
+			l_end_keyword: detachable ET_KEYWORD
 			l_conditional_expression: detachable ET_EXPRESSION
 			l_then_expression: detachable ET_EXPRESSION
 			l_else_expression: detachable ET_EXPRESSION
@@ -4041,6 +4049,8 @@ feature {NONE} -- Parsing
 			l_elseif_keyword: detachable ET_KEYWORD
 			l_elseif_then_keyword: detachable ET_KEYWORD
 			l_elseif_conditional_expression: detachable ET_EXPRESSION
+			l_elseif_conditional: detachable ET_CONDITIONAL
+			l_elseif_then_expression: detachable ET_EXPRESSION
 			nb: INTEGER
 			l_last_expression: detachable ET_EXPRESSION
 		do
@@ -4055,49 +4065,53 @@ feature {NONE} -- Parsing
 					read_token
 					parse_expression
 					l_then_expression := last_expression
-					l_old_last_elseif_expression_items_count := last_elseif_expression_items.count
-					from until last_token /= E_ELSEIF loop
-						l_elseif_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_expression
-						l_elseif_conditional_expression := last_expression
-						if last_token = E_THEN then
-							l_elseif_then_keyword := last_detachable_et_keyword_value
-							read_token
-							parse_expression
-							last_elseif_expression_items.force (ast_factory.new_elseif_expression (ast_factory.new_conditional (l_elseif_keyword, l_elseif_conditional_expression), l_elseif_then_keyword, last_expression))
-						else
-							report_syntax_error (last_position, last_value, then_keyword_expected)
-						end
-					end
-					nb := last_elseif_expression_items.count - l_old_last_elseif_expression_items_count
-					if nb > 0 then
-						l_elseif_expression_list := ast_factory.new_elseif_expression_list (nb)
-						from until nb <= 0 loop
-							if l_elseif_expression_list /= Void and attached last_elseif_expression_items.item as l_last_elseif_expression_item then
-								l_elseif_expression_list.put_first (l_last_elseif_expression_item)
-							end
-							last_elseif_expression_items.remove
-							nb := nb - 1
-						end
-					end
-					if last_token = E_ELSE then
-						l_else_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_expression
-						l_else_expression := last_expression
-						if last_token = E_END then
-							l_last_expression := ast_factory.new_if_expression (ast_factory.new_conditional (l_if_keyword, l_conditional_expression), l_then_keyword, l_then_expression, l_elseif_expression_list, l_else_keyword, l_else_expression, last_detachable_et_keyword_value)
-							read_token
-						else
-							report_syntax_error (last_position, last_value, end_keyword_expected)
-						end
-					else
-						report_syntax_error (last_position, last_value, else_keyword_expected)
-					end
 				else
 					report_syntax_error (last_position, last_value, then_keyword_expected)
 				end
+				l_old_last_elseif_expression_items_count := last_elseif_expression_items.count
+				from until last_token /= E_ELSEIF loop
+					l_elseif_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_expression
+					l_elseif_conditional_expression := last_expression
+					l_elseif_conditional := ast_factory.new_conditional (l_elseif_keyword, l_elseif_conditional_expression)
+					if last_token = E_THEN then
+						l_elseif_then_keyword := last_detachable_et_keyword_value
+						read_token
+						parse_expression
+						l_elseif_then_expression := last_expression
+					else
+						report_syntax_error (last_position, last_value, then_keyword_expected)
+						l_elseif_then_expression := Void
+					end
+					last_elseif_expression_items.force (ast_factory.new_elseif_expression (l_elseif_conditional, l_elseif_then_keyword, l_elseif_then_expression))
+				end
+				nb := last_elseif_expression_items.count - l_old_last_elseif_expression_items_count
+				if nb > 0 then
+					l_elseif_expression_list := ast_factory.new_elseif_expression_list (nb)
+					from until nb <= 0 loop
+						if l_elseif_expression_list /= Void and attached last_elseif_expression_items.item as l_last_elseif_expression_item then
+							l_elseif_expression_list.put_first (l_last_elseif_expression_item)
+						end
+						last_elseif_expression_items.remove
+						nb := nb - 1
+					end
+				end
+				if last_token = E_ELSE then
+					l_else_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_expression
+					l_else_expression := last_expression
+				else
+					report_syntax_error (last_position, last_value, else_keyword_expected)
+				end
+				if last_token = E_END then
+					l_end_keyword := last_detachable_et_keyword_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				l_last_expression := ast_factory.new_if_expression (ast_factory.new_conditional (l_if_keyword, l_conditional_expression), l_then_keyword, l_then_expression, l_elseif_expression_list, l_else_keyword, l_else_expression, l_end_keyword)
 			else
 				report_syntax_error (last_position, last_value, if_keyword_expected)
 			end
@@ -4111,11 +4125,13 @@ feature {NONE} -- Parsing
 			l_inspect_keyword: detachable ET_KEYWORD
 			l_then_keyword: detachable ET_KEYWORD
 			l_else_keyword: detachable ET_KEYWORD
+			l_end_keyword: detachable ET_KEYWORD
 			l_conditional_expression: detachable ET_EXPRESSION
 			l_else_expression: detachable ET_CONDITIONAL
 			l_when_expression_list: detachable ET_WHEN_EXPRESSION_LIST
 			l_old_last_when_expression_items_count: INTEGER
 			l_choices: detachable ET_CHOICE_LIST
+			l_expression: detachable ET_EXPRESSION
 			nb: INTEGER
 			l_last_expression: detachable ET_EXPRESSION
 		do
@@ -4133,10 +4149,12 @@ feature {NONE} -- Parsing
 						l_then_keyword := last_detachable_et_keyword_value
 						read_token
 						parse_expression
-						last_when_expression_items.force (ast_factory.new_when_expression (l_choices, l_then_keyword, last_expression))
+						l_expression := last_expression
 					else
 						report_syntax_error (last_position, last_value, then_keyword_expected)
+						l_expression := Void
 					end
+					last_when_expression_items.force (ast_factory.new_when_expression (l_choices, l_then_keyword, l_expression))
 				end
 				nb := last_when_expression_items.count - l_old_last_when_expression_items_count
 				if nb > 0 then
@@ -4156,11 +4174,12 @@ feature {NONE} -- Parsing
 					l_else_expression := ast_factory.new_conditional (l_else_keyword, last_expression)
 				end
 				if last_token = E_END then
-					l_last_expression := ast_factory.new_inspect_expression (ast_factory.new_conditional (l_inspect_keyword, l_conditional_expression), l_when_expression_list, l_else_expression, last_detachable_et_keyword_value)
+					l_end_keyword := last_detachable_et_keyword_value
 					read_token
 				else
 					report_syntax_error (last_position, last_value, end_keyword_expected)
 				end
+				l_last_expression := ast_factory.new_inspect_expression (ast_factory.new_conditional (l_inspect_keyword, l_conditional_expression), l_when_expression_list, l_else_expression, l_end_keyword)
 			else
 				report_syntax_error (last_position, last_value, inspect_keyword_expected)
 			end
@@ -4600,17 +4619,17 @@ feature {NONE} -- Parsing
 					if last_token = Right_parenthesis_code then
 						l_right_parenthesis := last_detachable_et_symbol_value
 						read_token
-						nb := (last_feature_name_items.count - l_old_last_feature_name_items_count).max (0)
-						l_strip_expression := ast_factory.new_strip_expression (l_strip_keyword, l_left_parenthesis, l_right_parenthesis,  nb)
-						from until nb <= 0 loop
-							if l_strip_expression /= Void and attached last_feature_name_items.item as l_last_feature_name_item then
-								l_strip_expression.put_first (l_last_feature_name_item)
-							end
-							last_feature_name_items.remove
-							nb := nb - 1
-						end
 					else
 						report_syntax_error (last_position, last_value, right_parenthesis_symbol_expected)
+					end
+					nb := (last_feature_name_items.count - l_old_last_feature_name_items_count).max (0)
+					l_strip_expression := ast_factory.new_strip_expression (l_strip_keyword, l_left_parenthesis, l_right_parenthesis,  nb)
+					from until nb <= 0 loop
+						if l_strip_expression /= Void and attached last_feature_name_items.item as l_last_feature_name_item then
+							l_strip_expression.put_first (l_last_feature_name_item)
+						end
+						last_feature_name_items.remove
+						nb := nb - 1
 					end
 				else
 					report_syntax_error (last_position, last_value, left_parenthesis_symbol_expected)
@@ -4770,17 +4789,17 @@ feature {NONE} -- Parsing
 				if last_token = E_RARRAY then
 					l_close_symbol := last_detachable_et_symbol_value
 					read_token
-					nb := (last_expression_items.count - l_old_last_expression_items_count).max (0)
-					l_array := ast_factory.new_manifest_array (l_open_symbol, l_close_symbol, nb)
-					from until nb <= 0 loop
-						if l_array /= Void and then attached last_expression_items.item as l_last_expression_item then
-							l_array.put_first (l_last_expression_item)
-						end
-						last_expression_items.remove
-						nb := nb - 1
-					end
 				else
 					report_syntax_error (last_position, last_value, right_array_symbol_expected)
+				end
+				nb := (last_expression_items.count - l_old_last_expression_items_count).max (0)
+				l_array := ast_factory.new_manifest_array (l_open_symbol, l_close_symbol, nb)
+				from until nb <= 0 loop
+					if l_array /= Void and then attached last_expression_items.item as l_last_expression_item then
+						l_array.put_first (l_last_expression_item)
+					end
+					last_expression_items.remove
+					nb := nb - 1
 				end
 			else
 				report_syntax_error (last_position, last_value, left_array_symbol_expected)
@@ -4833,17 +4852,17 @@ feature {NONE} -- Parsing
 				if last_token = Right_bracket_code then
 					l_close_symbol := last_detachable_et_symbol_value
 					read_token
-					nb := (last_expression_items.count - l_old_last_expression_items_count).max (0)
-					l_tuple := ast_factory.new_manifest_tuple (l_open_symbol, l_close_symbol, nb)
-					from until nb <= 0 loop
-						if l_tuple /= Void and then attached last_expression_items.item as l_last_expression_item then
-							l_tuple.put_first (l_last_expression_item)
-						end
-						last_expression_items.remove
-						nb := nb - 1
-					end
 				else
 					report_syntax_error (last_position, last_value, right_bracket_symbol_expected)
+				end
+				nb := (last_expression_items.count - l_old_last_expression_items_count).max (0)
+				l_tuple := ast_factory.new_manifest_tuple (l_open_symbol, l_close_symbol, nb)
+				from until nb <= 0 loop
+					if l_tuple /= Void and then attached last_expression_items.item as l_last_expression_item then
+						l_tuple.put_first (l_last_expression_item)
+					end
+					last_expression_items.remove
+					nb := nb - 1
 				end
 			else
 				report_syntax_error (last_position, last_value, left_bracket_symbol_expected)
@@ -4896,17 +4915,17 @@ feature {NONE} -- Parsing
 				if last_token = Right_parenthesis_code then
 					l_right_parenthesis := last_detachable_et_symbol_value
 					read_token
-					nb := (last_expression_items.count - l_old_last_expression_items_count).max (0)
-					l_actual_arguments := ast_factory.new_actual_arguments (l_left_parenthesis, l_right_parenthesis, nb)
-					from until nb <= 0 loop
-						if l_actual_arguments /= Void and then attached last_expression_items.item as l_last_expression_item then
-							l_actual_arguments.put_first (l_last_expression_item)
-						end
-						last_expression_items.remove
-						nb := nb - 1
-					end
 				else
 					report_syntax_error (last_position, last_value, right_parenthesis_symbol_expected)
+				end
+				nb := (last_expression_items.count - l_old_last_expression_items_count).max (0)
+				l_actual_arguments := ast_factory.new_actual_arguments (l_left_parenthesis, l_right_parenthesis, nb)
+				from until nb <= 0 loop
+					if l_actual_arguments /= Void and then attached last_expression_items.item as l_last_expression_item then
+						l_actual_arguments.put_first (l_last_expression_item)
+					end
+					last_expression_items.remove
+					nb := nb - 1
 				end
 			end
 			last_actual_arguments := l_actual_arguments
@@ -4957,17 +4976,17 @@ feature {NONE} -- Parsing
 				if last_token = Right_bracket_code then
 					l_right_bracket_symbol := last_detachable_et_symbol_value
 					read_token
-					nb := (last_expression_items.count - l_old_last_expression_items_count).max (0)
-					l_actual_arguments := ast_factory.new_bracket_arguments (l_left_bracket_symbol, l_right_bracket_symbol, nb)
-					from until nb <= 0 loop
-						if l_actual_arguments /= Void and then attached last_expression_items.item as l_last_expression_item then
-							l_actual_arguments.put_first (l_last_expression_item)
-						end
-						last_expression_items.remove
-						nb := nb - 1
-					end
 				else
 					report_syntax_error (last_position, last_value, right_bracket_symbol_expected)
+				end
+				nb := (last_expression_items.count - l_old_last_expression_items_count).max (0)
+				l_actual_arguments := ast_factory.new_bracket_arguments (l_left_bracket_symbol, l_right_bracket_symbol, nb)
+				from until nb <= 0 loop
+					if l_actual_arguments /= Void and then attached last_expression_items.item as l_last_expression_item then
+						l_actual_arguments.put_first (l_last_expression_item)
+					end
+					last_expression_items.remove
+					nb := nb - 1
 				end
 			else
 				report_syntax_error (last_position, last_value, left_bracket_symbol_expected)
@@ -5106,6 +5125,7 @@ feature {NONE} -- Parsing
 			l_external_keyword: detachable ET_KEYWORD
 			l_alias_keyword: detachable ET_KEYWORD
 			l_rescue_keyword: detachable ET_KEYWORD
+			l_end_keyword: detachable ET_KEYWORD
 			l_do_compound: detachable ET_COMPOUND
 			l_once_compound: detachable ET_COMPOUND
 			l_rescue_compound: detachable ET_COMPOUND
@@ -5150,14 +5170,15 @@ feature {NONE} -- Parsing
 						l_rescue_compound := ast_factory.new_rescue_compound (l_rescue_keyword, last_compound)
 					end
 					if last_token = E_END then
-						if l_has_type then
-							l_inline_agent := ast_factory.new_do_function_inline_agent (l_agent_keyword, l_formal_arguments, l_type, l_preconditions, l_local_variables, l_do_compound, l_postconditions, l_rescue_compound, last_detachable_et_keyword_value, Void)
-						else
-							l_inline_agent := ast_factory.new_do_procedure_inline_agent (l_agent_keyword, l_formal_arguments, l_preconditions, l_local_variables, l_do_compound, l_postconditions, l_rescue_compound, last_detachable_et_keyword_value, Void)
-						end
+						l_end_keyword := last_detachable_et_keyword_value
 						read_token
 					else
 						report_syntax_error (last_position, last_value, end_keyword_expected)
+					end
+					if l_has_type then
+						l_inline_agent := ast_factory.new_do_function_inline_agent (l_agent_keyword, l_formal_arguments, l_type, l_preconditions, l_local_variables, l_do_compound, l_postconditions, l_rescue_compound, l_end_keyword, Void)
+					else
+						l_inline_agent := ast_factory.new_do_procedure_inline_agent (l_agent_keyword, l_formal_arguments, l_preconditions, l_local_variables, l_do_compound, l_postconditions, l_rescue_compound, l_end_keyword, Void)
 					end
 				elseif last_token = E_ONCE then
 					l_once_keyword := last_detachable_et_keyword_value
@@ -5175,14 +5196,15 @@ feature {NONE} -- Parsing
 						l_rescue_compound := ast_factory.new_rescue_compound (l_rescue_keyword, last_compound)
 					end
 					if last_token = E_END then
-						if l_has_type then
-							l_inline_agent := ast_factory.new_once_function_inline_agent (l_agent_keyword, l_formal_arguments, l_type, l_preconditions, l_local_variables, l_keys, l_once_compound, l_postconditions, l_rescue_compound, last_detachable_et_keyword_value, Void)
-						else
-							l_inline_agent := ast_factory.new_once_procedure_inline_agent (l_agent_keyword, l_formal_arguments, l_preconditions, l_local_variables, l_keys, l_once_compound, l_postconditions, l_rescue_compound, last_detachable_et_keyword_value, Void)
-						end
+						l_end_keyword := last_detachable_et_keyword_value
 						read_token
 					else
 						report_syntax_error (last_position, last_value, end_keyword_expected)
+					end
+					if l_has_type then
+						l_inline_agent := ast_factory.new_once_function_inline_agent (l_agent_keyword, l_formal_arguments, l_type, l_preconditions, l_local_variables, l_keys, l_once_compound, l_postconditions, l_rescue_compound, l_end_keyword, Void)
+					else
+						l_inline_agent := ast_factory.new_once_procedure_inline_agent (l_agent_keyword, l_formal_arguments, l_preconditions, l_local_variables, l_keys, l_once_compound, l_postconditions, l_rescue_compound, l_end_keyword, Void)
 					end
 				elseif last_token = E_EXTERNAL then
 					if l_has_locals then
@@ -5209,14 +5231,15 @@ feature {NONE} -- Parsing
 					parse_optional_postconditions
 					l_postconditions := last_postconditions
 					if last_token = E_END then
-						if l_has_type then
-							l_inline_agent := ast_factory.new_external_function_inline_agent (l_agent_keyword, l_formal_arguments, l_type, l_preconditions, l_external_language, l_alias_name, l_postconditions, last_detachable_et_keyword_value, Void)
-						else
-							l_inline_agent := ast_factory.new_external_procedure_inline_agent (l_agent_keyword, l_formal_arguments, l_preconditions, l_external_language, l_alias_name, l_postconditions, last_detachable_et_keyword_value, Void)
-						end
+						l_end_keyword := last_detachable_et_keyword_value
 						read_token
 					else
 						report_syntax_error (last_position, last_value, end_keyword_expected)
+					end
+					if l_has_type then
+						l_inline_agent := ast_factory.new_external_function_inline_agent (l_agent_keyword, l_formal_arguments, l_type, l_preconditions, l_external_language, l_alias_name, l_postconditions, l_end_keyword, Void)
+					else
+						l_inline_agent := ast_factory.new_external_procedure_inline_agent (l_agent_keyword, l_formal_arguments, l_preconditions, l_external_language, l_alias_name, l_postconditions, l_end_keyword, Void)
 					end
 				elseif l_has_locals then
 					report_syntax_error (last_position, last_value, do_or_once_keyword_expected)
@@ -5303,17 +5326,17 @@ feature {NONE} -- Parsing
 				if last_token = Right_parenthesis_code then
 					l_right_parenthesis := last_detachable_et_symbol_value
 					read_token
-					nb := (last_agent_actual_argument_items.count - l_old_last_agent_actual_argument_items_count).max (0)
-					l_actual_arguments := ast_factory.new_agent_argument_operands (l_left_parenthesis, l_right_parenthesis, nb)
-					from until nb <= 0 loop
-						if l_actual_arguments /= Void and then attached last_agent_actual_argument_items.item as l_last_agent_actual_argument_item then
-							l_actual_arguments.put_first (l_last_agent_actual_argument_item)
-						end
-						last_agent_actual_argument_items.remove
-						nb := nb - 1
-					end
 				else
 					report_syntax_error (last_position, last_value, right_parenthesis_symbol_expected)
+				end
+				nb := (last_agent_actual_argument_items.count - l_old_last_agent_actual_argument_items_count).max (0)
+				l_actual_arguments := ast_factory.new_agent_argument_operands (l_left_parenthesis, l_right_parenthesis, nb)
+				from until nb <= 0 loop
+					if l_actual_arguments /= Void and then attached last_agent_actual_argument_items.item as l_last_agent_actual_argument_item then
+						l_actual_arguments.put_first (l_last_agent_actual_argument_item)
+					end
+					last_agent_actual_argument_items.remove
+					nb := nb - 1
 				end
 			end
 			last_agent_actual_arguments := l_actual_arguments
@@ -5365,17 +5388,17 @@ feature {NONE} -- Parsing
 				if last_token = Right_parenthesis_code then
 					l_right_parenthesis := last_detachable_et_symbol_value
 					read_token
-					nb := (last_manifest_string_items.count - l_old_last_manifest_string_items_count).max (0)
-					l_keys := ast_factory.new_manifest_string_list (l_left_parenthesis, l_right_parenthesis,  nb)
-					from until nb <= 0 loop
-						if l_keys /= Void and attached last_manifest_string_items.item as l_last_manifest_string_item then
-							l_keys.put_first (l_last_manifest_string_item)
-						end
-						last_manifest_string_items.remove
-						nb := nb - 1
-					end
 				else
 					report_syntax_error (last_position, last_value, right_parenthesis_symbol_expected)
+				end
+				nb := (last_manifest_string_items.count - l_old_last_manifest_string_items_count).max (0)
+				l_keys := ast_factory.new_manifest_string_list (l_left_parenthesis, l_right_parenthesis,  nb)
+				from until nb <= 0 loop
+					if l_keys /= Void and attached last_manifest_string_items.item as l_last_manifest_string_item then
+						l_keys.put_first (l_last_manifest_string_item)
+					end
+					last_manifest_string_items.remove
+					nb := nb - 1
 				end
 			end
 			last_keys := l_keys
@@ -6268,36 +6291,36 @@ feature {NONE} -- Parsing
 					read_token
 					parse_expression
 					l_until_conditional := ast_factory.new_conditional (l_until_keyword, last_expression)
-					if last_token = E_LOOP then
-						l_loop_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_optional_compound (False)
-						l_loop_compound := ast_factory.new_from_compound (l_loop_keyword, last_compound)
-						if not l_has_old_variant then
-							parse_optional_variant
-							l_variant := last_variant
-						end
-						if last_token = E_END then
-							l_end_keyword := last_detachable_et_keyword_value
-							read_token
-							if l_has_old_variant then
-								l_instruction := ast_factory.new_loop_instruction_old_syntax (l_from_compound, l_loop_invariants, l_variant, l_until_conditional, l_loop_compound, l_end_keyword)
-							else
-								l_instruction := ast_factory.new_loop_instruction (l_from_compound, l_loop_invariants, l_until_conditional, l_loop_compound, l_variant, l_end_keyword)
-							end
-							if end_indentation_mismatch = Void and l_end_keyword /= Void and l_from_keyword /= Void then
-								if l_end_keyword.line /= l_from_keyword.line and l_end_keyword.column /= l_from_keyword.column then
-									end_indentation_mismatch := l_instruction
-								end
-							end
-						else
-							report_syntax_error (last_position, last_value, end_keyword_expected)
-						end
-					else
-						report_syntax_error (last_position, last_value, loop_keyword_expected)
-					end
 				else
 					report_syntax_error (last_position, last_value, until_keyword_expected)
+				end
+				if last_token = E_LOOP then
+					l_loop_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_optional_compound (False)
+					l_loop_compound := ast_factory.new_from_compound (l_loop_keyword, last_compound)
+				else
+					report_syntax_error (last_position, last_value, loop_keyword_expected)
+				end
+				if not l_has_old_variant then
+					parse_optional_variant
+					l_variant := last_variant
+				end
+				if last_token = E_END then
+					l_end_keyword := last_detachable_et_keyword_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				if l_has_old_variant then
+					l_instruction := ast_factory.new_loop_instruction_old_syntax (l_from_compound, l_loop_invariants, l_variant, l_until_conditional, l_loop_compound, l_end_keyword)
+				else
+					l_instruction := ast_factory.new_loop_instruction (l_from_compound, l_loop_invariants, l_until_conditional, l_loop_compound, l_variant, l_end_keyword)
+				end
+				if end_indentation_mismatch = Void and l_end_keyword /= Void and l_from_keyword /= Void then
+					if l_end_keyword.line /= l_from_keyword.line and l_end_keyword.column /= l_from_keyword.column then
+						end_indentation_mismatch := l_instruction
+					end
 				end
 			else
 				report_syntax_error (last_position, last_value, from_keyword_expected)
@@ -6336,45 +6359,46 @@ feature {NONE} -- Parsing
 					read_token
 					parse_cursor_name_identifier
 					l_identifier := last_cursor_name_identifier
-					l_across_header := new_across_instruction_header (l_across_keyword, l_iterable_expression, l_as_keyword, l_identifier)
-					if last_token = E_FROM then
-						l_from_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_optional_compound (False)
-						l_from_compound := ast_factory.new_from_compound (l_from_keyword, last_compound)
-					end
-					parse_optional_loop_invariants
-					l_loop_invariants := last_loop_invariants
-					if last_token = E_UNTIL then
-						l_until_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_expression
-						l_until_conditional := ast_factory.new_conditional (l_until_keyword, last_expression)
-					end
-					if last_token = E_LOOP then
-						l_loop_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_optional_compound (False)
-						l_loop_compound := ast_factory.new_from_compound (l_loop_keyword, last_compound)
-						parse_optional_variant
-						l_variant := last_variant
-						if last_token = E_END then
-							l_end_keyword := last_detachable_et_keyword_value
-							read_token
-							l_instruction := new_across_instruction (l_across_header, l_from_compound, l_loop_invariants, l_until_conditional, l_loop_compound, l_variant, l_end_keyword)
-							if end_indentation_mismatch = Void and l_end_keyword /= Void and l_across_keyword /= Void then
-								if l_end_keyword.line /= l_across_keyword.line and l_end_keyword.column /= l_across_keyword.column then
-									end_indentation_mismatch := l_instruction
-								end
-							end
-						else
-							report_syntax_error (last_position, last_value, end_keyword_expected)
-						end
-					else
-						report_syntax_error (last_position, last_value, loop_keyword_expected)
-					end
 				else
 					report_syntax_error (last_position, last_value, as_keyword_expected)
+					create l_identifier.make (tokens.unknown_name)
+				end
+				l_across_header := new_across_instruction_header (l_across_keyword, l_iterable_expression, l_as_keyword, l_identifier)
+				if last_token = E_FROM then
+					l_from_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_optional_compound (False)
+					l_from_compound := ast_factory.new_from_compound (l_from_keyword, last_compound)
+				end
+				parse_optional_loop_invariants
+				l_loop_invariants := last_loop_invariants
+				if last_token = E_UNTIL then
+					l_until_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_expression
+					l_until_conditional := ast_factory.new_conditional (l_until_keyword, last_expression)
+				end
+				if last_token = E_LOOP then
+					l_loop_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_optional_compound (False)
+					l_loop_compound := ast_factory.new_from_compound (l_loop_keyword, last_compound)
+				else
+					report_syntax_error (last_position, last_value, loop_keyword_expected)
+				end
+				parse_optional_variant
+				l_variant := last_variant
+				if last_token = E_END then
+					l_end_keyword := last_detachable_et_keyword_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				l_instruction := new_across_instruction (l_across_header, l_from_compound, l_loop_invariants, l_until_conditional, l_loop_compound, l_variant, l_end_keyword)
+				if end_indentation_mismatch = Void and l_end_keyword /= Void and l_across_keyword /= Void then
+					if l_end_keyword.line /= l_across_keyword.line and l_end_keyword.column /= l_across_keyword.column then
+						end_indentation_mismatch := l_instruction
+					end
 				end
 			else
 				report_syntax_error (last_position, last_value, across_keyword_expected)
@@ -6387,11 +6411,13 @@ feature {NONE} -- Parsing
 			-- Make the result available in `last_instruction`.
 		local
 			l_open_symbol: detachable ET_SYMBOL
+			l_close_symbol: detachable ET_SYMBOL
 			l_identifier: detachable ET_IDENTIFIER
 			l_colon_symbol: detachable ET_SYMBOL
 			l_expression: detachable ET_EXPRESSION
 			l_bar_symbol: detachable ET_SYMBOL
 			l_repeat_instruction_header: detachable ET_REPEAT_INSTRUCTION
+			l_compound: detachable ET_COMPOUND
 			l_instruction: detachable ET_INSTRUCTION
 		do
 			last_instruction := Void
@@ -6408,18 +6434,20 @@ feature {NONE} -- Parsing
 					if last_token = E_BAR then
 						l_bar_symbol := last_detachable_et_symbol_value
 						read_token
-						l_repeat_instruction_header := new_repeat_instruction_header (l_open_symbol, l_identifier, l_colon_symbol, l_expression, l_bar_symbol)
-						parse_optional_compound (False)
-						if last_token = E_CLOSE_REPEAT then
-							l_instruction := new_repeat_instruction (l_repeat_instruction_header, last_compound, last_detachable_et_symbol_value)
-							read_token
-						else
-							report_syntax_error (last_position, last_value, close_repeat_symbol_expected)
-						end
 					else
 						report_syntax_error (last_position, last_value, bar_symbol_expected)
 					end
+					l_repeat_instruction_header := new_repeat_instruction_header (l_open_symbol, l_identifier, l_colon_symbol, l_expression, l_bar_symbol)
+					parse_optional_compound (False)
+					l_compound := last_compound
 				end
+				if last_token = E_CLOSE_REPEAT then
+					l_close_symbol := last_detachable_et_symbol_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, close_repeat_symbol_expected)
+				end
+				l_instruction := new_repeat_instruction (l_repeat_instruction_header, l_compound, l_close_symbol)
 			else
 				report_syntax_error (last_position, last_value, open_repeat_symbol_expected)
 			end
@@ -6440,6 +6468,7 @@ feature {NONE} -- Parsing
 			l_old_last_elseif_part_items_count: INTEGER
 			l_elseif_keyword: detachable ET_KEYWORD
 			l_elseif_then_keyword: detachable ET_KEYWORD
+			l_elseif_then_compound: detachable ET_COMPOUND
 			l_elseif_conditional_expression: detachable ET_EXPRESSION
 			l_end_keyword: detachable ET_KEYWORD
 			nb: INTEGER
@@ -6456,52 +6485,56 @@ feature {NONE} -- Parsing
 					read_token
 					parse_optional_compound (False)
 					l_then_compound := ast_factory.new_then_compound (l_then_keyword, last_compound)
-					l_old_last_elseif_part_items_count := last_elseif_part_items.count
-					from until last_token /= E_ELSEIF loop
-						l_elseif_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_expression
-						l_elseif_conditional_expression := last_expression
-						if last_token = E_THEN then
-							l_elseif_then_keyword := last_detachable_et_keyword_value
-							read_token
-							parse_optional_compound (False)
-							last_elseif_part_items.force (ast_factory.new_elseif_part (ast_factory.new_conditional (l_elseif_keyword, l_elseif_conditional_expression), ast_factory.new_then_compound (l_elseif_then_keyword, last_compound)))
-						else
-							report_syntax_error (last_position, last_value, then_keyword_expected)
-						end
-					end
-					nb := last_elseif_part_items.count - l_old_last_elseif_part_items_count
-					if nb > 0 then
-						l_elseif_part_list := ast_factory.new_elseif_part_list (nb)
-						from until nb <= 0 loop
-							if l_elseif_part_list /= Void and attached last_elseif_part_items.item as l_last_elseif_part_item then
-								l_elseif_part_list.put_first (l_last_elseif_part_item)
-							end
-							last_elseif_part_items.remove
-							nb := nb - 1
-						end
-					end
-					if last_token = E_ELSE then
-						l_else_keyword := last_detachable_et_keyword_value
-						read_token
-						parse_optional_compound (False)
-						l_else_compound := ast_factory.new_then_compound (l_else_keyword, last_compound)
-					end
-					if last_token = E_END then
-						l_end_keyword := last_detachable_et_keyword_value
-						read_token
-						l_instruction := ast_factory.new_if_instruction (ast_factory.new_conditional (l_if_keyword, l_conditional_expression), l_then_compound, l_elseif_part_list, l_else_compound, l_end_keyword)
-						if end_indentation_mismatch = Void and l_end_keyword /= Void and l_if_keyword /= Void then
-							if l_end_keyword.line /= l_if_keyword.line and l_end_keyword.column /= l_if_keyword.column then
-								end_indentation_mismatch := l_instruction
-							end
-						end
-					else
-						report_syntax_error (last_position, last_value, end_keyword_expected)
-					end
 				else
 					report_syntax_error (last_position, last_value, then_keyword_expected)
+				end
+				l_old_last_elseif_part_items_count := last_elseif_part_items.count
+				from until
+					last_token /= E_ELSEIF
+				loop
+					l_elseif_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_expression
+					l_elseif_conditional_expression := last_expression
+					if last_token = E_THEN then
+						l_elseif_then_keyword := last_detachable_et_keyword_value
+						read_token
+						parse_optional_compound (False)
+						l_elseif_then_compound := ast_factory.new_then_compound (l_elseif_then_keyword, last_compound)
+					else
+						report_syntax_error (last_position, last_value, then_keyword_expected)
+						l_elseif_then_compound := Void
+					end
+					last_elseif_part_items.force (ast_factory.new_elseif_part (ast_factory.new_conditional (l_elseif_keyword, l_elseif_conditional_expression), l_elseif_then_compound))
+				end
+				nb := last_elseif_part_items.count - l_old_last_elseif_part_items_count
+				if nb > 0 then
+					l_elseif_part_list := ast_factory.new_elseif_part_list (nb)
+					from until nb <= 0 loop
+						if l_elseif_part_list /= Void and attached last_elseif_part_items.item as l_last_elseif_part_item then
+							l_elseif_part_list.put_first (l_last_elseif_part_item)
+						end
+						last_elseif_part_items.remove
+						nb := nb - 1
+					end
+				end
+				if last_token = E_ELSE then
+					l_else_keyword := last_detachable_et_keyword_value
+					read_token
+					parse_optional_compound (False)
+					l_else_compound := ast_factory.new_then_compound (l_else_keyword, last_compound)
+				end
+				if last_token = E_END then
+					l_end_keyword := last_detachable_et_keyword_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				l_instruction := ast_factory.new_if_instruction (ast_factory.new_conditional (l_if_keyword, l_conditional_expression), l_then_compound, l_elseif_part_list, l_else_compound, l_end_keyword)
+				if end_indentation_mismatch = Void and l_end_keyword /= Void and l_if_keyword /= Void then
+					if l_end_keyword.line /= l_if_keyword.line and l_end_keyword.column /= l_if_keyword.column then
+						end_indentation_mismatch := l_instruction
+					end
 				end
 			else
 				report_syntax_error (last_position, last_value, if_keyword_expected)
@@ -6517,6 +6550,7 @@ feature {NONE} -- Parsing
 			l_then_keyword: detachable ET_KEYWORD
 			l_else_keyword: detachable ET_KEYWORD
 			l_conditional_expression: detachable ET_EXPRESSION
+			l_then_compound: detachable ET_COMPOUND
 			l_else_compound: detachable ET_COMPOUND
 			l_when_part_list: detachable ET_WHEN_PART_LIST
 			l_end_keyword: detachable ET_KEYWORD
@@ -6532,17 +6566,21 @@ feature {NONE} -- Parsing
 				parse_expression
 				l_conditional_expression := last_expression
 				l_old_last_when_part_items_count := last_when_part_items.count
-				from until last_token /= E_WHEN loop
+				from until
+					last_token /= E_WHEN
+				loop
 					parse_choices
 					l_choices := last_choices
 					if last_token = E_THEN then
 						l_then_keyword := last_detachable_et_keyword_value
 						read_token
 						parse_optional_compound (False)
-						last_when_part_items.force (ast_factory.new_when_part (l_choices, ast_factory.new_then_compound (l_then_keyword, last_compound)))
+						l_then_compound := ast_factory.new_then_compound (l_then_keyword, last_compound)
 					else
 						report_syntax_error (last_position, last_value, then_keyword_expected)
+						l_then_compound := Void
 					end
+					last_when_part_items.force (ast_factory.new_when_part (l_choices, l_then_compound))
 				end
 				nb := last_when_part_items.count - l_old_last_when_part_items_count
 				if nb > 0 then
@@ -6564,14 +6602,14 @@ feature {NONE} -- Parsing
 				if last_token = E_END then
 					l_end_keyword := last_detachable_et_keyword_value
 					read_token
-					l_instruction := ast_factory.new_inspect_instruction (ast_factory.new_conditional (l_inspect_keyword, l_conditional_expression), l_when_part_list, l_else_compound, l_end_keyword)
-					if end_indentation_mismatch = Void and l_end_keyword /= Void and l_inspect_keyword /= Void then
-						if l_end_keyword.line /= l_inspect_keyword.line and l_end_keyword.column /= l_inspect_keyword.column then
-							end_indentation_mismatch := l_instruction
-						end
-					end
 				else
 					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				l_instruction := ast_factory.new_inspect_instruction (ast_factory.new_conditional (l_inspect_keyword, l_conditional_expression), l_when_part_list, l_else_compound, l_end_keyword)
+				if end_indentation_mismatch = Void and l_end_keyword /= Void and l_inspect_keyword /= Void then
+					if l_end_keyword.line /= l_inspect_keyword.line and l_end_keyword.column /= l_inspect_keyword.column then
+						end_indentation_mismatch := l_instruction
+					end
 				end
 			else
 				report_syntax_error (last_position, last_value, inspect_keyword_expected)
@@ -6660,14 +6698,14 @@ feature {NONE} -- Parsing
 				if last_token = E_END then
 					l_end_keyword := last_detachable_et_keyword_value
 					read_token
-					l_instruction := new_check_instruction (l_check_keyword, l_semicolon_symbol, l_then_compound, l_end_keyword)
-					if end_indentation_mismatch = Void and l_end_keyword /= Void and l_check_keyword /= Void then
-						if l_end_keyword.line /= l_check_keyword.line and l_end_keyword.column /= l_check_keyword.column then
-							end_indentation_mismatch := l_instruction
-						end
-					end
 				else
 					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				l_instruction := new_check_instruction (l_check_keyword, l_semicolon_symbol, l_then_compound, l_end_keyword)
+				if end_indentation_mismatch = Void and l_end_keyword /= Void and l_check_keyword /= Void then
+					if l_end_keyword.line /= l_check_keyword.line and l_end_keyword.column /= l_check_keyword.column then
+						end_indentation_mismatch := l_instruction
+					end
 				end
 			else
 				report_syntax_error (last_position, last_value, check_keyword_expected)
@@ -6696,14 +6734,14 @@ feature {NONE} -- Parsing
 				if last_token = E_END then
 					l_end_keyword := last_detachable_et_keyword_value
 					read_token
-					l_instruction := ast_factory.new_debug_instruction (l_keys, l_debug_compound, l_end_keyword)
-					if end_indentation_mismatch = Void and l_end_keyword /= Void and l_debug_keyword /= Void then
-						if l_end_keyword.line /= l_debug_keyword.line and l_end_keyword.column /= l_debug_keyword.column then
-							end_indentation_mismatch := l_instruction
-						end
-					end
 				else
 					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				l_instruction := ast_factory.new_debug_instruction (l_keys, l_debug_compound, l_end_keyword)
+				if end_indentation_mismatch = Void and l_end_keyword /= Void and l_debug_keyword /= Void then
+					if l_end_keyword.line /= l_debug_keyword.line and l_end_keyword.column /= l_debug_keyword.column then
+						end_indentation_mismatch := l_instruction
+					end
 				end
 			else
 				report_syntax_error (last_position, last_value, debug_keyword_expected)
@@ -6765,44 +6803,45 @@ feature {NONE} -- Parsing
 							end
 						else
 							report_syntax_error (last_position, last_value, as_keyword_expected)
+							create l_identifier.make (tokens.unknown_name)
+							l_inline_separate_argument := new_inline_separate_argument (l_expression, l_as_keyword, l_identifier)
+							last_inline_separate_argument_items.force (l_inline_separate_argument)
+							l_done := True
 						end
 					end
 				end
 				nb := last_inline_separate_argument_items.count - l_old_last_inline_separate_argument_items_count
-				if nb <= 0 then
+				if nb > 0 then
+					l_inline_separate_arguments := ast_factory.new_inline_separate_arguments (l_separate_keyword, nb)
+					from until nb <= 0 loop
+						if l_inline_separate_arguments /= Void and then attached last_inline_separate_argument_items.item as l_last_inline_separate_argument_item then
+							l_inline_separate_arguments.put_first (l_last_inline_separate_argument_item)
+						end
+						last_inline_separate_argument_items.remove
+						nb := nb - 1
+					end
+				else
 					report_syntax_error (last_position, last_value, expression_expected)
 				end
 				if last_token = E_DO then
 					l_do_keyword := last_detachable_et_keyword_value
 					read_token
-					if nb > 0 then
-						l_inline_separate_arguments := ast_factory.new_inline_separate_arguments (l_separate_keyword, nb)
-						from until nb <= 0 loop
-							if l_inline_separate_arguments /= Void and then attached last_inline_separate_argument_items.item as l_last_inline_separate_argument_item then
-								l_inline_separate_arguments.put_first (l_last_inline_separate_argument_item)
-							end
-							last_inline_separate_argument_items.remove
-							nb := nb - 1
-						end
-					else
-						report_syntax_error (last_position, last_value, end_keyword_expected)
-					end
 					parse_optional_compound (False)
 					l_do_compound := ast_factory.new_do_compound (l_do_keyword, last_compound)
-					if last_token = E_END then
-						l_end_keyword := last_detachable_et_keyword_value
-						read_token
-						l_instruction := new_inline_separate_instruction (l_inline_separate_arguments, l_do_compound, l_end_keyword)
-						if end_indentation_mismatch = Void and l_end_keyword /= Void and l_separate_keyword /= Void then
-							if l_end_keyword.line /= l_separate_keyword.line and l_end_keyword.column /= l_separate_keyword.column then
-								end_indentation_mismatch := l_instruction
-							end
-						end
-					else
-						report_syntax_error (last_position, last_value, end_keyword_expected)
-					end
 				else
 					report_syntax_error (last_position, last_value, do_keyword_expected)
+				end
+				if last_token = E_END then
+					l_end_keyword := last_detachable_et_keyword_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, end_keyword_expected)
+				end
+				l_instruction := new_inline_separate_instruction (l_inline_separate_arguments, l_do_compound, l_end_keyword)
+				if end_indentation_mismatch = Void and l_end_keyword /= Void and l_separate_keyword /= Void then
+					if l_end_keyword.line /= l_separate_keyword.line and l_end_keyword.column /= l_separate_keyword.column then
+						end_indentation_mismatch := l_instruction
+					end
 				end
 			else
 				report_syntax_error (last_position, last_value, separate_keyword_expected)
@@ -6823,30 +6862,6 @@ feature {NONE} -- Parsing
 				read_token
 			else
 				report_syntax_error (last_position, last_value, feature_name_expected)
-			end
-		end
-
-	parse_optional_semicolon
-			-- Parse a optional semicolon.
-			-- Make the result available in `last_semicolon`.
-		local
-			l_semicolon: detachable ET_SEMICOLON_SYMBOL
-			l_last_semicolon: detachable ET_SEMICOLON_SYMBOL
-		do
-			last_semicolon := Void
-			from until
-				last_token /= Semicolon_code
-			loop
-				l_semicolon := last_detachable_et_semicolon_symbol_value
-				read_token
-				if last_semicolon = Void then
-					last_semicolon := l_semicolon
-				elseif l_last_semicolon /= Void and then l_last_semicolon /= tokens.semicolon_symbol then
-					l_last_semicolon.set_other (l_semicolon)
-				end
-				if l_semicolon /= Void then
-					l_last_semicolon := l_semicolon
-				end
 			end
 		end
 
@@ -6967,6 +6982,30 @@ feature {NONE} -- Parsing
 				last_extended_feature_name := ast_factory.new_aliased_feature_name (l_identifier, l_alias_name_list)
 			else
 				last_extended_feature_name := l_identifier
+			end
+		end
+
+	parse_optional_semicolon
+			-- Parse a optional semicolon.
+			-- Make the result available in `last_semicolon`.
+		local
+			l_semicolon: detachable ET_SEMICOLON_SYMBOL
+			l_last_semicolon: detachable ET_SEMICOLON_SYMBOL
+		do
+			last_semicolon := Void
+			from until
+				last_token /= Semicolon_code
+			loop
+				l_semicolon := last_detachable_et_semicolon_symbol_value
+				read_token
+				if last_semicolon = Void then
+					last_semicolon := l_semicolon
+				elseif l_last_semicolon /= Void and then l_last_semicolon /= tokens.semicolon_symbol then
+					l_last_semicolon.set_other (l_semicolon)
+				end
+				if l_semicolon /= Void then
+					l_last_semicolon := l_semicolon
+				end
 			end
 		end
 
