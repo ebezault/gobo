@@ -354,7 +354,7 @@ feature -- Status report
 			-- Has last parsing been unsuccesful?
 			-- This query may return false if errors have been recovered.
 			-- Note that the result of this query is undefined within
-			-- the calll to `parse', e.g. when executing semantic actions.
+			-- the call to `parse', e.g. when executing semantic actions.
 		do
 			Result := yy_parsing_status = yyAborted
 		end

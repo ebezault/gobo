@@ -5,7 +5,7 @@
 		"Scanner skeletons for Lace parsers"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 1999-2019, Eric Bezault and others"
+	copyright: "Copyright (c) 1999-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_LACE_SCANNER_SKELETON
@@ -23,6 +23,9 @@ inherit
 		end
 
 	ET_LACE_TOKENS
+		export {NONE} all end
+
+	ET_SHARED_TOKEN_CONSTANTS
 		export {NONE} all end
 
 	UT_CHARACTER_CODES
@@ -45,7 +48,7 @@ feature {NONE} -- Initialization
 			error_handler := an_error_handler
 			create eif_buffer.make (Init_buffer_size)
 			eif_lineno := 1
-			last_et_identifier_value := new_identifier ("**unknown**")
+			last_et_identifier_value := new_identifier (tokens.unknown_name)
 		ensure
 			filename_set: filename = a_filename
 			error_handler_set: error_handler = an_error_handler

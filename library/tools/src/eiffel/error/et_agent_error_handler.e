@@ -5,7 +5,7 @@
 		"Error handlers with agents"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2020, Eric Bezault and others"
+	copyright: "Copyright (c) 2020-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_AGENT_ERROR_HANDLER
@@ -22,6 +22,7 @@ inherit
 			report_assembly_error,
 			report_system_error,
 			report_syntax_error,
+			report_syntax_warning,
 			report_validity_error,
 			report_internal_error,
 			report_error_message
@@ -46,6 +47,7 @@ feature {NONE} -- Initialization
 			create assembly_error_actions
 			create system_error_actions
 			create syntax_error_actions
+			create syntax_warning_actions
 			create validity_error_actions
 			create internal_error_actions
 			create error_message_actions
@@ -63,6 +65,7 @@ feature {NONE} -- Initialization
 			create assembly_error_actions
 			create system_error_actions
 			create syntax_error_actions
+			create syntax_warning_actions
 			create validity_error_actions
 			create internal_error_actions
 			create error_message_actions
@@ -171,23 +174,41 @@ feature -- .NET assembly errors
 
 feature -- Syntax errors
 
-	report_syntax_error (a_filename: STRING; p: ET_POSITION)
+	report_syntax_error (a_filename: STRING; a_position: ET_POSITION; a_ast_node: detachable ET_AST_NODE; a_message: STRING)
 			-- Report a syntax error.
 		local
 			l_error: ET_SYNTAX_ERROR
 		do
 			if keep_default_actions then
-				precursor (a_filename, p)
+				precursor (a_filename, a_position, a_ast_node, a_message)
 			end
 			mutex.lock
-			create l_error.make (a_filename, p)
+			create l_error.make_error (a_filename, a_position, a_ast_node, a_message)
 			syntax_error_actions.call ([l_error])
 			set_has_eiffel_error (True)
 			mutex.unlock
 		end
 
+	report_syntax_warning (a_filename: STRING; a_position: ET_POSITION; a_ast_node: detachable ET_AST_NODE; a_message: STRING)
+			-- Report a syntax warning.
+		local
+			l_error: ET_SYNTAX_ERROR
+		do
+			if keep_default_actions then
+				precursor (a_filename, a_position, a_ast_node, a_message)
+			end
+			mutex.lock
+			create l_error.make_warning (a_filename, a_position, a_ast_node, a_message)
+			syntax_warning_actions.call ([l_error])
+			mutex.unlock
+		end
+
 	syntax_error_actions: ACTION_SEQUENCE [TUPLE [ET_SYNTAX_ERROR]]
 			-- Actions to be executed when `report_syntax_error'
+			-- is called
+
+	syntax_warning_actions: ACTION_SEQUENCE [TUPLE [ET_SYNTAX_ERROR]]
+			-- Actions to be executed when `report_syntax_warning'
 			-- is called
 
 feature -- System errors
@@ -274,6 +295,7 @@ invariant
 	assembly_error_actions_not_void: assembly_error_actions /= Void
 	system_error_actions_not_void: system_error_actions /= Void
 	syntax_error_actions_not_void: syntax_error_actions /= Void
+	syntax_warning_actions_not_void: syntax_warning_actions /= Void
 	validity_error_actions_not_void: validity_error_actions /= Void
 	internal_error_actions_not_void: internal_error_actions /= Void
 	error_message_actions_not_void: error_message_actions /= Void

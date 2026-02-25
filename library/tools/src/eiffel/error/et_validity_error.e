@@ -19017,7 +19017,7 @@ feature {NONE} -- Implementation
 			if a_feature_name /= Void then
 				Result := a_feature_name.lower_name
 			else
-				Result := "**unknown**"
+				Result := tokens.unknown_name
 			end
 		ensure
 			feature_lower_name_not_void: Result /= Void
@@ -19044,7 +19044,7 @@ feature {NONE} -- Implementation
 					i := i + 1
 				end
 			else
-				Result := "**unknown**"
+				Result := tokens.unknown_name
 			end
 		ensure
 			alias_lower_names_not_void: Result /= Void
@@ -19073,7 +19073,7 @@ feature {NONE} -- Implementation
 			if a_type /= Void then
 				Result := a_type.type.to_text
 			else
-				Result := "**UNKNOWN**"
+				Result := tokens.capitalized_unknown_name
 			end
 		ensure
 			type_name_not_void: Result /= Void

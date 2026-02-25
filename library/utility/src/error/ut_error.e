@@ -177,6 +177,7 @@ feature {NONE} -- Constants
 invariant
 
 	parameters_not_void: parameters /= Void
+	parameters_lower: parameters.lower = 1
 	no_void_parameter: not STRING_ARRAY_.has_void (parameters)
 
 end

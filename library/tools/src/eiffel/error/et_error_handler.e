@@ -496,202 +496,37 @@ feature -- .NET assembly error status
 
 feature -- Syntax errors
 
-	report_syntax_error (a_filename: STRING; p: ET_POSITION)
+	report_syntax_error (a_filename: STRING; a_position: ET_POSITION; a_ast_node: detachable ET_AST_NODE; a_message: STRING)
 			-- Report a syntax error.
 		require
 			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
+			a_position_not_void: a_position /= Void
+			a_message_not_void: a_message /= Void
 		local
 			an_error: ET_SYNTAX_ERROR
 		do
 			mutex.lock
-			create an_error.make (a_filename, p)
+			create an_error.make_error (a_filename, a_position, a_ast_node, a_message)
 			report_info (an_error)
 			add_separator_if_console (info_file)
 			set_has_eiffel_error (True)
 			mutex.unlock
 		end
 
-	report_SCAC_error (a_filename: STRING; p: ET_POSITION)
-			-- Missing ASCII code in special character
-			-- specification %/code/ in character constant.
-			-- (SCAC: Syntax Character Ascii Code)
+	report_syntax_warning (a_filename: STRING; a_position: ET_POSITION; a_ast_node: detachable ET_AST_NODE; a_message: STRING)
+			-- Report a syntax warning.
 		require
 			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SCAS_error (a_filename: STRING; p: ET_POSITION)
-			-- Missing character / at end of special character
-			-- specification %/code/ in character constant.
-			-- (SCAS: Syntax Character Ascii-code Slash)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SCCU_error (a_filename: STRING; p: ET_POSITION)
-			-- Special character specification %l where l is a letter
-			-- code should be in upper-case in character constant.
-			-- (SSCU: Syntax Character special-Character Upper-case)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SCEQ_error (a_filename: STRING; p: ET_POSITION)
-			-- Missing quote at end of character constant.
-			-- (SCEQ: Syntax Character End Quote)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SCQQ_error (a_filename: STRING; p: ET_POSITION)
-			-- Missing character between quotes in character constant.
-			-- (SCQQ: Syntax Character Quote Quote)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SCSC_error (a_filename: STRING; p: ET_POSITION)
-			-- Invalid special character %l in character constant.
-			-- (SCSC: Syntax Character Special Character)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SIFU_error (a_filename: STRING; p: ET_POSITION)
-			-- An underscore may not be the first character
-			-- of an integer constant. (ETL2 p.420)
-			-- (SIFU: Syntax Integer First Underscore)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SILU_error (a_filename: STRING; p: ET_POSITION)
-			-- An underscore may not be the last character
-			-- of an integer constant. (ECMA p.157)
-			-- (SILU: Syntax Integer Last Underscore)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSAC_error (a_filename: STRING; p: ET_POSITION)
-			-- Missing ASCII code in special character
-			-- specification %/code/ in manifest string.
-			-- (SSAC: Syntax String Ascii Code)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSAO_error (a_filename: STRING; p: ET_POSITION)
-			-- ASCII code too big in special character
-			-- specification %/code/ in manifest string.
-			-- (SSAO: Syntax String Ascii-code Overflow)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSAS_error (a_filename: STRING; p: ET_POSITION)
-			-- Missing character / at end of special character
-			-- specification %/code/ in manifest string.
-			-- (SSAS: Syntax String Ascii-code Slash)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSCU_error (a_filename: STRING; p: ET_POSITION)
-			-- Special character specification %l where l is a letter
-			-- code should be in upper-case in manifest strings.
-			-- (SSCU: Syntax String special-Character Upper-case)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSEL_error (a_filename: STRING; p: ET_POSITION)
-			-- Empty line in middle of multi-line manifest string.
-			-- (SSEL: Syntax String Empty Line)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
+			a_position_not_void: a_position /= Void
+			a_message_not_void: a_message /= Void
 		local
-			--an_error: ET_SSEL_ERROR
+			an_error: ET_SYNTAX_ERROR
 		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSEQ_error (a_filename: STRING; p: ET_POSITION)
-			-- Missing double quote at end of manifest string.
-			-- (SSEQ: Syntax String End double-Quote)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSNL_error (a_filename: STRING; p: ET_POSITION)
-			-- Invalid new-line in middle of manifest string.
-			-- (SSNL: Syntax String New-Line)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSNP_error (a_filename: STRING; p: ET_POSITION)
-			-- Missing character % at beginning of
-			-- line in multi-line manifest string.
-			-- (SSNP: Syntax String New-line Percent)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
-		end
-
-	report_SSSC_error (a_filename: STRING; p: ET_POSITION)
-			-- Invalid special character %l in manifest strings.
-			-- (SSSC: Syntax String Special Character)
-		require
-			a_filename_not_void: a_filename /= Void
-			p_not_void: p /= Void
-		do
-			report_syntax_error (a_filename, p)
+			mutex.lock
+			create an_error.make_warning (a_filename, a_position, a_ast_node, a_message)
+			report_info (an_error)
+			add_separator_if_console (info_file)
+			mutex.unlock
 		end
 
 feature -- System errors

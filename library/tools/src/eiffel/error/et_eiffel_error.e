@@ -28,6 +28,9 @@ feature -- Access
 	position: ET_POSITION
 			-- Position of current error in `class_impl'
 
+	ast_node: detachable ET_AST_NODE
+			-- AST node of current error in `class_impl'
+
 	filename: STRING
 			-- Name of file where current error occurred
 		deferred

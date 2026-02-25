@@ -5,7 +5,7 @@
 		"Eiffel AST lists where insertions to and removals from the head are optimized"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2002-2019, Eric Bezault and others"
+	copyright: "Copyright (c) 2002-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_HEAD_LIST [G]
@@ -90,6 +90,14 @@ feature -- Status report
 			definition: Result = (count = 0)
 		end
 
+	is_full: BOOLEAN
+			-- Is there no space in list for new items?
+		do
+			Result := (count = capacity)
+		ensure
+			definition: Result = (count = capacity)
+		end
+
 	has (an_item: like item): BOOLEAN
 			-- Does list contain `an_item'?
 			-- (Use `=' as comparison criterion.)
@@ -123,7 +131,7 @@ feature -- Element change
 			-- Put `an_item' at first position in list.
 		require
 			an_item_not_void: an_item /= Void
-			not_full: count < capacity
+			not_full: not is_full
 		do
 			fixed_array.force (storage, an_item, count)
 			count := count + 1

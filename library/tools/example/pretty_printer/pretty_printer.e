@@ -4,7 +4,7 @@
 
 		"Eiffel pretty-printer"
 
-	copyright: "Copyright (c) 2008-2019, Eric Bezault and others"
+	copyright: "Copyright (c) 2008-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class PRETTY_PRINTER
@@ -66,7 +66,7 @@ feature {NONE} -- Execution
 				report_cannot_read_error (in_filename)
 				Exceptions.die (1)
 			end
-			if a_parser.syntax_error then
+			if a_parser.has_syntax_error then
 					-- In case of syntax error, copy the input file
 					-- unmodified to the output file.
 				create in_file.make (in_filename)

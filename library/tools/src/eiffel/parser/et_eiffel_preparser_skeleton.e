@@ -5,7 +5,7 @@
 		"Eiffel preparser skeletons"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2002-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2002-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_EIFFEL_PREPARSER_SKELETON
@@ -147,7 +147,7 @@ feature -- Parsing
 						end
 					else
 							-- No class name found.
-						error_handler.report_syntax_error (filename, current_position)
+						error_handler.report_syntax_error (filename, current_position, Void, "class name not found")
 					end
 					reset
 					l_file.close
@@ -323,7 +323,7 @@ feature -- Error handling
 	report_error (a_message: STRING)
 			-- Print error message.
 		do
-			error_handler.report_syntax_error (filename, current_position)
+			error_handler.report_syntax_error (filename, current_position, Void, a_message)
 		end
 
 feature {NONE} -- Input buffer

@@ -5,7 +5,7 @@
 		"Eiffel type parser skeletons"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2025-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_TYPE_PARSER_SKELETON
@@ -171,7 +171,7 @@ feature -- Error handling
 	report_error (a_message: STRING)
 			-- Print error message.
 		do
-			report_syntax_error (current_position)
+			report_syntax_error (current_position, a_message)
 		end
 
 	set_syntax_error
