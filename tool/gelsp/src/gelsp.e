@@ -1119,7 +1119,10 @@ feature {NONE} -- Eiffel processing
 					end
 					send_log_trace_verbose_notification ("Restarting Eiffel language server...", l_message)
 				end
-				send_custom_notification ("$/goboEiffel/restart", Void)
+				if not restart_requested then
+					send_custom_notification ("$/goboEiffel/restart", Void)
+					restart_requested := True
+				end
 			else
 				if debug_mode then
 					dt1 := system_processor.benchmark_start_time
@@ -1188,7 +1191,10 @@ feature {NONE} -- Eiffel processing
 					l_message := "Restarting Eiffel language server after " + max_total_compilation_count.out + " Eiffel compilations..."
 					send_log_trace_verbose_notification ("Restarting Eiffel language server...", l_message)
 				end
-				send_custom_notification ("$/goboEiffel/restart", Void)
+				if not restart_requested then
+					send_custom_notification ("$/goboEiffel/restart", Void)
+					restart_requested := True
+				end
 			else
 				if debug_mode then
 					dt1 := system_processor.benchmark_start_time
@@ -1607,6 +1613,9 @@ feature -- Eiffel system
 
 	max_total_compilation_count: INTEGER = 500
 			-- Maximum number of compilations before exiting
+
+	restart_requested: BOOLEAN
+			-- Has restart of the server been requested?
 
 feature -- Helper
 
