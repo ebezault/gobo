@@ -404,7 +404,10 @@ create
 	make_gvuis0c,
 	make_gvwmc2a,
 	make_gvwmc2b,
-	make_gvwmc2c
+	make_gvwmc2c,
+	make_gwulv0a,
+	make_gwulv0b,
+	make_gwulv0c
 
 feature {NONE} -- Initialization
 
@@ -18597,6 +18600,140 @@ feature {NONE} -- Initialization
 			-- dollar7: $7 = string type
 		end
 
+	make_gwulv0a (a_class: ET_CLASS; a_local_variable: ET_LOCAL_VARIABLE; a_feature: ET_FEATURE)
+			-- Create a new GWULV warning: local variable `a_local_variable' is not used
+			-- in feature `a_feature` of class `a_class'.
+			--
+			-- Not in ECMA-367-2
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_local_variable_not_void: a_local_variable /= Void
+			a_feature_not_void: a_feature /= Void
+		local
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_local_variable.position
+			ast_node := a_local_variable
+			code := template_code (gwulv0a_template_code)
+			etl_code := gwulv_etl_code
+			default_template := default_message_template (gwulv0a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_local_variable.name.lower_name, 7)
+			parameters.put (a_feature.lower_name, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = local variable name
+			-- dollar8: $8 = feature name
+		end
+
+	make_gwulv0b (a_class: ET_CLASS; a_local_variable: ET_LOCAL_VARIABLE; a_feature: ET_FEATURE; a_inline_agent: ET_INLINE_AGENT)
+			-- Create a new GWULV warning: local variable `a_local_variable' is not used
+			-- in inline agent `a_inline_agent` of feature `a_feature` in class `a_class'.
+			--
+			-- Not in ECMA-367-2
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_local_variable_not_void: a_local_variable /= Void
+			a_feature_not_void: a_feature /= Void
+			a_inline_agent_not_void: a_inline_agent /= Void
+		local
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_local_variable.position
+			ast_node := a_local_variable
+			code := template_code (gwulv0b_template_code)
+			etl_code := gwulv_etl_code
+			default_template := default_message_template (gwulv0b_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_local_variable.name.lower_name, 7)
+			parameters.put (a_feature.lower_name, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = local variable name
+			-- dollar8: $8 = feature name
+		end
+
+	make_gwulv0c (a_class: ET_CLASS; a_local_variable: ET_LOCAL_VARIABLE; a_inline_agent: ET_INLINE_AGENT)
+			-- Create a new GWULV warning: local variable `a_local_variable' is not used
+			-- in inline agent `a_inline_agent` in the invariant of class `a_class'.
+			--
+			-- Not in ECMA-367-2
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_local_variable_not_void: a_local_variable /= Void
+			a_inline_agent_not_void: a_inline_agent /= Void
+		local
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_local_variable.position
+			ast_node := a_local_variable
+			code := template_code (gwulv0c_template_code)
+			etl_code := gwulv_etl_code
+			default_template := default_message_template (gwulv0c_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_local_variable.name.lower_name, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = local variable name
+		end
+
 feature -- Access
 
 	current_class: ET_CLASS
@@ -19069,6 +19206,9 @@ feature {NONE} -- Implementation
 	gvwmc2b_default_template: STRING = "character constant $7 is not representable (too big or surrogate) as an instance of '$8'."
 	gvwmc2c_default_template: STRING = "manifest string is not representable (contains too big or surrogate characters) as an instance of '$7'."
 	gvzzz0a_default_template: STRING = "validity error"
+	gwulv0a_default_template: STRING = "unused local variable '$7' in feature '$8'."
+	gwulv0b_default_template: STRING = "unused local variable '$7' in inline agent of feature '$8'."
+	gwulv0c_default_template: STRING = "unused local variable '$7' in inline agent in invariant."
 			-- Default templates
 
 	v1ea1g_etl_code: STRING = "V1EA-1G"
@@ -19244,6 +19384,7 @@ feature {NONE} -- Implementation
 	gvuis_etl_code: STRING = "GVUIS"
 	gvwmc2_etl_code: STRING = "GVWMC-2"
 	gvzzz_etl_code: STRING = "GVZZZ"
+	gwulv_etl_code: STRING = "GWULV"
 			-- ETL validity codes
 
 	template_code (a_code: STRING): STRING
@@ -19651,6 +19792,9 @@ feature {NONE} -- Implementation
 	gvwmc2b_template_code: STRING = "gvwmc2b"
 	gvwmc2c_template_code: STRING = "gvwmc2c"
 	gvzzz0a_template_code: STRING = "gvzzz0a"
+	gwulv0a_template_code: STRING = "gwulv0a"
+	gwulv0b_template_code: STRING = "gwulv0b"
+	gwulv0c_template_code: STRING = "gwulv0c"
 			-- Template error codes
 
 feature {NONE} -- Implementation

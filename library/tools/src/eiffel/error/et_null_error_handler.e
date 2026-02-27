@@ -199,7 +199,8 @@ inherit
 			reportable_gvuil_error,
 			reportable_gvuio_error,
 			reportable_gvuis_error,
-			reportable_gvwmc2_error
+			reportable_gvwmc2_error,
+			reportable_wuloc_warning
 		end
 
 create
@@ -1503,6 +1504,15 @@ feature -- Validity error status
 
 	reportable_gvwmc2_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a GVWMC-2 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+feature -- Warning status
+
+	reportable_wuloc_warning (a_class: ET_CLASS): BOOLEAN
+			-- Can a WULOC warning be reported when it
 			-- appears in `a_class'?
 		do
 			Result := False

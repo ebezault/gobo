@@ -10729,6 +10729,94 @@ feature -- Validity error status
 			Result := True
 		end
 
+feature -- Warnings
+
+	report_eiffel_warning (a_error: ET_VALIDITY_ERROR)
+			-- Report Eiffel warning.
+		require
+			a_error_not_void: a_error /= Void
+		do
+			if
+				(is_ise and a_error.ise_reported) or
+				(is_ge and a_error.ge_reported)
+			then
+				mutex.lock
+				report_info (a_error)
+				add_separator_if_console (info_file)
+				mutex.unlock
+			end
+		end
+
+	report_gwulv0a_warning (a_class: ET_CLASS; a_local_variable: ET_LOCAL_VARIABLE; a_feature: ET_FEATURE)
+			-- Report GWULV warning: local variable `a_local_variable' is not used
+			-- in feature `a_feature` of class `a_class'.
+			--
+			-- Not in ECMA-367-2
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_local_variable_not_void: a_local_variable /= Void
+			a_feature_not_void: a_feature /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_wuloc_warning (a_class) then
+				create l_error.make_gwulv0a (a_class, a_local_variable, a_feature)
+				report_eiffel_warning (l_error)
+			end
+		end
+
+	report_gwulv0b_warning (a_class: ET_CLASS; a_local_variable: ET_LOCAL_VARIABLE; a_feature: ET_FEATURE; a_inline_agent: ET_INLINE_AGENT)
+			-- Report GWULV warning: local variable `a_local_variable' is not used
+			-- in inline agent `a_inline_agent` of feature `a_feature` in class `a_class'.
+			--
+			-- Not in ECMA-367-2
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_local_variable_not_void: a_local_variable /= Void
+			a_feature_not_void: a_feature /= Void
+			a_inline_agent_not_void: a_inline_agent /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_wuloc_warning (a_class) then
+				create l_error.make_gwulv0b (a_class, a_local_variable, a_feature, a_inline_agent)
+				report_eiffel_warning (l_error)
+			end
+		end
+
+	report_gwulv0c_warning (a_class: ET_CLASS; a_local_variable: ET_LOCAL_VARIABLE; a_inline_agent: ET_INLINE_AGENT)
+			-- Report GWULV warning: local variable `a_local_variable' is not used
+			-- in inline agent `a_inline_agent` in the invariant of class `a_class'.
+			--
+			-- Not in ECMA-367-2
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_local_variable_not_void: a_local_variable /= Void
+			a_inline_agent_not_void: a_inline_agent /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_wuloc_warning (a_class) then
+				create l_error.make_gwulv0c (a_class, a_local_variable, a_inline_agent)
+				report_eiffel_warning (l_error)
+			end
+		end
+
+feature -- Warning status
+
+	reportable_wuloc_warning (a_class: ET_CLASS): BOOLEAN
+			-- Can a WULOC warning be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
 feature -- Internal errors
 
 	report_internal_error (an_error: ET_INTERNAL_ERROR)
