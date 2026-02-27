@@ -5,7 +5,7 @@
 		"Eiffel type checkers"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2003-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2003-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_TYPE_CHECKER
@@ -129,6 +129,7 @@ feature -- Validity checking
 			old_context: ET_TYPE_CONTEXT
 			old_class: ET_CLASS
 			old_class_impl: ET_CLASS
+			l_has_interface_error: BOOLEAN
 		do
 			has_fatal_error := False
 			old_context := current_context
@@ -140,7 +141,8 @@ feature -- Validity checking
 			an_actuals := a_type.actual_parameters
 			a_type_class := a_type.base_class
 			a_type_class.process (system_processor.interface_checker)
-			if not a_type_class.interface_checked or else a_type_class.has_interface_error then
+			l_has_interface_error := not a_type_class.interface_checked_successfully
+			if l_has_interface_error and not system_processor.is_fault_tolerant then
 				set_fatal_error
 			elseif attached {ET_TUPLE_TYPE} a_type as l_tuple_type then
 					-- This covers the case where we have:
@@ -331,6 +333,9 @@ feature -- Validity checking
 						i := i + 1
 					end
 				end
+			end
+			if l_has_interface_error then
+				set_fatal_error
 			end
 			current_class_impl := old_class_impl
 			current_class := old_class

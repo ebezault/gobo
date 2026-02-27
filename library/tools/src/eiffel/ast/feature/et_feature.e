@@ -385,7 +385,7 @@ feature -- Status report
 						l_other_precursor := l_other_precursors.item (i)
 						if l_other_precursor.is_precondition_free then
 							Result := True
-								 -- Jump out of the loop
+								-- Jump out of the loop
 							i := nb
 						end
 						i := i + 1
@@ -428,7 +428,7 @@ feature -- Status report
 						l_other_precursor := l_other_precursors.item (i)
 						if not l_other_precursor.are_preconditions_instance_free_recursive then
 							Result := False
-								 -- Jump out of the loop
+								-- Jump out of the loop
 							i := nb
 						end
 						i := i + 1
@@ -465,7 +465,7 @@ feature -- Status report
 						l_other_precursor := l_other_precursors.item (i)
 						if not l_other_precursor.are_postconditions_instance_free_recursive then
 							Result := False
-								 -- Jump out of the loop
+								-- Jump out of the loop
 							i := nb
 						end
 						i := i + 1
@@ -496,7 +496,7 @@ feature -- Status report
 						l_other_precursor := l_other_precursors.item (i)
 						if l_other_precursor.has_class_postcondition_recursive then
 							Result := True
-								 -- Jump out of the loop
+								-- Jump out of the loop
 							i := nb
 						end
 						i := i + 1

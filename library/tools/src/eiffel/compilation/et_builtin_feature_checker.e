@@ -1198,7 +1198,7 @@ feature {NONE} -- Implementation
 		end
 
 	detachable_separate_formal_parameter_type (a_formal_parameter: ET_FORMAL_PARAMETER_TYPE): ET_FORMAL_PARAMETER_TYPE
-			-- Detachable separate version of formal generic paramater `a_formal_parameter'
+			-- Detachable separate version of formal generic parameter `a_formal_parameter'
 		require
 			a_formal_parameter_not_void: a_formal_parameter /= Void
 		do

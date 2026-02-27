@@ -5,7 +5,7 @@
 		"Eiffel parent validity third pass checkers"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2003-2019, Eric Bezault and others"
+	copyright: "Copyright (c) 2003-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_PARENT_CHECKER3
@@ -99,10 +99,12 @@ feature {NONE} -- Parent validity
 			k, nb_base_types: INTEGER
 			a_name: ET_FEATURE_NAME
 			a_seed: INTEGER
+			l_has_interface_error: BOOLEAN
 		do
 			a_class := a_type.base_class
 			a_class.process (system_processor.interface_checker)
-			if not a_class.interface_checked_successfully then
+			l_has_interface_error := not a_class.interface_checked_successfully
+			if l_has_interface_error and not system_processor.is_fault_tolerant then
 				set_fatal_error
 			elseif a_class.is_generic and then attached a_class.formal_parameters as a_formals then
 				an_actuals := a_type.actual_parameters
@@ -191,6 +193,9 @@ feature {NONE} -- Parent validity
 						i := i + 1
 					end
 				end
+			end
+			if l_has_interface_error then
+				set_fatal_error
 			end
 		end
 

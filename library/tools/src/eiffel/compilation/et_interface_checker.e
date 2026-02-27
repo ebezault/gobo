@@ -61,7 +61,7 @@ feature -- Processing
 			-- redeclaration if this could not be done already.
 			-- Then check validity of the constraint creations of
 			-- formal parameters of `a_class' and of the actual
-			-- paramaters of its parents after having done
+			-- parameters of its parents after having done
 			-- so for its parent classes recursively.
 		local
 			a_processor: like Current
@@ -121,7 +121,7 @@ feature {NONE} -- Processing
 			-- redeclaration if this could not be done already.
 			-- Then check validity of the constraint creations of
 			-- formal parameters of `a_class' and of the actual
-			-- paramaters of its parents after having done
+			-- parameters of its parents after having done
 			-- so for its parent classes recursively.
 		require
 			a_class_not_void: a_class /= Void

@@ -746,7 +746,7 @@ feature {NONE} -- Access
 			--   No_type_mark: "G -> H"
 
 	base_type_dependencies: DS_ARRAYED_LIST [INTEGER]
-			-- Constraint dependencies between a formal paramater
+			-- Constraint dependencies between a formal parameter
 			-- and a base type (when we have something like "G -> FOO")
 			-- Indexing: (index_of_FOO_in_all_base_types - 1) * number_of_formal_parameters + index_of_G
 			-- Values:

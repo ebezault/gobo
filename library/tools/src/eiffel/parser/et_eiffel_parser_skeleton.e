@@ -1760,7 +1760,7 @@ feature {NONE} -- AST factory
 
 	new_constraint_named_type (a_type_mark: detachable ET_TYPE_MARK; a_name: detachable ET_IDENTIFIER;
 		a_parameters: detachable ET_CONSTRAINT_ACTUAL_PARAMETER_LIST): detachable ET_CONSTRAINT_NAMED_TYPE
-			-- New Eiffel class type or formal generic paramater
+			-- New Eiffel class type or formal generic parameter
 			-- appearing in a generic constraint
 		do
 			if a_parameters /= Void then
@@ -2111,7 +2111,7 @@ feature {NONE} -- AST factory
 		
 	new_named_type (a_type_mark: detachable ET_TYPE_MARK; a_name: detachable ET_IDENTIFIER;
 		a_generics: detachable ET_ACTUAL_PARAMETER_LIST): detachable ET_TYPE
-			-- New Eiffel class type or formal generic paramater
+			-- New Eiffel class type or formal generic parameter
 		local
 			a_last_class: like last_class
 			l_class: ET_MASTER_CLASS

@@ -872,7 +872,7 @@ invariant
 	no_option_is_void: not options.has_void
 	alternative_options_lists_not_void: alternative_options_lists /= Void
 	application_description_not_void: application_description /= Void
-	paramaters_description_not_void: parameters_description /= Void
+	parameters_description_not_void: parameters_description /= Void
 	parameters_not_void: parameters /= Void
 
 end
