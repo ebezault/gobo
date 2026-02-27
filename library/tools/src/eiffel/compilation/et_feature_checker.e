@@ -2818,6 +2818,7 @@ feature {NONE} -- Instruction validity
 			an_instruction_not_void: an_instruction /= Void
 		local
 			l_call: ET_QUALIFIED_FEATURE_CALL_EXPRESSION
+			l_actual_call: ET_CALL_WITH_ACTUAL_ARGUMENTS
 			l_call_info: like new_call_info
 			l_target_context: ET_NESTED_TYPE_CONTEXT
 			l_call_context:ET_NESTED_TYPE_CONTEXT
@@ -3018,7 +3019,12 @@ feature {NONE} -- Instruction validity
 								-- 'is_type_reference'), but the type of ther formal argument is not separate.
 							set_fatal_error
 							if l_assigner_procedure /= Void then
-								error_handler.report_vuar3ga_error (current_class, current_class_impl, l_name, l_assigner_procedure, l_target_base_class, l_formal_argument_index, l_source_context.named_type, l_expected_type_context.named_type)
+								if attached l_call.parenthesis_call as l_parenthesis_call then
+									l_actual_call := l_parenthesis_call
+								else
+									l_actual_call := l_call
+								end
+								error_handler.report_vuar3ga_error (current_class, current_class_impl, l_actual_call, l_assigner_procedure, l_target_base_class, l_formal_argument_index, l_source_context.named_type, l_expected_type_context.named_type)
 							else
 								check tuple_label: l_name.is_tuple_label end
 								l_target_context.remove_last
@@ -12116,13 +12122,13 @@ feature {NONE} -- Expression validity
 						else
 							set_fatal_error
 							if a_class /= Void then
-								if l_name.is_precursor then
-									error_handler.report_vdpr4a_error (current_class, l_name.precursor_keyword, a_feature, a_class)
+								if attached {ET_PRECURSOR_CALL} a_call as l_precursor_call then
+									error_handler.report_vdpr4a_error (current_class, l_precursor_call, a_feature, a_class)
 								else
-									error_handler.report_vuar1a_error (current_class, l_name, a_feature, a_class)
+									error_handler.report_vuar1a_error (current_class, a_call, a_feature, a_class)
 								end
 							else
-								error_handler.report_vuar1b_error (current_class, l_name, a_feature)
+								error_handler.report_vuar1b_error (current_class, a_call, a_feature)
 							end
 						end
 					else
@@ -12157,13 +12163,13 @@ feature {NONE} -- Expression validity
 -- of this function.
 						set_fatal_error
 						if a_class /= Void then
-							if l_name.is_precursor then
-								error_handler.report_vdpr4a_error (current_class, l_name.precursor_keyword, a_feature, a_class)
+							if attached {ET_PRECURSOR_CALL} a_call as l_precursor_call then
+								error_handler.report_vdpr4a_error (current_class, l_precursor_call, a_feature, a_class)
 							else
-								error_handler.report_vuar1a_error (current_class, l_name, a_feature, a_class)
+								error_handler.report_vuar1a_error (current_class, a_call, a_feature, a_class)
 							end
 						else
-							error_handler.report_vuar1b_error (current_class, l_name, a_feature)
+							error_handler.report_vuar1b_error (current_class, a_call, a_feature)
 						end
 					end
 				else
@@ -12264,13 +12270,13 @@ feature {NONE} -- Expression validity
 						l_actual_named_type := l_actual_context.named_type
 						l_formal_named_type := l_formal_context.named_type
 						if a_class /= Void then
-							if l_name.is_precursor then
-								error_handler.report_vdpr4b_error (current_class, current_class_impl, l_name.precursor_keyword, a_feature, a_class, i, l_actual_named_type, l_formal_named_type)
+							if attached {ET_PRECURSOR_CALL} a_call as l_precursor_call then
+								error_handler.report_vdpr4b_error (current_class, current_class_impl, l_precursor_call, a_feature, a_class, i, l_actual_named_type, l_formal_named_type)
 							else
-								error_handler.report_vuar2a_error (current_class, current_class_impl, l_name, a_feature, a_class, i, l_actual_named_type, l_formal_named_type)
+								error_handler.report_vuar2a_error (current_class, current_class_impl, a_call, a_feature, a_class, i, l_actual_named_type, l_formal_named_type)
 							end
 						else
-							error_handler.report_vuar2b_error (current_class, current_class_impl, l_name, a_feature, i, l_actual_named_type, l_formal_named_type)
+							error_handler.report_vuar2b_error (current_class, current_class_impl, a_call, a_feature, i, l_actual_named_type, l_formal_named_type)
 						end
 					elseif not l_to_be_reprocessed then
 						if l_is_target_type_separate then
@@ -12288,7 +12294,7 @@ feature {NONE} -- Expression validity
 									-- this CAP (i.e. considering `l_class' as attached
 									-- after the check-instruction) for formal arguments!
 								check qualified_call: l_class /= Void then end
-								error_handler.report_vuar3ga_error (current_class, current_class_impl, l_name, a_feature, l_class, i, l_actual_named_type, l_formal_named_type)
+								error_handler.report_vuar3ga_error (current_class, current_class_impl, a_call, a_feature, l_class, i, l_actual_named_type, l_formal_named_type)
 							end
 						end
 					end
@@ -15262,12 +15268,12 @@ feature {NONE} -- Agent validity
 						if current_class = current_class_impl then
 							if attached {ET_CALL_AGENT} an_agent as l_call_agent and a_feature /= Void then
 								if l_call_agent.is_qualified_call then
-									error_handler.report_vpca3a_error (current_class, l_call_agent.name, a_feature, a_context.base_class)
+									error_handler.report_vpca3a_error (current_class, l_call_agent.name, a_feature, a_context.base_class, l_call_agent)
 								else
-									error_handler.report_vpca3b_error (current_class, l_call_agent.name, a_feature)
+									error_handler.report_vpca3b_error (current_class, l_call_agent.name, a_feature, l_call_agent)
 								end
 							elseif attached {ET_INLINE_AGENT} an_agent as l_inline_agent then
--- TODO: inline agent
+								error_handler.report_vpca3c_error (current_class, l_inline_agent)
 							else
 									-- Internal error: unknown kind of agent.
 								set_fatal_error
@@ -15286,12 +15292,12 @@ feature {NONE} -- Agent validity
 					if current_class = current_class_impl then
 						if attached {ET_CALL_AGENT} an_agent as l_call_agent and a_feature /= Void then
 							if l_call_agent.is_qualified_call then
-								error_handler.report_vpca3a_error (current_class, l_call_agent.name, a_feature, a_context.base_class)
+								error_handler.report_vpca3a_error (current_class, l_call_agent.name, a_feature, a_context.base_class, l_call_agent)
 							else
-								error_handler.report_vpca3b_error (current_class, l_call_agent.name, a_feature)
+								error_handler.report_vpca3b_error (current_class, l_call_agent.name, a_feature, l_call_agent)
 							end
 						elseif attached {ET_INLINE_AGENT} an_agent as l_inline_agent then
--- TODO: inline agent
+							error_handler.report_vpca3c_error (current_class, l_inline_agent)
 						else
 								-- Internal error: unknown kind of agent.
 							set_fatal_error
@@ -15342,13 +15348,13 @@ feature {NONE} -- Agent validity
 												-- Make sure that `a_context' (which is the same object as `l_formal_context') represents
 												-- the type of the target of the agent and not the type of the formal argument.
 											l_formal_context.remove_last
-											error_handler.report_vpca4a_error (current_class, current_class_impl, l_call_agent.name, a_feature, a_context.base_class, i, l_actual_named_type, l_formal_named_type)
+											error_handler.report_vpca4a_error (current_class, current_class_impl, l_call_agent.name, a_feature, a_context.base_class, i, l_actual_named_type, l_formal_named_type, l_call_agent)
 											l_formal_context.force_last (l_formal_type)
 										else
-											error_handler.report_vpca4b_error (current_class, current_class_impl, l_call_agent.name, a_feature, i, l_actual_named_type, l_formal_named_type)
+											error_handler.report_vpca4b_error (current_class, current_class_impl, l_call_agent.name, a_feature, i, l_actual_named_type, l_formal_named_type, l_call_agent)
 										end
 									elseif attached {ET_INLINE_AGENT} an_agent as l_inline_agent then
--- TODO: inline agent
+										error_handler.report_vpca4c_error (current_class, current_class_impl, i, l_actual_named_type, l_formal_named_type, l_inline_agent)
 									else
 											-- Internal error: unknown kind of agent.
 										set_fatal_error
@@ -15369,12 +15375,12 @@ feature {NONE} -- Agent validity
 									l_formal_named_type := l_formal.type.named_type (l_formal_context)
 									if attached {ET_CALL_AGENT} an_agent as l_call_agent and a_feature /= Void then
 										if l_call_agent.is_qualified_call then
-											error_handler.report_vpca5a_error (current_class, current_class_impl, l_call_agent.name, a_feature, a_context.base_class, i, l_actual_named_type, l_formal_named_type)
+											error_handler.report_vpca5a_error (current_class, current_class_impl, l_call_agent.name, a_feature, a_context.base_class, i, l_actual_named_type, l_formal_named_type, l_call_agent)
 										else
-											error_handler.report_vpca5b_error (current_class, current_class_impl, l_call_agent.name, a_feature, i, l_actual_named_type, l_formal_named_type)
+											error_handler.report_vpca5b_error (current_class, current_class_impl, l_call_agent.name, a_feature, i, l_actual_named_type, l_formal_named_type, l_call_agent)
 										end
 									elseif attached {ET_INLINE_AGENT} an_agent as l_inline_agent then
--- TODO: inline agent
+										error_handler.report_vpca5c_error (current_class, current_class_impl, i, l_actual_named_type, l_formal_named_type, l_inline_agent)
 									else
 											-- Internal error: unknown kind of agent.
 										set_fatal_error

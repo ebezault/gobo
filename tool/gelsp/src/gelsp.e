@@ -1394,7 +1394,9 @@ feature {NONE} -- Eiffel processing
 					diagnostics.force (l_diagnostic_list, l_filename)
 				end
 				l_position := a_error.position
-				if attached {ET_AST_NODE} l_position as l_ast_node then
+				if attached a_error.ast_node as l_ast_node then
+					l_range := range (l_ast_node, l_class_impl)
+				elseif attached {ET_AST_NODE} l_position as l_ast_node then
 					l_range := range (l_ast_node, l_class_impl)
 				else
 					create l_last_position_plus_one.make (l_position.line, l_position.column + 1)

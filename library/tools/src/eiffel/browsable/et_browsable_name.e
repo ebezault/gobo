@@ -49,7 +49,7 @@ feature -- Context
 	is_only_class_name_expected: BOOLEAN
 			-- In the current context in the Eiffel code,
 			-- is only a class name expected (no type mark,
-			-- no formal paramater)?
+			-- no formal parameter)?
 			-- (For example in client clauses.)
 
 	is_only_query_expected: BOOLEAN

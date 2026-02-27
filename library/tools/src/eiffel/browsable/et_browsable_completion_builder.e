@@ -101,7 +101,7 @@ feature -- Basic operations
 		end
 
 	add_formal_parameter (a_formal_parameter: ET_FORMAL_PARAMETER; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add formal paramater `a_formal_parameter` to the list of completion suggestions.
+			-- Add formal parameter `a_formal_parameter` to the list of completion suggestions.
 		require
 			a_formal_parameter_not_void: a_formal_parameter /= Void
 			a_browsable_name_not_void: a_browsable_name /= Void

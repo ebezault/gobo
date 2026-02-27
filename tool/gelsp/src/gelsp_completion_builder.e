@@ -219,13 +219,13 @@ feature -- Basic operations
 			create l_completion_item.make (l_label)
 			l_completion_item.set_detail ("class")
 			l_completion_item.set_kind ({LS_COMPLETION_ITEM_KINDS}.class_)
-			set_class_actual_paramaters_snippet (a_class, l_completion_item, a_browsable_name)
+			set_class_actual_parameters_snippet (a_class, l_completion_item, a_browsable_name)
 			set_class_documentation (a_class, l_completion_item, a_browsable_name)
 			response.add_completion_item (l_completion_item)
 		end
 
 	add_formal_parameter (a_formal_parameter: ET_FORMAL_PARAMETER; a_browsable_name: ET_BROWSABLE_NAME)
-			-- Add formal paramater `a_formal_parameter` to the list of completion suggestions.
+			-- Add formal parameter `a_formal_parameter` to the list of completion suggestions.
 		local
 			l_completion_item: LS_COMPLETION_ITEM
 			l_label: LS_STRING
@@ -520,7 +520,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-	set_class_actual_paramaters_snippet (a_class: ET_CLASS; a_completion_item: LS_COMPLETION_ITEM; a_browsable_name: ET_BROWSABLE_NAME)
+	set_class_actual_parameters_snippet (a_class: ET_CLASS; a_completion_item: LS_COMPLETION_ITEM; a_browsable_name: ET_BROWSABLE_NAME)
 			-- Set snippet with the actual generic parameters of `a_class` in `a_completion_item`, if any.
 		require
 			a_class_not_void: a_class /= Void

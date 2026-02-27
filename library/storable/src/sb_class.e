@@ -391,7 +391,7 @@ feature -- Access
 		end
 
 	tuple_type_template (an_actual_count: INTEGER): SB_TUPLE_TYPE
-			-- Tuple type associated with current tuple class, with `an_actual_count' actual paramaters
+			-- Tuple type associated with current tuple class, with `an_actual_count' actual parameters
 			-- (Does not have actual generic parameters even when current class is generic.)
 		require
 			an_actual_count_not_negative: an_actual_count >= 0
@@ -415,7 +415,7 @@ feature -- Access
 		end
 
 	attached_tuple_type_template (an_actual_count: INTEGER): SB_TUPLE_TYPE
-			-- Attached tuple type associated with current tuple class, with `an_actual_count' actual paramaters
+			-- Attached tuple type associated with current tuple class, with `an_actual_count' actual parameters
 			-- (Does not have actual generic parameters even when current class is generic.)
 		require
 			an_actual_count_not_negative: an_actual_count >= 0
@@ -440,7 +440,7 @@ feature -- Access
 		end
 
 	detachable_tuple_type_template (an_actual_count: INTEGER): SB_TUPLE_TYPE
-			-- Detachable tuple type associated with current tuple class, with `an_actual_count' actual paramaters
+			-- Detachable tuple type associated with current tuple class, with `an_actual_count' actual parameters
 			-- (Does not have actual generic parameters even when current class is generic.)
 		require
 			an_actual_count_not_negative: an_actual_count >= 0

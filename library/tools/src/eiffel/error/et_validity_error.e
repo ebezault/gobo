@@ -248,10 +248,13 @@ create
 	make_vpca2a,
 	make_vpca3a,
 	make_vpca3b,
+	make_vpca3c,
 	make_vpca4a,
 	make_vpca4b,
+	make_vpca4c,
 	make_vpca5a,
 	make_vpca5b,
+	make_vpca5c,
 	make_vpir1a,
 	make_vpir1b,
 	make_vpir1c,
@@ -415,6 +418,9 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_position
+			if attached {ET_AST_NODE} a_position as l_ast_node then
+				ast_node := l_ast_node
+			end
 			code := template_code (gvzzz0a_template_code)
 			etl_code := gvzzz_etl_code
 			default_template := default_message_template (gvzzz0a_default_template)
@@ -460,6 +466,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.name.position
+			ast_node := a_attribute.type
 			code := template_code (v1ea1ga_template_code)
 			etl_code := v1ea1g_etl_code
 			default_template := default_message_template (v1ea1ga_default_template)
@@ -508,6 +515,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.name.position
+			ast_node := a_attribute.type
 			code := template_code (v1ea1gb_template_code)
 			etl_code := v1ea1g_etl_code
 			default_template := default_message_template (v1ea1gb_default_template)
@@ -556,6 +564,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.name.position
+			ast_node := a_attribute.type
 			code := template_code (v1ea1gc_template_code)
 			etl_code := v1ea1g_etl_code
 			default_template := default_message_template (v1ea1gc_default_template)
@@ -604,6 +613,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.name.position
+			ast_node := a_attribute.type
 			code := template_code (v1ea1gd_template_code)
 			etl_code := v1ea1g_etl_code
 			default_template := default_message_template (v1ea1gd_default_template)
@@ -648,6 +658,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg2.name.position
+			ast_node := arg2.name
 			code := template_code (v1se1ga_template_code)
 			etl_code := v1se1g_etl_code
 			default_template := default_message_template (v1se1ga_default_template)
@@ -677,7 +688,7 @@ feature {NONE} -- Initialization
 
 	make_v1se2ga (a_class: ET_CLASS; arg: ET_INLINE_SEPARATE_ARGUMENT; a_feature: ET_FEATURE)
 			-- Create a new V1SE-2G error: argument `arg' of an inline separate instruction
-		 	-- has the same name as `a_feature' in `a_class'.
+			-- has the same name as `a_feature' in `a_class'.
 			--
 			-- Not in ECMA-367-2.
 			-- SCOOP.
@@ -690,6 +701,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (v1se2ga_template_code)
 			etl_code := v1se2g_etl_code
 			default_template := default_message_template (v1se2ga_default_template)
@@ -731,6 +743,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_inline_separate_arg.name.position
+			ast_node := a_inline_separate_arg.name
 			code := template_code (v1se2gb_template_code)
 			etl_code := v1se2g_etl_code
 			default_template := default_message_template (v1se2gb_default_template)
@@ -758,7 +771,7 @@ feature {NONE} -- Initialization
 
 	make_v1se2gc (a_class: ET_CLASS; arg: ET_INLINE_SEPARATE_ARGUMENT; a_local: ET_LOCAL_VARIABLE)
 			-- Create a new V1SE-2G error: argument `arg' of an inline separate instruction
-		 	-- has the same name as local variable `a_local' of an enclosing
+			-- has the same name as local variable `a_local' of an enclosing
 			-- feature or inline agent.
 			--
 			-- Not in ECMA-367-2.
@@ -772,6 +785,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (v1se2gc_template_code)
 			etl_code := v1se2g_etl_code
 			default_template := default_message_template (v1se2gc_default_template)
@@ -812,6 +826,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (v1se2gd_template_code)
 			etl_code := v1se2g_etl_code
 			default_template := default_message_template (v1se2gd_default_template)
@@ -853,6 +868,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (v1se2ge_template_code)
 			etl_code := v1se2g_etl_code
 			default_template := default_message_template (v1se2ge_default_template)
@@ -894,6 +910,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg1.name.position
+			ast_node := arg1.name
 			code := template_code (v1se2gf_template_code)
 			etl_code := v1se2g_etl_code
 			default_template := default_message_template (v1se2gf_default_template)
@@ -921,7 +938,7 @@ feature {NONE} -- Initialization
 
 	make_v1se3ga (a_class, a_class_impl: ET_CLASS; arg: ET_INLINE_SEPARATE_ARGUMENT; a_type: ET_NAMED_TYPE)
 			-- Report V1SE-3G error: the type of the argument `arg'
-			-- of an inline separate instruction in `a_class_impl' and view from
+			-- of an inline separate instruction in `a_class_impl' and viewed from
 			-- one of its descendants `a_class' (possibly itself)
 			-- is not separate.
 			--
@@ -938,6 +955,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := arg.expression.position
+			ast_node := arg.expression
 			code := template_code (v1se3ga_template_code)
 			etl_code := v1se3g_etl_code
 			default_template := default_message_template (v1se3ga_default_template)
@@ -978,6 +996,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_expression.position
+			ast_node := an_expression
 			code := template_code (vaol1a_template_code)
 			etl_code := vaol1_etl_code
 			default_template := default_message_template (vaol1a_default_template)
@@ -1022,6 +1041,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vape1a_template_code)
 			etl_code := vape1_etl_code
 			default_template := default_message_template (vape1a_default_template)
@@ -1076,6 +1096,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vape1b_template_code)
 			etl_code := vape1_etl_code
 			default_template := default_message_template (vape1b_default_template)
@@ -1132,6 +1153,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vape2a_template_code)
 			etl_code := vape2_etl_code
 			default_template := default_message_template (vape2a_default_template)
@@ -1188,6 +1210,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vape2b_template_code)
 			etl_code := vape2_etl_code
 			default_template := default_message_template (vape2b_default_template)
@@ -1241,6 +1264,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_expression.position
+			ast_node := an_expression
 			code := template_code (vave0a_template_code)
 			etl_code := vave_etl_code
 			default_template := default_message_template (vave0a_default_template)
@@ -1287,6 +1311,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_assigner.source.position
+			ast_node := an_assigner.source
 			code := template_code (vbac1a_template_code)
 			etl_code := vbac1_etl_code
 			default_template := default_message_template (vbac1a_default_template)
@@ -1332,6 +1357,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_assigner.call.name.position
+			ast_node := an_assigner.call.name
 			code := template_code (vbac2a_template_code)
 			etl_code := vbac2_etl_code
 			default_template := default_message_template (vbac2a_default_template)
@@ -1377,6 +1403,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.name.position
+			ast_node := f.name
 			code := template_code (vcch1a_template_code)
 			etl_code := vcch1_etl_code
 			default_template := default_message_template (vcch1a_default_template)
@@ -1421,8 +1448,10 @@ feature {NONE} -- Initialization
 			class_impl := a_class
 			if f.parent_feature.has_undefine then
 				position := ast_position (f.parent_feature.undefine_name)
+				ast_node := f.parent_feature.undefine_name
 			else
 				position := f.parent_feature.parent.type.name.position
+				ast_node := f.parent_feature.parent.type.name
 			end
 			code := template_code (vcch1a_template_code)
 			etl_code := vcch1_etl_code
@@ -1466,6 +1495,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := ast_position (a_class.class_mark)
+			ast_node := a_class.class_mark
 			code := template_code (vcch2a_template_code)
 			etl_code := vcch2_etl_code
 			default_template := default_message_template (vcch2a_default_template)
@@ -1508,6 +1538,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_formal.name.position
+			ast_node := a_formal.name
 			code := template_code (vcfg1a_template_code)
 			etl_code := vcfg1_etl_code
 			default_template := default_message_template (vcfg1a_default_template)
@@ -1550,6 +1581,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_formal1.name.position
+			ast_node := a_formal1.name
 			code := template_code (vcfg2a_template_code)
 			etl_code := vcfg2_etl_code
 			default_template := default_message_template (vcfg2a_default_template)
@@ -1596,6 +1628,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vdjr0a_template_code)
 			etl_code := vdjr_etl_code
 			default_template := default_message_template (vdjr0a_default_template)
@@ -1642,6 +1675,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vdjr0b_template_code)
 			etl_code := vdjr_etl_code
 			default_template := default_message_template (vdjr0b_default_template)
@@ -1690,6 +1724,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vdjr0c_template_code)
 			etl_code := vdjr_etl_code
 			default_template := default_message_template (vdjr0c_default_template)
@@ -1737,6 +1772,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vdjr2a_template_code)
 			etl_code := vdjr2_etl_code
 			default_template := default_message_template (vdjr2a_default_template)
@@ -1787,6 +1823,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vdjr2b_template_code)
 			etl_code := vdjr2_etl_code
 			default_template := default_message_template (vdjr2b_default_template)
@@ -1834,7 +1871,8 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_precursor.position
+			position := a_precursor.precursor_keyword.position
+			ast_node := a_precursor.precursor_keyword
 			code := template_code (vdpr1a_template_code)
 			etl_code := vdpr1_etl_code
 			default_template := default_message_template (vdpr1a_default_template)
@@ -1868,7 +1906,8 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_precursor.position
+			position := a_precursor.precursor_keyword.position
+			ast_node := a_precursor.precursor_keyword
 			code := template_code (vdpr1b_template_code)
 			etl_code := vdpr1_etl_code
 			default_template := default_message_template (vdpr1b_default_template)
@@ -1917,6 +1956,7 @@ feature {NONE} -- Initialization
 				a_class_name := tokens.unknown_class_name
 			end
 			position := a_class_name.position
+			ast_node := a_class_name
 			code := template_code (vdpr2a_template_code)
 			etl_code := vdpr2_etl_code
 			default_template := default_message_template (vdpr2a_default_template)
@@ -1959,7 +1999,8 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_precursor.position
+			position := a_precursor.precursor_keyword.position
+			ast_node := a_precursor.precursor_keyword
 			code := template_code (vdpr3a_template_code)
 			etl_code := vdpr3_etl_code
 			default_template := default_message_template (vdpr3a_default_template)
@@ -2007,7 +2048,8 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_precursor.position
+			position := a_precursor.precursor_keyword.position
+			ast_node := a_precursor.precursor_keyword
 			code := template_code (vdpr3b_template_code)
 			etl_code := vdpr3_etl_code
 			default_template := default_message_template (vdpr3b_default_template)
@@ -2060,6 +2102,7 @@ feature {NONE} -- Initialization
 				a_class_name := tokens.unknown_class_name
 			end
 			position := a_class_name.position
+			ast_node := a_class_name
 			code := template_code (vdpr3b_template_code)
 			etl_code := vdpr3_etl_code
 			default_template := default_message_template (vdpr3b_default_template)
@@ -2102,7 +2145,8 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_precursor.position
+			position := a_precursor.precursor_keyword.position
+			ast_node := a_precursor.precursor_keyword
 			code := template_code (vdpr3d_template_code)
 			etl_code := vdpr3_etl_code
 			default_template := default_message_template (vdpr3d_default_template)
@@ -2143,7 +2187,8 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_precursor.position
+			position := a_precursor.precursor_keyword.position
+			ast_node := a_precursor.precursor_keyword
 			code := template_code (vdpr3e_template_code)
 			etl_code := vdpr3_etl_code
 			default_template := default_message_template (vdpr3e_default_template)
@@ -2169,7 +2214,7 @@ feature {NONE} -- Initialization
 			-- dollar6: $6 = implementation class name
 		end
 
-	make_vdpr4a (a_class: ET_CLASS; a_precursor: ET_PRECURSOR_KEYWORD; a_feature: ET_FEATURE; a_parent: ET_CLASS)
+	make_vdpr4a (a_class: ET_CLASS; a_precursor: ET_PRECURSOR_CALL; a_feature: ET_FEATURE; a_parent: ET_CLASS)
 			-- Create a new VDPR-4A error: the number of actual arguments in
 			-- the precursor call `a_precursor' appearing in `a_class' is
 			-- not the same as the number of formal arguments of `a_feature'
@@ -2185,7 +2230,12 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_precursor.position
+			position := a_precursor.precursor_keyword.position
+			if attached a_precursor.arguments as l_arguments and then l_arguments.count > 0 then
+				ast_node := l_arguments
+			else
+				ast_node := a_precursor.precursor_keyword
+			end
 			code := template_code (vdpr4a_template_code)
 			etl_code := vdpr4a_etl_code
 			default_template := default_message_template (vdpr4a_default_template)
@@ -2215,7 +2265,7 @@ feature {NONE} -- Initialization
 			-- dollar8: $8 = parent base class
 		end
 
-	make_vdpr4b (a_class, a_class_impl: ET_CLASS; a_precursor: ET_PRECURSOR_KEYWORD; a_feature: ET_FEATURE; a_parent: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
+	make_vdpr4b (a_class, a_class_impl: ET_CLASS; a_precursor: ET_PRECURSOR_CALL; a_feature: ET_FEATURE; a_parent: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
 			-- Create a new VDPR-4B error: the `arg'-th actual argument in the precursor
 			-- call `a_precursor' appearing in `a_class_impl' and viewed from one of its
 			-- descendants `a_class' (possibly itself) does not conform to the corresponding
@@ -2236,7 +2286,12 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class_impl
-			position := a_precursor.position
+			position := a_precursor.precursor_keyword.position
+			if attached a_precursor.arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_precursor.precursor_keyword
+			end
 			code := template_code (vdpr4b_template_code)
 			etl_code := vdpr4b_etl_code
 			default_template := default_message_template (vdpr4b_default_template)
@@ -2288,6 +2343,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.name.position
+			ast_node := f1.name
 			code := template_code (vdrd2a_template_code)
 			etl_code := vdrd2_etl_code
 			default_template := default_message_template (vdrd2a_default_template)
@@ -2336,6 +2392,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vdrd2b_template_code)
 			etl_code := vdrd2_etl_code
 			default_template := default_message_template (vdrd2b_default_template)
@@ -2386,6 +2443,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.name.position
+			ast_node := f1.name
 			code := template_code (vdrd2c_template_code)
 			etl_code := vdrd2_etl_code
 			default_template := default_message_template (vdrd2c_default_template)
@@ -2435,6 +2493,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vdrd2d_template_code)
 			etl_code := vdrd2_etl_code
 			default_template := default_message_template (vdrd2d_default_template)
@@ -2484,6 +2543,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := p.position
+			ast_node := p.require_keyword
 			code := template_code (vdrd3a_template_code)
 			etl_code := vdrd3_etl_code
 			default_template := default_message_template (vdrd3a_default_template)
@@ -2527,6 +2587,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := p.position
+			ast_node := p.ensure_keyword
 			code := template_code (vdrd3b_template_code)
 			etl_code := vdrd3_etl_code
 			default_template := default_message_template (vdrd3b_default_template)
@@ -2573,6 +2634,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.name.position
+			ast_node := f2.name
 			code := template_code (vdrd4a_template_code)
 			etl_code := vdrd4_etl_code
 			default_template := default_message_template (vdrd4a_default_template)
@@ -2621,6 +2683,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.name.position
+			ast_node := f2.name
 			code := template_code (vdrd4b_template_code)
 			etl_code := vdrd4_etl_code
 			default_template := default_message_template (vdrd4b_default_template)
@@ -2669,6 +2732,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.name.position
+			ast_node := f2.name
 			code := template_code (vdrd4c_template_code)
 			etl_code := vdrd4_etl_code
 			default_template := default_message_template (vdrd4c_default_template)
@@ -2717,6 +2781,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := ast_position (f1.redefine_name)
+			ast_node := f1.redefine_name
 			code := template_code (vdrd5a_template_code)
 			etl_code := vdrd5_etl_code
 			default_template := default_message_template (vdrd5a_default_template)
@@ -2762,6 +2827,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.name.position
+			ast_node := f2.name
 			code := template_code (vdrd6a_template_code)
 			etl_code := vdrd6_etl_code
 			default_template := default_message_template (vdrd6a_default_template)
@@ -2809,6 +2875,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.name.position
+			ast_node := f2.type
 			code := template_code (vdrd6b_template_code)
 			etl_code := vdrd6_etl_code
 			default_template := default_message_template (vdrd6b_default_template)
@@ -2856,6 +2923,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := first_alias_name (f2.alias_names).position
+			ast_node := first_alias_name (f2.alias_names)
 			code := template_code (vdrd7a_template_code)
 			etl_code := vdrd7_etl_code
 			default_template := default_message_template (vdrd7a_default_template)
@@ -2905,6 +2973,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.name.position
+			ast_node := f2.name
 			code := template_code (vdrd7b_template_code)
 			etl_code := vdrd7_etl_code
 			default_template := default_message_template (vdrd7b_default_template)
@@ -2955,6 +3024,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := first_alias_name (f2.alias_names).position
+			ast_node := first_alias_name (f2.alias_names)
 			code := template_code (vdrd7c_template_code)
 			etl_code := vdrd7_etl_code
 			default_template := default_message_template (vdrd7c_default_template)
@@ -3006,6 +3076,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vdrs1a_template_code)
 			etl_code := vdrs1_etl_code
 			default_template := default_message_template (vdrs1a_default_template)
@@ -3051,6 +3122,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vdrs2a_template_code)
 			etl_code := vdrs2_etl_code
 			default_template := default_message_template (vdrs2a_default_template)
@@ -3096,6 +3168,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vdrs2b_template_code)
 			etl_code := vdrs2_etl_code
 			default_template := default_message_template (vdrs2b_default_template)
@@ -3141,6 +3214,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.position
+			ast_node := f2
 			code := template_code (vdrs3a_template_code)
 			etl_code := vdrs3_etl_code
 			default_template := default_message_template (vdrs3a_default_template)
@@ -3186,6 +3260,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := ast_position (a_feature.redefine_name)
+			ast_node := a_feature.redefine_name
 			code := template_code (vdrs4a_template_code)
 			etl_code := vdrs4_etl_code
 			default_template := default_message_template (vdrs4a_default_template)
@@ -3234,6 +3309,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := ast_position (a_deferred.redefine_name)
+			ast_node := a_deferred.redefine_name
 			code := template_code (vdrs4b_template_code)
 			etl_code := vdrs4_etl_code
 			default_template := default_message_template (vdrs4b_default_template)
@@ -3280,6 +3356,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vdus1a_template_code)
 			etl_code := vdus1_etl_code
 			default_template := default_message_template (vdus1a_default_template)
@@ -3325,6 +3402,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vdus2a_template_code)
 			etl_code := vdus2_etl_code
 			default_template := default_message_template (vdus2a_default_template)
@@ -3370,6 +3448,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vdus2b_template_code)
 			etl_code := vdus2_etl_code
 			default_template := default_message_template (vdus2b_default_template)
@@ -3415,6 +3494,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vdus3a_template_code)
 			etl_code := vdus3_etl_code
 			default_template := default_message_template (vdus3a_default_template)
@@ -3461,6 +3541,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.position
+			ast_node := f2
 			code := template_code (vdus4a_template_code)
 			etl_code := vdus4_etl_code
 			default_template := default_message_template (vdus4a_default_template)
@@ -3508,6 +3589,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_identifier.position
+			ast_node := an_identifier
 			code := template_code (veen0a_template_code)
 			etl_code := veen_etl_code
 			default_template := default_message_template (veen0a_default_template)
@@ -3555,6 +3637,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_identifier.position
+			ast_node := an_identifier
 			code := template_code (veen0b_template_code)
 			etl_code := veen_etl_code
 			default_template := default_message_template (veen0b_default_template)
@@ -3598,6 +3681,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_result.position
+			ast_node := a_result
 			code := template_code (veen2a_template_code)
 			etl_code := veen2_etl_code
 			default_template := default_message_template (veen2a_default_template)
@@ -3639,6 +3723,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_result.position
+			ast_node := a_result
 			code := template_code (veen2b_template_code)
 			etl_code := veen2_etl_code
 			default_template := default_message_template (veen2b_default_template)
@@ -3681,6 +3766,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.position
+			ast_node := a_local
 			code := template_code (veen2c_template_code)
 			etl_code := veen2_etl_code
 			default_template := default_message_template (veen2c_default_template)
@@ -3723,6 +3809,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_result.position
+			ast_node := a_result
 			code := template_code (veen2d_template_code)
 			etl_code := veen2_etl_code
 			default_template := default_message_template (veen2d_default_template)
@@ -3763,6 +3850,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.position
+			ast_node := a_local
 			code := template_code (veen2e_template_code)
 			etl_code := veen2_etl_code
 			default_template := default_message_template (veen2e_default_template)
@@ -3804,6 +3892,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_result.position
+			ast_node := a_result
 			code := template_code (veen2b_template_code)
 			etl_code := veen2_etl_code
 			default_template := default_message_template (veen2f_default_template)
@@ -3845,6 +3934,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_result.position
+			ast_node := a_result
 			code := template_code (veen2g_template_code)
 			etl_code := veen2_etl_code
 			default_template := default_message_template (veen2g_default_template)
@@ -3884,6 +3974,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_result.position
+			ast_node := a_result
 			code := template_code (veen2h_template_code)
 			etl_code := veen2_etl_code
 			default_template := default_message_template (veen2h_default_template)
@@ -3925,6 +4016,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_identifier.position
+			ast_node := an_identifier
 			code := template_code (veen8a_template_code)
 			etl_code := veen8_etl_code
 			default_template := default_message_template (veen8a_default_template)
@@ -3969,6 +4061,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_identifier.position
+			ast_node := an_identifier
 			code := template_code (veen8b_template_code)
 			etl_code := veen8_etl_code
 			default_template := default_message_template (veen8b_default_template)
@@ -4012,6 +4105,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_identifier.position
+			ast_node := an_identifier
 			code := template_code (veen9a_template_code)
 			etl_code := veen9_etl_code
 			default_template := default_message_template (veen9a_default_template)
@@ -4056,6 +4150,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_identifier.position
+			ast_node := an_identifier
 			code := template_code (veen9b_template_code)
 			etl_code := veen9_etl_code
 			default_template := default_message_template (veen9b_default_template)
@@ -4099,6 +4194,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_identifier.position
+			ast_node := a_identifier
 			code := template_code (veen10a_template_code)
 			etl_code := veen10_etl_code
 			default_template := default_message_template (veen10a_default_template)
@@ -4143,6 +4239,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_identifier.position
+			ast_node := a_identifier
 			code := template_code (veen10b_template_code)
 			etl_code := veen10_etl_code
 			default_template := default_message_template (veen10b_default_template)
@@ -4184,6 +4281,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (veen11a_template_code)
 			etl_code := veen11_etl_code
 			default_template := default_message_template (veen11a_default_template)
@@ -4227,6 +4325,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vevi0a_template_code)
 			etl_code := vevi_etl_code
 			default_template := default_message_template (vevi0a_default_template)
@@ -4269,6 +4368,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_result.position
+			ast_node := a_result
 			code := template_code (vevi0b_template_code)
 			etl_code := vevi_etl_code
 			default_template := default_message_template (vevi0b_default_template)
@@ -4310,8 +4410,10 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_function.end_keyword.position
+			ast_node := a_function.end_keyword
 			if position.is_null then
 				position := a_function.name.position
+				ast_node := a_function.name
 			end
 			code := template_code (vevi0c_template_code)
 			etl_code := vevi_etl_code
@@ -4356,8 +4458,10 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_agent.end_keyword.position
+			ast_node := a_agent.end_keyword
 			if position.is_null then
 				position := a_agent.position
+				ast_node := a_agent.agent_keyword
 			end
 			code := template_code (vevi0d_template_code)
 			etl_code := vevi_etl_code
@@ -4400,8 +4504,10 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.end_keyword.position
+			ast_node := a_attribute.end_keyword
 			if position.is_null then
 				position := a_attribute.name.position
+				ast_node := a_attribute.name
 			end
 			code := template_code (vevi0e_template_code)
 			etl_code := vevi_etl_code
@@ -4432,7 +4538,7 @@ feature {NONE} -- Initialization
 
 	make_vfac1a (a_class: ET_CLASS; an_assigner: ET_FEATURE_NAME; a_query: ET_QUERY)
 			-- Create a new VFAC-1 error: `a_query' has an assigner `an_assigner'
-			-- but there is not feature with that name in `a_class'.
+			-- but there is no feature with that name in `a_class'.
 			--
 			-- ECMA 367-2: p.41
 		require
@@ -4445,6 +4551,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_assigner.position
+			ast_node := an_assigner
 			code := template_code (vfac1a_template_code)
 			etl_code := vfac1_etl_code
 			default_template := default_message_template (vfac1a_default_template)
@@ -4489,6 +4596,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_assigner.position
+			ast_node := an_assigner
 			code := template_code (vfac1b_template_code)
 			etl_code := vfac1_etl_code
 			default_template := default_message_template (vfac1b_default_template)
@@ -4535,6 +4643,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_assigner.position
+			ast_node := an_assigner
 			code := template_code (vfac2a_template_code)
 			etl_code := vfac2_etl_code
 			default_template := default_message_template (vfac2a_default_template)
@@ -4586,6 +4695,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_assigner.position
+			ast_node := an_assigner
 			code := template_code (vfac3a_template_code)
 			etl_code := vfac3_etl_code
 			default_template := default_message_template (vfac3a_default_template)
@@ -4640,6 +4750,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_assigner.position
+			ast_node := an_assigner
 			code := template_code (vfac4a_template_code)
 			etl_code := vfac4_etl_code
 			default_template := default_message_template (vfac4a_default_template)
@@ -4698,6 +4809,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav1a_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1a_default_template)
@@ -4744,6 +4856,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav1b_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1b_default_template)
@@ -4793,6 +4906,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name1.position
+			ast_node := a_alias_name1
 			code := template_code (vfav1c_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1c_default_template)
@@ -4846,6 +4960,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name1.position
+			ast_node := a_alias_name1
 			code := template_code (vfav1d_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1d_default_template)
@@ -4901,6 +5016,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature1.parent.type.name.position
+			ast_node := a_feature1.parent.type.name
 			code := template_code (vfav1e_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1e_default_template)
@@ -4958,6 +5074,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name1.position
+			ast_node := a_alias_name1
 			code := template_code (vfav1f_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1f_default_template)
@@ -5011,6 +5128,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name1.position
+			ast_node := a_alias_name1
 			code := template_code (vfav1g_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1g_default_template)
@@ -5066,6 +5184,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature1.parent.type.name.position
+			ast_node := a_feature1.parent.type.name
 			code := template_code (vfav1h_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1h_default_template)
@@ -5121,6 +5240,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav1k_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1k_default_template)
@@ -5173,6 +5293,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_new_alias_name.position
+			ast_node := a_new_alias_name
 			code := template_code (vfav1m_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1m_default_template)
@@ -5229,6 +5350,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_new_alias_name.position
+			ast_node := a_new_alias_name
 			code := template_code (vfav1n_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1n_default_template)
@@ -5285,6 +5407,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_new_alias_name.position
+			ast_node := a_new_alias_name
 			code := template_code (vfav1p_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1p_default_template)
@@ -5339,6 +5462,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav1q_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1q_default_template)
@@ -5389,6 +5513,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav1r_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1r_default_template)
@@ -5439,6 +5564,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav1s_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1s_default_template)
@@ -5491,6 +5617,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav1t_template_code)
 			etl_code := vfav1_etl_code
 			default_template := default_message_template (vfav1t_default_template)
@@ -5539,6 +5666,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav2a_template_code)
 			etl_code := vfav2_etl_code
 			default_template := default_message_template (vfav2a_default_template)
@@ -5588,6 +5716,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name1.position
+			ast_node := a_alias_name1
 			code := template_code (vfav2b_template_code)
 			etl_code := vfav2_etl_code
 			default_template := default_message_template (vfav2b_default_template)
@@ -5641,6 +5770,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name1.position
+			ast_node := a_alias_name1
 			code := template_code (vfav2c_template_code)
 			etl_code := vfav2_etl_code
 			default_template := default_message_template (vfav2c_default_template)
@@ -5696,6 +5826,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature1.parent.type.name.position
+			ast_node := a_feature1.parent.type.name
 			code := template_code (vfav2d_template_code)
 			etl_code := vfav2_etl_code
 			default_template := default_message_template (vfav2d_default_template)
@@ -5756,6 +5887,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_new_alias_name.position
+			ast_node := a_new_alias_name
 			code := template_code (vfav2e_template_code)
 			etl_code := vfav2_etl_code
 			default_template := default_message_template (vfav2e_default_template)
@@ -5810,6 +5942,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav2f_template_code)
 			etl_code := vfav2_etl_code
 			default_template := default_message_template (vfav2f_default_template)
@@ -5860,6 +5993,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav2g_template_code)
 			etl_code := vfav2_etl_code
 			default_template := default_message_template (vfav2g_default_template)
@@ -5908,6 +6042,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav3a_template_code)
 			etl_code := vfav3_etl_code
 			default_template := default_message_template (vfav3a_default_template)
@@ -5957,6 +6092,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name1.position
+			ast_node := a_alias_name1
 			code := template_code (vfav3b_template_code)
 			etl_code := vfav3_etl_code
 			default_template := default_message_template (vfav3b_default_template)
@@ -6010,6 +6146,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name1.position
+			ast_node := a_alias_name1
 			code := template_code (vfav3c_template_code)
 			etl_code := vfav3_etl_code
 			default_template := default_message_template (vfav3c_default_template)
@@ -6065,6 +6202,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature1.parent.type.name.position
+			ast_node := a_feature1.parent.type.name
 			code := template_code (vfav3d_template_code)
 			etl_code := vfav3_etl_code
 			default_template := default_message_template (vfav3d_default_template)
@@ -6125,6 +6263,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_new_alias_name.position
+			ast_node := a_new_alias_name
 			code := template_code (vfav3e_template_code)
 			etl_code := vfav3_etl_code
 			default_template := default_message_template (vfav3e_default_template)
@@ -6179,6 +6318,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav3f_template_code)
 			etl_code := vfav3_etl_code
 			default_template := default_message_template (vfav3f_default_template)
@@ -6229,6 +6369,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav3g_template_code)
 			etl_code := vfav3_etl_code
 			default_template := default_message_template (vfav3g_default_template)
@@ -6275,6 +6416,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4a_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4a_default_template)
@@ -6319,6 +6461,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4b_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4b_default_template)
@@ -6363,6 +6506,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4c_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4c_default_template)
@@ -6407,6 +6551,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4d_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4d_default_template)
@@ -6454,6 +6599,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4e_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4e_default_template)
@@ -6503,6 +6649,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4f_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4f_default_template)
@@ -6552,6 +6699,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4g_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4g_default_template)
@@ -6601,6 +6749,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4h_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4h_default_template)
@@ -6652,6 +6801,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4i_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4i_default_template)
@@ -6700,6 +6850,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4j_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4j_default_template)
@@ -6748,6 +6899,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4k_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4k_default_template)
@@ -6796,6 +6948,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav4l_template_code)
 			etl_code := vfav4_etl_code
 			default_template := default_message_template (vfav4l_default_template)
@@ -6840,6 +6993,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_alias_name.position
+			ast_node := a_alias_name
 			code := template_code (vfav5a_template_code)
 			etl_code := vfav5_etl_code
 			default_template := default_message_template (vfav5a_default_template)
@@ -6881,6 +7035,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature.name.position
+			ast_node := a_feature.frozen_keyword
 			code := template_code (vffd4a_template_code)
 			etl_code := vffd4_etl_code
 			default_template := default_message_template (vffd4a_default_template)
@@ -6923,6 +7078,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature.name.position
+			ast_node := a_feature.type
 			code := template_code (vffd7a_template_code)
 			etl_code := vffd7_etl_code
 			default_template := default_message_template (vffd7a_default_template)
@@ -6965,6 +7121,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature.name.position
+			ast_node := a_feature.type
 			code := template_code (vffd7b_template_code)
 			etl_code := vffd7_etl_code
 			default_template := default_message_template (vffd7b_default_template)
@@ -7011,6 +7168,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_once_function.name.position
+			ast_node := a_once_function.type
 			code := template_code (vffd11ga_template_code)
 			etl_code := vffd11g_etl_code
 			default_template := default_message_template (vffd11ga_default_template)
@@ -7058,6 +7216,10 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_creation.position
+			ast_node := a_creation.type
+			if ast_node = Void and then attached {ET_CREATION_INSTRUCTION} a_creation as l_creation_instruction then
+				ast_node := l_creation_instruction.target
+			end
 			code := template_code (vgcc1a_template_code)
 			etl_code := vgcc1_etl_code
 			default_template := default_message_template (vgcc1a_default_template)
@@ -7106,6 +7268,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := ast_position (a_creation.type)
+			ast_node := a_creation.type
 			code := template_code (vgcc3a_template_code)
 			etl_code := vgcc3_etl_code
 			default_template := default_message_template (vgcc3a_default_template)
@@ -7153,6 +7316,10 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_creation.position
+			ast_node := a_creation.type
+			if ast_node = Void and then attached {ET_CREATION_INSTRUCTION} a_creation as l_creation_instruction then
+				ast_node := l_creation_instruction.target
+			end
 			code := template_code (vgcc5a_template_code)
 			etl_code := vgcc5_etl_code
 			default_template := default_message_template (vgcc5a_default_template)
@@ -7198,6 +7365,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := cp.position
+			ast_node := cp
 			code := template_code (vgcc6a_template_code)
 			etl_code := vgcc6_etl_code
 			default_template := default_message_template (vgcc6a_default_template)
@@ -7240,6 +7408,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgcc6b_template_code)
 			etl_code := vgcc6_etl_code
 			default_template := default_message_template (vgcc6b_default_template)
@@ -7289,6 +7458,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgcc6c_template_code)
 			etl_code := vgcc6_etl_code
 			default_template := default_message_template (vgcc6c_default_template)
@@ -7335,6 +7505,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgcc6d_template_code)
 			etl_code := vgcc6_etl_code
 			default_template := default_message_template (vgcc6d_default_template)
@@ -7386,6 +7557,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgcc8a_template_code)
 			etl_code := vgcc8_etl_code
 			default_template := default_message_template (vgcc8a_default_template)
@@ -7432,6 +7604,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_creator.position
+			ast_node := a_creator.create_keyword
 			code := template_code (vgcp1a_template_code)
 			etl_code := vgcp1_etl_code
 			default_template := default_message_template (vgcp1a_default_template)
@@ -7470,6 +7643,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := cp.position
+			ast_node := cp
 			code := template_code (vgcp2a_template_code)
 			etl_code := vgcp2_etl_code
 			default_template := default_message_template (vgcp2a_default_template)
@@ -7513,6 +7687,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := cp.position
+			ast_node := cp
 			code := template_code (vgcp2b_template_code)
 			etl_code := vgcp2_etl_code
 			default_template := default_message_template (vgcp2b_default_template)
@@ -7554,6 +7729,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.position
+			ast_node := f2
 			code := template_code (vgcp3a_template_code)
 			etl_code := vgcp3_etl_code
 			default_template := default_message_template (vgcp3a_default_template)
@@ -7595,6 +7771,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.position
+			ast_node := f2
 			code := template_code (vgcp3b_template_code)
 			etl_code := vgcp3_etl_code
 			default_template := default_message_template (vgcp3b_default_template)
@@ -7637,6 +7814,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.position
+			ast_node := f2
 			code := template_code (vgcp3c_template_code)
 			etl_code := vgcp3_etl_code
 			default_template := default_message_template (vgcp3c_default_template)
@@ -7677,6 +7855,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.position
+			ast_node := a_type
 			code := template_code (vggc1a_template_code)
 			etl_code := vggc1_etl_code
 			default_template := default_message_template (vggc1a_default_template)
@@ -7721,6 +7900,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_rename.old_name.position
+			ast_node := a_rename.old_name
 			code := template_code (vggc2a_template_code)
 			etl_code := vggc2_etl_code
 			default_template := default_message_template (vggc2a_default_template)
@@ -7766,6 +7946,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_constraint.name.position
+			ast_node := a_constraint.name
 			code := template_code (vggc2b_template_code)
 			etl_code := vggc2_etl_code
 			default_template := default_message_template (vggc2b_default_template)
@@ -7810,6 +7991,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_constraint.name.position
+			ast_node := a_constraint.name
 			code := template_code (vggc2c_template_code)
 			etl_code := vggc2_etl_code
 			default_template := default_message_template (vggc2c_default_template)
@@ -7855,6 +8037,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_rename2.old_name.position
+			ast_node := a_rename2.old_name
 			code := template_code (vggc2d_template_code)
 			etl_code := vggc2_etl_code
 			default_template := default_message_template (vggc2d_default_template)
@@ -7902,6 +8085,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_rename2.new_name.feature_name.position
+			ast_node := a_rename2.new_name
 			code := template_code (vggc2e_template_code)
 			etl_code := vggc2_etl_code
 			default_template := default_message_template (vggc2e_default_template)
@@ -7948,6 +8132,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_rename.new_name.feature_name.position
+			ast_node := a_rename.new_name.feature_name
 			code := template_code (vggc2f_template_code)
 			etl_code := vggc2_etl_code
 			default_template := default_message_template (vggc2f_default_template)
@@ -7992,6 +8177,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := cp.position
+			ast_node := cp
 			code := template_code (vggc3a_template_code)
 			etl_code := vggc3_etl_code
 			default_template := default_message_template (vggc3a_default_template)
@@ -8036,6 +8222,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := cp.position
+			ast_node := cp
 			code := template_code (vggc3b_template_code)
 			etl_code := vggc3_etl_code
 			default_template := default_message_template (vggc3b_default_template)
@@ -8085,6 +8272,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := cp.position
+			ast_node := cp
 			code := template_code (vggc3c_template_code)
 			etl_code := vggc3_etl_code
 			default_template := default_message_template (vggc3c_default_template)
@@ -8137,6 +8325,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := cp.position
+			ast_node := cp
 			code := template_code (vggc3d_template_code)
 			etl_code := vggc3_etl_code
 			default_template := default_message_template (vggc3d_default_template)
@@ -8195,6 +8384,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgmc0a_template_code)
 			etl_code := vgmc_etl_code
 			default_template := default_message_template (vgmc0a_default_template)
@@ -8261,6 +8451,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgmc0b_template_code)
 			etl_code := vgmc_etl_code
 			default_template := default_message_template (vgmc0b_default_template)
@@ -8319,6 +8510,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgmc0c_template_code)
 			etl_code := vgmc_etl_code
 			default_template := default_message_template (vgmc0c_default_template)
@@ -8372,6 +8564,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgmc0d_template_code)
 			etl_code := vgmc_etl_code
 			default_template := default_message_template (vgmc0d_default_template)
@@ -8431,6 +8624,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgmc0e_template_code)
 			etl_code := vgmc_etl_code
 			default_template := default_message_template (vgmc0e_default_template)
@@ -8485,6 +8679,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgmc0f_template_code)
 			etl_code := vgmc_etl_code
 			default_template := default_message_template (vgmc0f_default_template)
@@ -8542,6 +8737,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vgmc0g_template_code)
 			etl_code := vgmc_etl_code
 			default_template := default_message_template (vgmc0g_default_template)
@@ -8589,6 +8785,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := null_position
+			ast_node := a_class.name
 			code := template_code (vhay0a_template_code)
 			etl_code := vhay_etl_code
 			default_template := default_message_template (vhay0a_default_template)
@@ -8632,6 +8829,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := null_position
+			ast_node := a_class.name
 			code := template_code (vhpr1a_template_code)
 			etl_code := vhpr1_etl_code
 			default_template := default_message_template (vhpr1a_default_template)
@@ -8685,6 +8883,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_none.position
+			ast_node := a_none
 			code := template_code (vhpr1b_template_code)
 			etl_code := vhpr1_etl_code
 			default_template := default_message_template (vhpr1b_default_template)
@@ -8725,6 +8924,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_parent.position
+			ast_node := a_parent.name
 			code := template_code (vhpr2a_template_code)
 			etl_code := vhpr2_etl_code
 			default_template := default_message_template (vhpr2a_default_template)
@@ -8765,6 +8965,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.position
+			ast_node := a_type
 			code := template_code (vhpr3a_template_code)
 			etl_code := vhpr3_etl_code
 			default_template := default_message_template (vhpr3a_default_template)
@@ -8809,6 +9010,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_rename.old_name.position
+			ast_node := a_rename.old_name
 			code := template_code (vhrc1a_template_code)
 			etl_code := vhrc1_etl_code
 			default_template := default_message_template (vhrc1a_default_template)
@@ -8856,6 +9058,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_rename2.old_name.position
+			ast_node := a_rename2.old_name
 			code := template_code (vhrc2a_template_code)
 			etl_code := vhrc2_etl_code
 			default_template := default_message_template (vhrc2a_default_template)
@@ -8904,6 +9107,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_assignment.source.position
+			ast_node := an_assignment.source
 			code := template_code (vjar0a_template_code)
 			etl_code := vjar_etl_code
 			default_template := default_message_template (vjar0a_default_template)
@@ -8952,6 +9156,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_assignment.source.position
+			ast_node := a_assignment.source
 			code := template_code (vjar0b_template_code)
 			etl_code := vjar_etl_code
 			default_template := default_message_template (vjar0b_default_template)
@@ -8995,6 +9200,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vjaw0a_template_code)
 			etl_code := vjaw_etl_code
 			default_template := default_message_template (vjaw0a_default_template)
@@ -9039,6 +9245,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vjaw0b_template_code)
 			etl_code := vjaw_etl_code
 			default_template := default_message_template (vjaw0b_default_template)
@@ -9083,6 +9290,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vjaw0c_template_code)
 			etl_code := vjaw_etl_code
 			default_template := default_message_template (vjaw0c_default_template)
@@ -9124,6 +9332,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vjaw0d_template_code)
 			etl_code := vjaw_etl_code
 			default_template := default_message_template (vjaw0d_default_template)
@@ -9165,6 +9374,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vjaw0e_template_code)
 			etl_code := vjaw_etl_code
 			default_template := default_message_template (vjaw0e_default_template)
@@ -9206,6 +9416,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vjaw0f_template_code)
 			etl_code := vjaw_etl_code
 			default_template := default_message_template (vjaw0f_default_template)
@@ -9236,7 +9447,7 @@ feature {NONE} -- Initialization
 	make_vjrv0a (a_class, a_class_impl: ET_CLASS; a_target: ET_WRITABLE; a_target_type: ET_NAMED_TYPE)
 			-- Create a new VJRV error: the type `a_target_type' of the target
 			-- `a_target' of an assignment attempt appearing in `a_class_impl'
-			-- and viewed from one of its descedants `a_class' (possibly itselft)
+			-- and viewed from one of its descendants `a_class' (possibly itselft)
 			-- is not a reference type.
 			--
 			-- ETL2: p. 332
@@ -9251,6 +9462,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_target.position
+			ast_node := a_target
 			code := template_code (vjrv0a_template_code)
 			etl_code := vjrv_etl_code
 			default_template := default_message_template (vjrv0a_default_template)
@@ -9294,6 +9506,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vkcn1a_template_code)
 			etl_code := vkcn1_etl_code
 			default_template := default_message_template (vkcn1a_default_template)
@@ -9340,6 +9553,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vkcn1b_template_code)
 			etl_code := vkcn1_etl_code
 			default_template := default_message_template (vkcn1b_default_template)
@@ -9384,6 +9598,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vkcn1c_template_code)
 			etl_code := vkcn1_etl_code
 			default_template := default_message_template (vkcn1c_default_template)
@@ -9429,6 +9644,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vkcn2a_template_code)
 			etl_code := vkcn2_etl_code
 			default_template := default_message_template (vkcn2a_default_template)
@@ -9475,6 +9691,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vkcn2c_template_code)
 			etl_code := vkcn2_etl_code
 			default_template := default_message_template (vkcn2c_default_template)
@@ -9516,6 +9733,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_region.class_name.position
+			ast_node := a_region.class_name
 			code := template_code (vkex4ga_template_code)
 			etl_code := vkex4g_etl_code
 			default_template := default_message_template (vkex4ga_default_template)
@@ -9555,6 +9773,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_region.class_name.position
+			ast_node := a_region.class_name
 			code := template_code (vkin5ga_template_code)
 			etl_code := vkin5g_etl_code
 			default_template := default_message_template (vkin5ga_default_template)
@@ -9597,8 +9816,10 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := all2.all_keyword.position
+			ast_node := all2.all_keyword
 			if position.is_null then
 				position := all2.position
+				ast_node := all2
 			end
 			code := template_code (vlel1a_template_code)
 			etl_code := vlel1_etl_code
@@ -9642,6 +9863,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vlel2a_template_code)
 			etl_code := vlel2_etl_code
 			default_template := default_message_template (vlel2a_default_template)
@@ -9686,6 +9908,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.position
+			ast_node := f2
 			code := template_code (vlel3a_template_code)
 			etl_code := vlel3_etl_code
 			default_template := default_message_template (vlel3a_default_template)
@@ -9730,6 +9953,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.name.position
+			ast_node := f2.name
 			code := template_code (vmfn0a_template_code)
 			etl_code := vmfn_etl_code
 			default_template := default_message_template (vmfn0a_default_template)
@@ -9774,6 +9998,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.name.position
+			ast_node := f2.name
 			code := template_code (vmfn0b_template_code)
 			etl_code := vmfn_etl_code
 			default_template := default_message_template (vmfn0b_default_template)
@@ -9824,6 +10049,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vmfn0c_template_code)
 			etl_code := vmfn_etl_code
 			default_template := default_message_template (vmfn0c_default_template)
@@ -9873,6 +10099,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vmfn2a_template_code)
 			etl_code := vmfn2_etl_code
 			default_template := default_message_template (vmfn2a_default_template)
@@ -9923,6 +10150,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f1.parent.type.name.position
+			ast_node := f1.parent.type.name
 			code := template_code (vmfn2b_template_code)
 			etl_code := vmfn2_etl_code
 			default_template := default_message_template (vmfn2b_default_template)
@@ -9980,6 +10208,7 @@ feature {NONE} -- Initialization
 			class_impl := a_class
 			a_feature := replicated_features.first
 			position := a_feature.parent.type.name.position
+			ast_node := a_feature.parent.type.name
 			code := template_code (vmrc2a_template_code)
 			etl_code := vmrc2_etl_code
 			default_template := default_message_template (vmrc2a_default_template)
@@ -10049,6 +10278,7 @@ feature {NONE} -- Initialization
 			class_impl := a_class
 			a_feature := replicated_features.first
 			position := ast_position (a_feature.select_name)
+			ast_node := a_feature.select_name
 			code := template_code (vmrc2b_template_code)
 			etl_code := vmrc2_etl_code
 			default_template := default_message_template (vmrc2b_default_template)
@@ -10111,6 +10341,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f.position
+			ast_node := f
 			code := template_code (vmss1a_template_code)
 			etl_code := vmss1_etl_code
 			default_template := default_message_template (vmss1a_default_template)
@@ -10156,6 +10387,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := f2.position
+			ast_node := f2
 			code := template_code (vmss2a_template_code)
 			etl_code := vmss2_etl_code
 			default_template := default_message_template (vmss2a_default_template)
@@ -10201,6 +10433,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := ast_position (a_feature.select_name)
+			ast_node := a_feature.select_name
 			code := template_code (vmss3a_template_code)
 			etl_code := vmss3_etl_code
 			default_template := default_message_template (vmss3a_default_template)
@@ -10246,6 +10479,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_expression.position
+			ast_node := an_expression
 			code := template_code (voit1a_template_code)
 			etl_code := voit1_etl_code
 			default_template := default_message_template (voit1a_default_template)
@@ -10287,6 +10521,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_iteration_component.item_name.position
+			ast_node := a_iteration_component.item_name
 			code := template_code (voit2a_template_code)
 			etl_code := voit2_etl_code
 			default_template := default_message_template (voit2a_default_template)
@@ -10327,6 +10562,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_iteration_component.item_name.position
+			ast_node := a_iteration_component.item_name
 			code := template_code (voit2b_template_code)
 			etl_code := voit2_etl_code
 			default_template := default_message_template (voit2b_default_template)
@@ -10367,6 +10603,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_iteration_component.item_name.position
+			ast_node := a_iteration_component.item_name
 			code := template_code (voit2c_template_code)
 			etl_code := voit2_etl_code
 			default_template := default_message_template (voit2c_default_template)
@@ -10406,6 +10643,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_iteration_component.item_name.position
+			ast_node := a_iteration_component.item_name
 			code := template_code (voit2d_template_code)
 			etl_code := voit2_etl_code
 			default_template := default_message_template (voit2d_default_template)
@@ -10446,6 +10684,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_iteration_component1.item_name.position
+			ast_node := a_iteration_component1.item_name
 			code := template_code (voit2e_template_code)
 			etl_code := voit2_etl_code
 			default_template := default_message_template (voit2e_default_template)
@@ -10486,6 +10725,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_iteration_component.item_name.position
+			ast_node := a_iteration_component.item_name
 			code := template_code (voit2f_template_code)
 			etl_code := voit2_etl_code
 			default_template := default_message_template (voit2f_default_template)
@@ -10524,6 +10764,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_iteration_cursor.item_name.position
+			ast_node := a_iteration_cursor.item_name
 			code := template_code (voit3a_template_code)
 			etl_code := voit3_etl_code
 			default_template := default_message_template (voit3a_default_template)
@@ -10566,6 +10807,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_expression.position
+			ast_node := an_expression
 			code := template_code (vomb1a_template_code)
 			etl_code := vomb1_etl_code
 			default_template := default_message_template (vomb1a_default_template)
@@ -10611,6 +10853,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_constant.position
+			ast_node := a_constant
 			code := template_code (vomb2a_template_code)
 			etl_code := vomb2_etl_code
 			default_template := default_message_template (vomb2a_default_template)
@@ -10655,6 +10898,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_constant.position
+			ast_node := a_constant
 			code := template_code (vomb2b_template_code)
 			etl_code := vomb2_etl_code
 			default_template := default_message_template (vomb2b_default_template)
@@ -10705,6 +10949,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vpca1a_template_code)
 			etl_code := vpca1_etl_code
 			default_template := default_message_template (vpca1a_default_template)
@@ -10749,6 +10994,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vpca1b_template_code)
 			etl_code := vpca1_etl_code
 			default_template := default_message_template (vpca1b_default_template)
@@ -10796,6 +11042,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vpca2a_template_code)
 			etl_code := vpca2_etl_code
 			default_template := default_message_template (vpca2a_default_template)
@@ -10827,7 +11074,7 @@ feature {NONE} -- Initialization
 			-- dollar9: $9 = base class of target of the call agent
 		end
 
-	make_vpca3a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS)
+	make_vpca3a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS; a_agent: ET_CALL_AGENT)
 			-- Create a new VPCA-3 error: the number of actual arguments in
 			-- the qualified call agent `a_name' appearing in `a_class' is not the
 			-- same as the number of formal arguments of `a_feature' in
@@ -10840,10 +11087,16 @@ feature {NONE} -- Initialization
 			a_name_not_void: a_name /= Void
 			a_feature_not_void: a_feature /= Void
 			a_target_not_void: a_target /= Void
+			a_agent_not_void: a_agent /= Void
 		do
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			if attached {ET_AGENT_ARGUMENT_OPERAND_LIST} a_agent.arguments as l_arguments and then l_arguments.count > 0 then
+				ast_node := l_arguments
+			else
+				ast_node := a_name
+			end
 			code := template_code (vpca3a_template_code)
 			etl_code := vpca3_etl_code
 			default_template := default_message_template (vpca3a_default_template)
@@ -10875,7 +11128,7 @@ feature {NONE} -- Initialization
 			-- dollar9: $9 = base class of target of the call agent
 		end
 
-	make_vpca3b (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE)
+	make_vpca3b (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; a_agent: ET_CALL_AGENT)
 			-- Create a new VPCA-3 error: the number of actual arguments in
 			-- the unqualified call agent `a_name' appearing in `a_class' is not the
 			-- same as the number of formal arguments of `a_feature' in `a_class'.
@@ -10886,10 +11139,16 @@ feature {NONE} -- Initialization
 			a_class_preparsed: a_class.is_preparsed
 			a_name_not_void: a_name /= Void
 			a_feature_not_void: a_feature /= Void
+			a_agent_not_void: a_agent /= Void
 		do
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			if attached {ET_AGENT_ARGUMENT_OPERAND_LIST} a_agent.arguments as l_arguments and then l_arguments.count > 0 then
+				ast_node := l_arguments
+			else
+				ast_node := a_name
+			end
 			code := template_code (vpca3b_template_code)
 			etl_code := vpca3_etl_code
 			default_template := default_message_template (vpca3b_default_template)
@@ -10919,7 +11178,53 @@ feature {NONE} -- Initialization
 			-- dollar8: $8 = name of corresponding feature in class $5
 		end
 
-	make_vpca4a (a_class, a_class_impl: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
+	make_vpca3c (a_class: ET_CLASS; a_agent: ET_INLINE_AGENT)
+			-- Create a new VPCA-3 error: the number of actual arguments in
+			-- the inline agent `a_agent' appearing in `a_class' is not the
+			-- same as the number of formal arguments.
+			--
+			-- ETL3 (4.82-00-00): p.581
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_agent_not_void: a_agent /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_agent.agent_keyword.position
+			if attached {ET_AGENT_ARGUMENT_OPERAND_LIST} a_agent.actual_arguments as l_arguments and then l_arguments.count > 0 then
+				ast_node := l_arguments
+			elseif attached a_agent.formal_arguments as l_arguments and then l_arguments.count > 0 then
+				ast_node := l_arguments
+			else
+				ast_node := a_agent.agent_keyword
+			end
+			code := template_code (vpca3c_template_code)
+			etl_code := vpca3_etl_code
+			default_template := default_message_template (vpca3c_default_template)
+			create parameters.make_filled (empty_string, 1, 6)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+		end
+
+	make_vpca4a (a_class, a_class_impl: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE; a_agent: ET_CALL_AGENT)
 			-- Create a new VPCA-4 error: the `arg'-th actual argument in the qualified
 			-- call agent `a_name' appearing in `a_class_impl' and viewed from one of its
 			-- descendants `a_class' (possibly itself) does not conform to the corresponding
@@ -10937,10 +11242,16 @@ feature {NONE} -- Initialization
 			an_actual_named_type: an_actual.is_named_type
 			a_formal_not_void: a_formal /= Void
 			a_formal_named_type: a_formal.is_named_type
+			a_agent_not_void: a_agent /= Void
 		do
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			if attached a_agent.arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_name
+			end
 			code := template_code (vpca4a_template_code)
 			etl_code := vpca4_etl_code
 			default_template := default_message_template (vpca4a_default_template)
@@ -10978,7 +11289,7 @@ feature {NONE} -- Initialization
 			-- dollar12: $12 = formal type
 		end
 
-	make_vpca4b (a_class, a_class_impl: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
+	make_vpca4b (a_class, a_class_impl: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE; a_agent: ET_CALL_AGENT)
 			-- Create a new VPCA-4 error: the `arg'-th actual argument in the unqualified
 			-- call agent `a_name' appearing in `a_class_impl' and viewed from one of its
 			-- descendants `a_class' (possibly itself) does not conform to the corresponding
@@ -10995,10 +11306,16 @@ feature {NONE} -- Initialization
 			an_actual_named_type: an_actual.is_named_type
 			a_formal_not_void: a_formal /= Void
 			a_formal_named_type: a_formal.is_named_type
+			a_agent_not_void: a_agent /= Void
 		do
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			if attached a_agent.arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_name
+			end
 			code := template_code (vpca4b_template_code)
 			etl_code := vpca4_etl_code
 			default_template := default_message_template (vpca4b_default_template)
@@ -11034,7 +11351,63 @@ feature {NONE} -- Initialization
 			-- dollar11: $11 = formal type
 		end
 
-	make_vpca5a (a_class, a_class_impl: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
+	make_vpca4c (a_class, a_class_impl: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE; a_agent: ET_INLINE_AGENT)
+			-- Create a new VPCA-4 error: the `arg'-th actual argument in the inline agent
+			-- `a_agent' appearing in `a_class_impl' and viewed from one of its
+			-- descendants `a_class' (possibly itself) does not conform to the corresponding
+			-- formal argument.
+			--
+			-- ETL3 (4.82-00-00): p.581
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			an_actual_not_void: an_actual /= Void
+			an_actual_named_type: an_actual.is_named_type
+			a_formal_not_void: a_formal /= Void
+			a_formal_named_type: a_formal.is_named_type
+			a_agent_not_void: a_agent /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_agent.agent_keyword.position
+			if attached a_agent.actual_arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_agent.agent_keyword
+			end
+			code := template_code (vpca4c_template_code)
+			etl_code := vpca4_etl_code
+			default_template := default_message_template (vpca4c_default_template)
+			create parameters.make_filled (empty_string, 1, 9)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (arg.out, 7)
+			parameters.put (an_actual.to_text, 8)
+			parameters.put (a_formal.to_text, 9)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = argument index
+			-- dollar8: $8 = actual type
+			-- dollar9: $9 = formal type
+		end
+
+	make_vpca5a (a_class, a_class_impl: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE; a_agent: ET_CALL_AGENT)
 			-- Create a new VPCA-5 error: the type specified for the `arg'-th actual
 			-- argument in the qualified call agent `a_name' appearing in `a_class_impl'
 			-- and viewed from one of its descendants `a_class' (possibly itself) does
@@ -11053,10 +11426,16 @@ feature {NONE} -- Initialization
 			an_actual_named_type: an_actual.is_named_type
 			a_formal_not_void: a_formal /= Void
 			a_formal_named_type: a_formal.is_named_type
+			a_agent_not_void: a_agent /= Void
 		do
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			if attached a_agent.arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_name
+			end
 			code := template_code (vpca5a_template_code)
 			etl_code := vpca5_etl_code
 			default_template := default_message_template (vpca5a_default_template)
@@ -11094,7 +11473,7 @@ feature {NONE} -- Initialization
 			-- dollar12: $12 = formal type
 		end
 
-	make_vpca5b (a_class, a_class_impl: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
+	make_vpca5b (a_class, a_class_impl: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE; a_agent: ET_CALL_AGENT)
 			-- Create a new VPCA-5 error: the type specified for the `arg'-th actual
 			-- argument in the unqualified call agent `a_name' appearing in `a_class_impl'
 			-- and viewed from one of its descendants `a_class' (possiby itself) does not
@@ -11111,10 +11490,16 @@ feature {NONE} -- Initialization
 			an_actual_named_type: an_actual.is_named_type
 			a_formal_not_void: a_formal /= Void
 			a_formal_named_type: a_formal.is_named_type
+			a_agent_not_void: a_agent /= Void
 		do
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			if attached a_agent.arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_name
+			end
 			code := template_code (vpca5b_template_code)
 			etl_code := vpca5_etl_code
 			default_template := default_message_template (vpca5b_default_template)
@@ -11150,6 +11535,63 @@ feature {NONE} -- Initialization
 			-- dollar11: $11 = formal type
 		end
 
+	make_vpca5c (a_class, a_class_impl: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE; a_agent: ET_INLINE_AGENT)
+			-- Create a new VPCA-5 error: the type specified for the `arg'-th actual
+			-- argument in the inline agent `a_agent' appearing in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) does not conform to the corresponding formal
+			-- argument.
+			--
+			-- ETL3 (4.82-00-00): p.581
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			an_actual_not_void: an_actual /= Void
+			an_actual_named_type: an_actual.is_named_type
+			a_formal_not_void: a_formal /= Void
+			a_formal_named_type: a_formal.is_named_type
+			a_agent_not_void: a_agent /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_agent.agent_keyword.position
+			if attached a_agent.actual_arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_agent.agent_keyword
+			end
+			code := template_code (vpca5c_template_code)
+			etl_code := vpca5_etl_code
+			default_template := default_message_template (vpca5c_default_template)
+			create parameters.make_filled (empty_string, 1, 9)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (arg.out, 7)
+			parameters.put (an_actual.to_text, 8)
+			parameters.put (a_formal.to_text, 9)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dolla7: $7 = argument index
+			-- dollar8: $8 = actual type
+			-- dollar9: $9 = formal type
+		end
+
 	make_vpir1a (a_class: ET_CLASS; arg1: ET_FORMAL_ARGUMENT; an_agent: ET_INLINE_AGENT; arg2: ET_FORMAL_ARGUMENT)
 			-- Create a new VPIR-1 error: `arg1' in inline agent `an_agent' has
 			-- the same name as argument `arg2' of an enclosing feature or
@@ -11166,6 +11608,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg1.name.position
+			ast_node := arg1.name
 			code := template_code (vpir1a_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1a_default_template)
@@ -11209,6 +11652,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg1.name.position
+			ast_node := arg1.name
 			code := template_code (vpir1b_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1b_default_template)
@@ -11252,6 +11696,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local1.name.position
+			ast_node := a_local1.name
 			code := template_code (vpir1c_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1c_default_template)
@@ -11295,6 +11740,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local1.name.position
+			ast_node := a_local1.name
 			code := template_code (vpir1d_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1d_default_template)
@@ -11341,6 +11787,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (vpir1e_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1e_default_template)
@@ -11387,6 +11834,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vpir1f_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1f_default_template)
@@ -11430,6 +11878,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (vpir1g_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1g_default_template)
@@ -11473,6 +11922,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vpir1h_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1h_default_template)
@@ -11518,6 +11968,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (vpir1i_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1i_default_template)
@@ -11563,6 +12014,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vpir1j_template_code)
 			etl_code := vpir1_etl_code
 			default_template := default_message_template (vpir1j_default_template)
@@ -11603,6 +12055,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_agent.position
+			if attached an_agent.compound as l_compound and then not l_compound.keyword.position.is_null then
+				ast_node := l_compound.keyword
+			else
+				ast_node := an_agent.agent_keyword
+			end
 			code := template_code (vpir3a_template_code)
 			etl_code := vpir3_etl_code
 			default_template := default_message_template (vpir3a_default_template)
@@ -11641,6 +12098,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := an_agent.position
+			if attached {ET_KEYWORD_MANIFEST_STRING} an_agent.language as l_language and then not l_language.keyword.position.is_null then
+				ast_node := l_language.keyword
+			else
+				ast_node := an_agent.agent_keyword
+			end
 			code := template_code (vpir3b_template_code)
 			etl_code := vpir3_etl_code
 			default_template := default_message_template (vpir3b_default_template)
@@ -11682,6 +12144,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_attribute.type.position
+			ast_node := an_attribute.type
 			code := template_code (vqmc1a_template_code)
 			etl_code := vqmc1_etl_code
 			default_template := default_message_template (vqmc1a_default_template)
@@ -11727,6 +12190,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_attribute.type.position
+			ast_node := an_attribute.type
 			code := template_code (vqmc2a_template_code)
 			etl_code := vqmc2_etl_code
 			default_template := default_message_template (vqmc2a_default_template)
@@ -11774,6 +12238,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.type.position
+			ast_node := a_attribute.type
 			code := template_code (vqmc2b_template_code)
 			etl_code := vqmc2_etl_code
 			default_template := default_message_template (vqmc2b_default_template)
@@ -11836,6 +12301,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_attribute.type.position
+			ast_node := an_attribute.type
 			code := template_code (vqmc3a_template_code)
 			etl_code := vqmc3_etl_code
 			default_template := default_message_template (vqmc3a_default_template)
@@ -11884,6 +12350,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.type.position
+			ast_node := a_attribute.type
 			code := template_code (vqmc3b_template_code)
 			etl_code := vqmc3_etl_code
 			default_template := default_message_template (vqmc3b_default_template)
@@ -11938,6 +12405,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_attribute.type.position
+			ast_node := an_attribute.type
 			code := template_code (vqmc4a_template_code)
 			etl_code := vqmc4_etl_code
 			default_template := default_message_template (vqmc4a_default_template)
@@ -11983,6 +12451,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_attribute.type.position
+			ast_node := an_attribute.type
 			code := template_code (vqmc5a_template_code)
 			etl_code := vqmc5_etl_code
 			default_template := default_message_template (vqmc5a_default_template)
@@ -12028,6 +12497,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.type.position
+			ast_node := a_attribute.type
 			code := template_code (vqmc5b_template_code)
 			etl_code := vqmc5_etl_code
 			default_template := default_message_template (vqmc5b_default_template)
@@ -12071,6 +12541,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_unique.type.position
+			ast_node := a_unique.type
 			code := template_code (vqui0a_template_code)
 			etl_code := vqui_etl_code
 			default_template := default_message_template (vqui0a_default_template)
@@ -12115,6 +12586,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg2.name.position
+			ast_node := arg2.name
 			code := template_code (vred0a_template_code)
 			etl_code := vred_etl_code
 			default_template := default_message_template (vred0a_default_template)
@@ -12159,6 +12631,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := local2.name.position
+			ast_node := local2.name
 			code := template_code (vred0b_template_code)
 			etl_code := vred_etl_code
 			default_template := default_message_template (vred0b_default_template)
@@ -12204,6 +12677,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg2.name.position
+			ast_node := arg2.name
 			code := template_code (vred0c_template_code)
 			etl_code := vred_etl_code
 			default_template := default_message_template (vred0c_default_template)
@@ -12247,6 +12721,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := local2.name.position
+			ast_node := local2.name
 			code := template_code (vred0d_template_code)
 			etl_code := vred_etl_code
 			default_template := default_message_template (vred0d_default_template)
@@ -12289,6 +12764,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg2.name.position
+			ast_node := arg2.name
 			code := template_code (vreg0a_template_code)
 			etl_code := vreg_etl_code
 			default_template := default_message_template (vreg0a_default_template)
@@ -12333,6 +12809,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := local2.name.position
+			ast_node := local2.name
 			code := template_code (vreg0b_template_code)
 			etl_code := vreg_etl_code
 			default_template := default_message_template (vreg0b_default_template)
@@ -12378,6 +12855,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (vrfa0a_template_code)
 			etl_code := vrfa_etl_code
 			default_template := default_message_template (vrfa0a_default_template)
@@ -12423,6 +12901,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := arg.name.position
+			ast_node := arg.name
 			code := template_code (vrfa0b_template_code)
 			etl_code := vrfa_etl_code
 			default_template := default_message_template (vrfa0b_default_template)
@@ -12465,6 +12944,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vrle1a_template_code)
 			etl_code := vrle1_etl_code
 			default_template := default_message_template (vrle1a_default_template)
@@ -12510,6 +12990,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vrle2a_template_code)
 			etl_code := vrle2_etl_code
 			default_template := default_message_template (vrle2a_default_template)
@@ -12554,6 +13035,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vrlv1a_template_code)
 			etl_code := vrlv1_etl_code
 			default_template := default_message_template (vrlv1a_default_template)
@@ -12599,6 +13081,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vrlv1b_template_code)
 			etl_code := vrlv1_etl_code
 			default_template := default_message_template (vrlv1b_default_template)
@@ -12642,6 +13125,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vrlv2a_template_code)
 			etl_code := vrlv2_etl_code
 			default_template := default_message_template (vrlv2a_default_template)
@@ -12688,6 +13172,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_local.name.position
+			ast_node := a_local.name
 			code := template_code (vrlv2b_template_code)
 			etl_code := vrlv2_etl_code
 			default_template := default_message_template (vrlv2b_default_template)
@@ -12729,6 +13214,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.name.position
+			ast_node := a_type.name
 			code := template_code (vtat1a_template_code)
 			etl_code := vtat1_etl_code
 			default_template := default_message_template (vtat1a_default_template)
@@ -12774,6 +13260,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.name.position
+			ast_node := a_type.name
 			code := template_code (vtat1b_template_code)
 			etl_code := vtat1_etl_code
 			default_template := default_message_template (vtat1b_default_template)
@@ -12819,6 +13306,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.name.position
+			ast_node := a_type.name
 			code := template_code (vtat1c_template_code)
 			etl_code := vtat1_etl_code
 			default_template := default_message_template (vtat1c_default_template)
@@ -12901,17 +13389,20 @@ feature {NONE} -- Initialization
 				--
 				-- `position' is set to null in that case.
 			position := null_position
+			ast_node := Void
 			a_cursor := a_cycle.new_cursor
 			from a_cursor.start until a_cursor.after loop
 				a_like := a_cursor.item
 				if attached a_class.seeded_feature (a_like.seed) as a_feature and then a_feature.implementation_class = current_class then
 					if a_like.is_like_argument then
 						position := a_like.name.position
+						ast_node := a_like.name
 						a_cursor.go_after
 					else
 						a_cursor.forth
 						if not a_cursor.after then
 							position := a_cursor.item.name.position
+							ast_node := a_cursor.item.name
 							a_cursor.go_after
 						end
 					end
@@ -12994,6 +13485,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_type.name.position
+			ast_node := a_type.name
 			code := template_code (vtat2b_template_code)
 			etl_code := vtat2_etl_code
 			default_template := default_message_template (vtat2b_default_template)
@@ -13024,12 +13516,12 @@ feature {NONE} -- Initialization
 		end
 
 	make_vtcg3a (a_class, a_class_impl: ET_CLASS; a_type: ET_CLASS_TYPE; an_actual: ET_TYPE; a_constraint: ET_CONSTRAINT)
-			-- Create a new VTCG-3 error: actual generic paramater `an_actual'
+			-- Create a new VTCG-3 error: actual generic parameter `an_actual'
 			-- of `a_type' appearing in `a_class_impl' and viewed from one of
-			-- its decendants `a_class' (possibly itself) does not conform to
+			-- its descendants `a_class' (possibly itself) does not conform to
 			-- constraint `a_constraint'.
 			--
-			-- Note that it is possible that the actual paramater conforms
+			-- Note that it is possible that the actual parameter conforms
 			-- to the constraint in `a_class_impl' but not in `a_class'.
 			-- Here is an example:
 			--
@@ -13065,6 +13557,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_actual.position
+			ast_node := an_actual
 			code := template_code (vtcg3a_template_code)
 			etl_code := vtcg3_etl_code
 			default_template := default_message_template (vtcg3a_default_template)
@@ -13113,6 +13606,9 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_position
+			if attached {ET_AST_NODE} a_position as l_ast_node then
+				ast_node := l_ast_node
+			end
 			code := template_code (vtcg4a_template_code)
 			etl_code := vtcg4_etl_code
 			default_template := default_message_template (vtcg4a_default_template)
@@ -13163,6 +13659,9 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_position
+			if attached {ET_AST_NODE} a_position as l_ast_node then
+				ast_node := l_ast_node
+			end
 			code := template_code (vtcg4b_template_code)
 			etl_code := vtcg4_etl_code
 			default_template := default_message_template (vtcg4b_default_template)
@@ -13210,6 +13709,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.name.position
+			ast_node := a_type.name
 			code := template_code (vtct0a_template_code)
 			etl_code := vtct_etl_code
 			default_template := default_message_template (vtct0a_default_template)
@@ -13251,6 +13751,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.name.position
+			ast_node := a_type.name
 			code := template_code (vtct0b_template_code)
 			etl_code := vtct_etl_code
 			default_template := default_message_template (vtct0b_default_template)
@@ -13293,6 +13794,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.name.position
+			if attached a_type.actual_parameters as l_actual_parameters and then l_actual_parameters.count > 0 then
+				ast_node := l_actual_parameters
+			else
+				ast_node := a_type.name
+			end
 			code := template_code (vtug1a_template_code)
 			etl_code := vtug1_etl_code
 			default_template := default_message_template (vtug1a_default_template)
@@ -13337,6 +13843,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_type.name.position
+			if attached a_type.actual_parameters as l_actual_parameters and then l_actual_parameters.count > 0 then
+				ast_node := l_actual_parameters
+			else
+				ast_node := a_type.name
+			end
 			code := template_code (vtug2a_template_code)
 			etl_code := vtug2_etl_code
 			default_template := default_message_template (vtug2a_default_template)
@@ -13364,9 +13875,9 @@ feature {NONE} -- Initialization
 			-- dollar7: $7 = invalid type
 		end
 
-	make_vuar1a (a_class: ET_CLASS; a_name: ET_CALL_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS)
+	make_vuar1a (a_class: ET_CLASS; a_call: ET_CALL_WITH_ACTUAL_ARGUMENTS; a_feature: ET_FEATURE; a_target: ET_CLASS)
 			-- Create a new VUAR-1 error: the number of actual arguments in
-			-- the qualified call `a_name' appearing in `a_class' is not the
+			-- the qualified call `a_call' appearing in `a_class' is not the
 			-- same as the number of formal arguments of `a_feature' in
 			-- class `a_target'.
 			--
@@ -13374,13 +13885,18 @@ feature {NONE} -- Initialization
 		require
 			a_class_not_void: a_class /= Void
 			a_class_preparsed: a_class.is_preparsed
-			a_name_not_void: a_name /= Void
+			a_call_not_void: a_call /= Void
 			a_feature_not_void: a_feature /= Void
 			a_target_not_void: a_target /= Void
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_name.position
+			position := a_call.name.position
+			if attached a_call.arguments as l_arguments and then l_arguments.count > 0 then
+				ast_node := l_arguments
+			else
+				ast_node := a_call.name
+			end
 			code := template_code (vuar1a_template_code)
 			etl_code := vuar1_etl_code
 			default_template := default_message_template (vuar1a_default_template)
@@ -13391,7 +13907,7 @@ feature {NONE} -- Initialization
 			parameters.put (position.column.out, 4)
 			parameters.put (current_class.upper_name, 5)
 			parameters.put (class_impl.upper_name, 6)
-			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_call.name.lower_name, 7)
 			parameters.put (a_feature.lower_name, 8)
 			parameters.put (a_target.upper_name, 9)
 			set_compilers (True)
@@ -13412,21 +13928,26 @@ feature {NONE} -- Initialization
 			-- dollar9: $9 = base class of target of the call
 		end
 
-	make_vuar1b (a_class: ET_CLASS; a_name: ET_CALL_NAME; a_feature: ET_FEATURE)
+	make_vuar1b (a_class: ET_CLASS; a_call: ET_CALL_WITH_ACTUAL_ARGUMENTS; a_feature: ET_FEATURE)
 			-- Create a new VUAR-1 error: the number of actual arguments in
-			-- the unqualified call `a_name' appearing in `a_class' is not the
+			-- the unqualified call `a_call' appearing in `a_class' is not the
 			-- same as the number of formal arguments of `a_feature' in `a_class'.
 			--
 			-- ETL2: p.369
 		require
 			a_class_not_void: a_class /= Void
 			a_class_preparsed: a_class.is_preparsed
-			a_name_not_void: a_name /= Void
+			a_call_not_void: a_call /= Void
 			a_feature_not_void: a_feature /= Void
 		do
 			current_class := a_class
 			class_impl := a_class
-			position := a_name.position
+			position := a_call.name.position
+			if attached a_call.arguments as l_arguments and then l_arguments.count > 0 then
+				ast_node := l_arguments
+			else
+				ast_node := a_call.name
+			end
 			code := template_code (vuar1b_template_code)
 			etl_code := vuar1_etl_code
 			default_template := default_message_template (vuar1b_default_template)
@@ -13437,7 +13958,7 @@ feature {NONE} -- Initialization
 			parameters.put (position.column.out, 4)
 			parameters.put (current_class.upper_name, 5)
 			parameters.put (class_impl.upper_name, 6)
-			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_call.name.lower_name, 7)
 			parameters.put (a_feature.lower_name, 8)
 			set_compilers (True)
 		ensure
@@ -13467,6 +13988,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_label.position
+			ast_node := a_label
 			code := template_code (vuar1c_template_code)
 			etl_code := vuar1_etl_code
 			default_template := default_message_template (vuar1c_default_template)
@@ -13494,9 +14016,9 @@ feature {NONE} -- Initialization
 			-- dollar7: $7 = label name of the call
 		end
 
-	make_vuar2a (a_class, a_class_impl: ET_CLASS; a_name: ET_CALL_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
+	make_vuar2a (a_class, a_class_impl: ET_CLASS; a_call: ET_CALL_WITH_ACTUAL_ARGUMENTS; a_feature: ET_FEATURE; a_target: ET_CLASS; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
 			-- Create a new VUAR-2 error: the `arg'-th actual argument in the qualified
-			-- call `a_name' appearing in `a_class_impl' and viewed from one of its descendants
+			-- call `a_call' appearing in `a_class_impl' and viewed from one of its descendants
 			-- `a_class' (possibly itself) does not conform to the corresponding formal argument
 			-- of `a_feature' in class `a_target'.
 			--
@@ -13505,7 +14027,7 @@ feature {NONE} -- Initialization
 			a_class_not_void: a_class /= Void
 			a_class_impl_not_void: a_class_impl /= Void
 			a_class_impl_preparsed: a_class_impl.is_preparsed
-			a_name_not_void: a_name /= Void
+			a_call_not_void: a_call /= Void
 			a_feature_not_void: a_feature /= Void
 			a_target_not_void: a_target /= Void
 			an_actual_not_void: an_actual /= Void
@@ -13515,7 +14037,12 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class_impl
-			position := a_name.position
+			position := a_call.name.position
+			if attached a_call.arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_call.name
+			end
 			code := template_code (vuar2a_template_code)
 			etl_code := vuar2_etl_code
 			default_template := default_message_template (vuar2a_default_template)
@@ -13526,7 +14053,7 @@ feature {NONE} -- Initialization
 			parameters.put (position.column.out, 4)
 			parameters.put (current_class.upper_name, 5)
 			parameters.put (class_impl.upper_name, 6)
-			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_call.name.lower_name, 7)
 			parameters.put (a_feature.lower_name, 8)
 			parameters.put (a_target.upper_name, 9)
 			parameters.put (arg.out, 10)
@@ -13553,9 +14080,9 @@ feature {NONE} -- Initialization
 			-- dollar12: $12 = formal type
 		end
 
-	make_vuar2b (a_class, a_class_impl: ET_CLASS; a_name: ET_CALL_NAME; a_feature: ET_FEATURE; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
+	make_vuar2b (a_class, a_class_impl: ET_CLASS; a_call: ET_CALL_WITH_ACTUAL_ARGUMENTS; a_feature: ET_FEATURE; arg: INTEGER; an_actual, a_formal: ET_NAMED_TYPE)
 			-- Create a new VUAR-2 error: the `arg'-th actual argument in the unqualified
-			-- call `a_name' appearing in `a_class_impl' and viewed from one of its descendants
+			-- call `a_call' appearing in `a_class_impl' and viewed from one of its descendants
 			-- `a_class' (possibly itself) does not conform to the corresponding formal argument
 			-- of `a_feature' in `a_class'.
 			--
@@ -13564,7 +14091,7 @@ feature {NONE} -- Initialization
 			a_class_not_void: a_class /= Void
 			a_class_impl_not_void: a_class_impl /= Void
 			a_class_impl_preparsed: a_class_impl.is_preparsed
-			a_name_not_void: a_name /= Void
+			a_call_not_void: a_call /= Void
 			a_feature_not_void: a_feature /= Void
 			an_actual_not_void: an_actual /= Void
 			an_actual_named_type: an_actual.is_named_type
@@ -13573,7 +14100,12 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class_impl
-			position := a_name.position
+			position := a_call.name.position
+			if attached a_call.arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_call.name
+			end
 			code := template_code (vuar2b_template_code)
 			etl_code := vuar2_etl_code
 			default_template := default_message_template (vuar2b_default_template)
@@ -13584,7 +14116,7 @@ feature {NONE} -- Initialization
 			parameters.put (position.column.out, 4)
 			parameters.put (current_class.upper_name, 5)
 			parameters.put (class_impl.upper_name, 6)
-			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_call.name.lower_name, 7)
 			parameters.put (a_feature.lower_name, 8)
 			parameters.put (arg.out, 9)
 			parameters.put (an_actual.to_text, 10)
@@ -13609,8 +14141,8 @@ feature {NONE} -- Initialization
 			-- dollar11: $11 = formal type
 		end
 
-	make_vuar3ga (a_class, a_class_impl: ET_CLASS; a_name: ET_CALL_NAME; a_feature: ET_FEATURE; a_target_class: ET_CLASS; arg: INTEGER; an_actual_type, a_formal_type: ET_NAMED_TYPE)
-			-- Create a new VUAR-3G error: the `arg'-th actual argument of the separate call `a_name', appearing
+	make_vuar3ga (a_class, a_class_impl: ET_CLASS; a_call: ET_CALL_WITH_ACTUAL_ARGUMENTS; a_feature: ET_FEATURE; a_target_class: ET_CLASS; arg: INTEGER; an_actual_type, a_formal_type: ET_NAMED_TYPE)
+			-- Create a new VUAR-3G error: the `arg'-th actual argument of the separate call `a_call', appearing
 			-- in `a_class_impl' and viewed from one of its descendants `a_class' (possibly itself), has a
 			-- reference type, but the type of the formal argument of feature `a_feature' in class `a_target'
 			-- is not separate.
@@ -13621,7 +14153,7 @@ feature {NONE} -- Initialization
 			a_class_not_void: a_class /= Void
 			a_class_impl_not_void: a_class_impl /= Void
 			a_class_impl_preparsed: a_class_impl.is_preparsed
-			a_name_not_void: a_name /= Void
+			a_call_not_void: a_call /= Void
 			a_feature_not_void: a_feature /= Void
 			a_target_class_not_void: a_target_class /= Void
 			an_actual_type_not_void: an_actual_type /= Void
@@ -13631,8 +14163,13 @@ feature {NONE} -- Initialization
 		do
 			current_class := a_class
 			class_impl := a_class_impl
-			position := a_name.position
+			position := a_call.name.position
 			code := template_code (vuar3ga_template_code)
+			if attached a_call.arguments as l_arguments and then arg >= 1 and then arg <= l_arguments.count then
+				ast_node := l_arguments.actual_argument (arg)
+			else
+				ast_node := a_call.name
+			end
 			etl_code := vuar3g_etl_code
 			default_template := default_message_template (vuar3ga_default_template)
 			create parameters.make_filled (empty_string, 1, 12)
@@ -13642,7 +14179,7 @@ feature {NONE} -- Initialization
 			parameters.put (position.column.out, 4)
 			parameters.put (current_class.upper_name, 5)
 			parameters.put (class_impl.upper_name, 6)
-			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_call.name.lower_name, 7)
 			parameters.put (a_feature.lower_name, 8)
 			parameters.put (a_target_class.upper_name, 9)
 			parameters.put (arg.out, 10)
@@ -13693,6 +14230,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuar3gb_template_code)
 			etl_code := vuar3g_etl_code
 			default_template := default_message_template (vuar3gb_default_template)
@@ -13740,6 +14278,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature.name.position
+			ast_node := a_feature.name
 			code := template_code (vucr0a_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0a_default_template)
@@ -13781,6 +14320,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature.name.position
+			ast_node := a_feature.name
 			code := template_code (vucr0b_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0b_default_template)
@@ -13825,6 +14365,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vucr0c_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0c_default_template)
@@ -13869,6 +14410,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vucr0d_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0d_default_template)
@@ -13898,7 +14440,7 @@ feature {NONE} -- Initialization
 
 	make_vucr0e (a_class, a_class_impl: ET_CLASS; a_name: ET_CALL_NAME; a_attribute: ET_FEATURE)
 			-- Create a new VUCR error: the access to the address of `a_name' written in `a_class_impl'
-			-- if the access to the address of attribute `a_attribute' from a static feature
+			-- is the access to the address of attribute `a_attribute' from a static feature
 			-- when viewed from `a_class'.
 			--
 			-- Only in ISE Eiffel
@@ -13913,6 +14455,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vUCR0e_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0e_default_template)
@@ -13954,6 +14497,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_current.position
+			ast_node := a_current
 			code := template_code (vucr0f_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0f_default_template)
@@ -13993,6 +14537,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_current_address.position
+			ast_node := a_current_address.current_keyword
 			code := template_code (vucr0g_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0g_default_template)
@@ -14035,6 +14580,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_precursor.position
+			ast_node := a_precursor
 			code := template_code (vucr0h_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0h_default_template)
@@ -14076,6 +14622,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_agent.position
+			ast_node := a_agent.agent_keyword
 			code := template_code (vucr0i_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0i_default_template)
@@ -14116,6 +14663,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_agent.position
+			ast_node := a_agent.agent_keyword
 			code := template_code (vucr0j_template_code)
 			etl_code := vucr_etl_code
 			default_template := default_message_template (vucr0j_default_template)
@@ -14157,6 +14705,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuex1a_template_code)
 			etl_code := vuex1_etl_code
 			default_template := default_message_template (vuex1a_default_template)
@@ -14199,6 +14748,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuex2a_template_code)
 			etl_code := vuex2_etl_code
 			default_template := default_message_template (vuex2a_default_template)
@@ -14246,6 +14796,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuex2b_template_code)
 			etl_code := vuex2_etl_code
 			default_template := default_message_template (vuex2b_default_template)
@@ -14295,6 +14846,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuno3a_template_code)
 			etl_code := vuno3_etl_code
 			default_template := default_message_template (vuno3a_default_template)
@@ -14343,6 +14895,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_target_type.position
+			ast_node := a_target_type
 			code := template_code (vuno5a_template_code)
 			etl_code := vuno5_etl_code
 			default_template := default_message_template (vuno5a_default_template)
@@ -14388,6 +14941,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_target_type.position
+			ast_node := a_target_type
 			code := template_code (vuno5b_template_code)
 			etl_code := vuno5_etl_code
 			default_template := default_message_template (vuno5b_default_template)
@@ -14429,6 +14983,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test.name.position
+			ast_node := a_object_test.name
 			code := template_code (vuot1a_template_code)
 			etl_code := vuot1_etl_code
 			default_template := default_message_template (vuot1a_default_template)
@@ -14469,6 +15024,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test.name.position
+			ast_node := a_object_test.name
 			code := template_code (vuot1b_template_code)
 			etl_code := vuot1_etl_code
 			default_template := default_message_template (vuot1b_default_template)
@@ -14509,6 +15065,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test.name.position
+			ast_node := a_object_test.name
 			code := template_code (vuot1c_template_code)
 			etl_code := vuot1_etl_code
 			default_template := default_message_template (vuot1c_default_template)
@@ -14548,6 +15105,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test1.name.position
+			ast_node := a_object_test1.name
 			code := template_code (vuot1d_template_code)
 			etl_code := vuot1_etl_code
 			default_template := default_message_template (vuot1d_default_template)
@@ -14587,6 +15145,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test.name.position
+			ast_node := a_object_test.name
 			code := template_code (vuot1e_template_code)
 			etl_code := vuot1_etl_code
 			default_template := default_message_template (vuot1e_default_template)
@@ -14626,6 +15185,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test.name.position
+			ast_node := a_object_test.name
 			code := template_code (vuot1f_template_code)
 			etl_code := vuot1_etl_code
 			default_template := default_message_template (vuot1f_default_template)
@@ -14665,6 +15225,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test1.name.position
+			ast_node := a_object_test1.name
 			code := template_code (vuot1g_template_code)
 			etl_code := vuot1_etl_code
 			default_template := default_message_template (vuot1g_default_template)
@@ -14707,6 +15268,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test1.name.position
+			ast_node := a_object_test1.name
 			code := template_code (vuot3a_template_code)
 			etl_code := vuot3_etl_code
 			default_template := default_message_template (vuot3a_default_template)
@@ -14750,6 +15312,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test1.name.position
+			ast_node := a_object_test1.name
 			code := template_code (vuot3b_template_code)
 			etl_code := vuot3_etl_code
 			default_template := default_message_template (vuot3b_default_template)
@@ -14788,6 +15351,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test.name.position
+			ast_node := a_object_test.name
 			code := template_code (vuot4a_template_code)
 			etl_code := vuot4_etl_code
 			default_template := default_message_template (vuot4a_default_template)
@@ -14826,6 +15390,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_object_test.name.position
+			ast_node := a_object_test.name
 			code := template_code (vuot4b_template_code)
 			etl_code := vuot4_etl_code
 			default_template := default_message_template (vuot4b_default_template)
@@ -14868,6 +15433,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuta2a_template_code)
 			etl_code := vuta2_etl_code
 			default_template := default_message_template (vuta2a_default_template)
@@ -14916,6 +15482,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuta2b_template_code)
 			etl_code := vuta2_etl_code
 			default_template := default_message_template (vuta2b_default_template)
@@ -14963,6 +15530,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuta4ga_template_code)
 			etl_code := vuta4g_etl_code
 			default_template := default_message_template (vuta4ga_default_template)
@@ -15012,6 +15580,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vuta4gb_template_code)
 			etl_code := vuta4g_etl_code
 			default_template := default_message_template (vuta4gb_default_template)
@@ -15056,6 +15625,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_once_key2.position
+			ast_node := a_once_key2
 			code := template_code (vvok1a_template_code)
 			etl_code := vvok1_etl_code
 			default_template := default_message_template (vvok1a_default_template)
@@ -15098,6 +15668,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_once_key2.position
+			ast_node := a_once_key2
 			code := template_code (vvok1b_template_code)
 			etl_code := vvok1_etl_code
 			default_template := default_message_template (vvok1b_default_template)
@@ -15140,6 +15711,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_note_term2.position
+			ast_node := a_note_term2
 			code := template_code (vvok1c_template_code)
 			etl_code := vvok1_etl_code
 			default_template := default_message_template (vvok1c_default_template)
@@ -15180,6 +15752,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_once_key.position
+			ast_node := a_once_key
 			code := template_code (vvok2a_template_code)
 			etl_code := vvok2_etl_code
 			default_template := default_message_template (vvok2a_default_template)
@@ -15218,6 +15791,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_note_term.position
+			ast_node := a_note_term
 			code := template_code (vvok2b_template_code)
 			etl_code := vvok2_etl_code
 			default_template := default_message_template (vvok2b_default_template)
@@ -15260,6 +15834,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_attribute.position
+			ast_node := a_attribute.type
 			code := template_code (vwab0a_template_code)
 			etl_code := vwab_etl_code
 			default_template := default_message_template (vwab0a_default_template)
@@ -15304,6 +15879,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_expression.position
+			ast_node := an_expression
 			code := template_code (vwbe0a_template_code)
 			etl_code := vwbe_etl_code
 			default_template := default_message_template (vwbe0a_default_template)
@@ -15348,6 +15924,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_expression.position
+			ast_node := a_expression
 			code := template_code (vwce0a_template_code)
 			etl_code := vwce_etl_code
 			default_template := default_message_template (vwce0a_default_template)
@@ -15395,6 +15972,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_expression.operator.position
+			ast_node := an_expression
 			code := template_code (vweq0a_template_code)
 			etl_code := vweq_etl_code
 			default_template := default_message_template (vweq0a_default_template)
@@ -15444,6 +16022,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_expression.operator.position
+			ast_node := an_expression
 			code := template_code (vweq0b_template_code)
 			etl_code := vweq_etl_code
 			default_template := default_message_template (vweq0b_default_template)
@@ -15491,6 +16070,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := ast_position (a_manifest_array.cast_type)
+			if attached a_manifest_array.cast_type as l_cast_type then
+				ast_node := l_cast_type.type
+			else
+				ast_node := a_manifest_array
+			end
 			code := template_code (vwma1a_template_code)
 			etl_code := vwma1_etl_code
 			default_template := default_message_template (vwma1a_default_template)
@@ -15540,6 +16124,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_manifest_array_item.position
+			ast_node := a_manifest_array_item
 			code := template_code (vwma2a_template_code)
 			etl_code := vwma2_etl_code
 			default_template := default_message_template (vwma2a_default_template)
@@ -15586,6 +16171,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := ast_position (a_constant.cast_type)
+			if attached a_constant.cast_type as l_cast_type then
+				ast_node := l_cast_type.type
+			else
+				ast_node := a_constant
+			end
 			code := template_code (vwmq0a_template_code)
 			etl_code := vwmq_etl_code
 			default_template := default_message_template (vwmq0a_default_template)
@@ -15629,6 +16219,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := ast_position (a_constant.cast_type)
+			if attached a_constant.cast_type as l_cast_type then
+				ast_node := l_cast_type.type
+			else
+				ast_node := a_constant
+			end
 			code := template_code (vwmq0b_template_code)
 			etl_code := vwmq_etl_code
 			default_template := default_message_template (vwmq0b_default_template)
@@ -15672,6 +16267,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := ast_position (a_constant.cast_type)
+			if attached a_constant.cast_type as l_cast_type then
+				ast_node := l_cast_type.type
+			else
+				ast_node := a_constant
+			end
 			code := template_code (vwmq0c_template_code)
 			etl_code := vwmq_etl_code
 			default_template := default_message_template (vwmq0c_default_template)
@@ -15715,6 +16315,11 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := ast_position (a_constant.cast_type)
+			if attached a_constant.cast_type as l_cast_type then
+				ast_node := l_cast_type.type
+			else
+				ast_node := a_constant
+			end
 			code := template_code (vwmq0d_template_code)
 			etl_code := vwmq_etl_code
 			default_template := default_message_template (vwmq0d_default_template)
@@ -15756,6 +16361,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vwst1a_template_code)
 			etl_code := vwst1_etl_code
 			default_template := default_message_template (vwst1a_default_template)
@@ -15798,6 +16404,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (vwst1a_template_code)
 			etl_code := vwst1_etl_code
 			default_template := default_message_template (vwst1a_default_template)
@@ -15841,6 +16448,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name2.position
+			ast_node := a_name2
 			code := template_code (vwst2a_template_code)
 			etl_code := vwst2_etl_code
 			default_template := default_message_template (vwst2a_default_template)
@@ -15881,6 +16489,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_retry.position
+			ast_node := a_retry
 			code := template_code (vxrt0a_template_code)
 			etl_code := vxrt_etl_code
 			default_template := default_message_template (vxrt0a_default_template)
@@ -15922,6 +16531,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := null_position
+			ast_node := Void
 			code := template_code (gvagp0a_template_code)
 			etl_code := gvagp_etl_code
 			default_template := default_message_template (gvagp0a_default_template)
@@ -15964,6 +16574,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_parent.position
+			ast_node := a_parent.tuple_keyword
 			code := template_code (gvhpr5a_template_code)
 			etl_code := gvhpr5_etl_code
 			default_template := default_message_template (gvhpr5a_default_template)
@@ -16004,6 +16615,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := null_position
+			ast_node := Void
 			code := template_code (gvhso1a_template_code)
 			etl_code := gvhso1_etl_code
 			default_template := default_message_template (gvhso1a_default_template)
@@ -16042,6 +16654,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := null_position
+			ast_node := Void
 			code := template_code (gvhso2a_template_code)
 			etl_code := gvhso2_etl_code
 			default_template := default_message_template (gvhso2a_default_template)
@@ -16086,6 +16699,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature.name.position
+			ast_node := a_feature.name
 			code := template_code (gvkbs0a_template_code)
 			etl_code := gvkbs_etl_code
 			default_template := default_message_template (gvkbs0a_default_template)
@@ -16151,6 +16765,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature.name.position
+			ast_node := a_feature.name
 			code := template_code (gvkbu1a_template_code)
 			etl_code := gvkbu1_etl_code
 			default_template := default_message_template (gvkbu1a_default_template)
@@ -16192,6 +16807,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := null_position
+			ast_node := Void
 			code := template_code (gvkfe1a_template_code)
 			etl_code := gvkfe1_etl_code
 			default_template := default_message_template (gvkfe1a_default_template)
@@ -16235,8 +16851,10 @@ feature {NONE} -- Initialization
 			class_impl := a_class
 			if a_feature.implementation_class = a_class then
 				position := a_feature.name.position
+				ast_node := a_feature.name
 			else
 				position := null_position
+				ast_node := Void
 			end
 			code := template_code (gvkfe2a_template_code)
 			etl_code := gvkfe2_etl_code
@@ -16283,8 +16901,10 @@ feature {NONE} -- Initialization
 			class_impl := a_class
 			if a_feature.implementation_class = a_class then
 				position := a_feature.name.position
+				ast_node := a_feature.name
 			else
 				position := null_position
+				ast_node := Void
 			end
 			code := template_code (gvkfe3a_template_code)
 			etl_code := gvkfe3_etl_code
@@ -16331,8 +16951,10 @@ feature {NONE} -- Initialization
 			class_impl := a_class
 			if a_feature.implementation_class = a_class then
 				position := a_feature.name.position
+				ast_node := a_feature.name
 			else
 				position := null_position
+				ast_node := Void
 			end
 			code := template_code (gvkfe4a_template_code)
 			etl_code := gvkfe4_etl_code
@@ -16377,8 +16999,10 @@ feature {NONE} -- Initialization
 			class_impl := a_class
 			if a_feature.implementation_class = a_class then
 				position := a_feature.name.position
+				ast_node := a_feature.name
 			else
 				position := null_position
+				ast_node := Void
 			end
 			code := template_code (gvkfe5a_template_code)
 			etl_code := gvkfe5_etl_code
@@ -16425,6 +17049,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_feature.name.position
+			ast_node := a_feature.name
 			code := template_code (gvkfe6a_template_code)
 			etl_code := gvkfe6_etl_code
 			default_template := default_message_template (gvkfe6a_default_template)
@@ -16489,6 +17114,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvscn1a_template_code)
 			etl_code := gvscn1_etl_code
 			default_template := default_message_template (gvscn1a_default_template)
@@ -16533,6 +17159,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := null_position
+			ast_node := Void
 			code := template_code (gvscn1b_template_code)
 			etl_code := gvscn1_etl_code
 			default_template := default_message_template (gvscn1b_default_template)
@@ -16563,7 +17190,7 @@ feature {NONE} -- Initialization
 		end
 
 	make_gvtcg5a (a_class, a_class_impl: ET_CLASS; a_type: ET_CLASS_TYPE; an_actual: ET_TYPE; a_formal: ET_FORMAL_PARAMETER)
-			-- Create a new GVTCG-5 error: actual generic paramater `an_actual' of `a_type' in
+			-- Create a new GVTCG-5 error: actual generic parameter `an_actual' of `a_type' in
 			-- `a_class_impl' and viewed from one of its descendants `a_class' is not a
 			-- reference type but the corresponding formal parameter `a_formal' is marked
 			-- as reference.
@@ -16580,6 +17207,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_actual.position
+			ast_node := an_actual
 			code := template_code (gvtcg5a_template_code)
 			etl_code := gvtcg5_etl_code
 			default_template := default_message_template (gvtcg5a_default_template)
@@ -16610,7 +17238,7 @@ feature {NONE} -- Initialization
 		end
 
 	make_gvtcg5b (a_class, a_class_impl: ET_CLASS; a_type: ET_CLASS_TYPE; an_actual: ET_TYPE; a_formal: ET_FORMAL_PARAMETER)
-			-- Create a new GVTCG-5 error: actual generic paramater `an_actual' of `a_type' in
+			-- Create a new GVTCG-5 error: actual generic parameter `an_actual' of `a_type' in
 			-- `a_class_impl' and viewed from one of its descendants `a_class' is not a
 			-- expanded type but the corresponding formal parameter `a_formal' is marked
 			-- as expanded.
@@ -16627,6 +17255,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := an_actual.position
+			ast_node := an_actual
 			code := template_code (gvtcg5b_template_code)
 			etl_code := gvtcg5_etl_code
 			default_template := default_message_template (gvtcg5b_default_template)
@@ -16672,6 +17301,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuaa0a_template_code)
 			etl_code := gvuaa_etl_code
 			default_template := default_message_template (gvuaa0a_default_template)
@@ -16717,6 +17347,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuaa0b_template_code)
 			etl_code := gvuaa_etl_code
 			default_template := default_message_template (gvuaa0b_default_template)
@@ -16760,6 +17391,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuac0a_template_code)
 			etl_code := gvuac_etl_code
 			default_template := default_message_template (gvuac0a_default_template)
@@ -16805,6 +17437,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuac0b_template_code)
 			etl_code := gvuac_etl_code
 			default_template := default_message_template (gvuac0b_default_template)
@@ -16848,6 +17481,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuac0c_template_code)
 			etl_code := gvuac_etl_code
 			default_template := default_message_template (gvuac0c_default_template)
@@ -16891,6 +17525,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvual0a_template_code)
 			etl_code := gvual_etl_code
 			default_template := default_message_template (gvual0a_default_template)
@@ -16936,6 +17571,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvual0b_template_code)
 			etl_code := gvual_etl_code
 			default_template := default_message_template (gvual0b_default_template)
@@ -16979,6 +17615,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuao0a_template_code)
 			etl_code := gvuao_etl_code
 			default_template := default_message_template (gvuao0a_default_template)
@@ -17024,6 +17661,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuao0b_template_code)
 			etl_code := gvuao_etl_code
 			default_template := default_message_template (gvuao0b_default_template)
@@ -17067,6 +17705,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuao0c_template_code)
 			etl_code := gvuao_etl_code
 			default_template := default_message_template (gvuao0c_default_template)
@@ -17110,6 +17749,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuas0a_template_code)
 			etl_code := gvuas_etl_code
 			default_template := default_message_template (gvuas0a_default_template)
@@ -17155,6 +17795,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuas0b_template_code)
 			etl_code := gvuas_etl_code
 			default_template := default_message_template (gvuas0b_default_template)
@@ -17198,6 +17839,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuas0c_template_code)
 			etl_code := gvuas_etl_code
 			default_template := default_message_template (gvuas0c_default_template)
@@ -17240,6 +17882,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuia0a_template_code)
 			etl_code := gvuia_etl_code
 			default_template := default_message_template (gvuia0a_default_template)
@@ -17284,6 +17927,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuia0b_template_code)
 			etl_code := gvuia_etl_code
 			default_template := default_message_template (gvuia0b_default_template)
@@ -17326,6 +17970,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuic0a_template_code)
 			etl_code := gvuic_etl_code
 			default_template := default_message_template (gvuic0a_default_template)
@@ -17370,6 +18015,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuic0b_template_code)
 			etl_code := gvuic_etl_code
 			default_template := default_message_template (gvuic0b_default_template)
@@ -17412,6 +18058,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuic0c_template_code)
 			etl_code := gvuic_etl_code
 			default_template := default_message_template (gvuic0c_default_template)
@@ -17454,6 +18101,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuil0a_template_code)
 			etl_code := gvuil_etl_code
 			default_template := default_message_template (gvuil0a_default_template)
@@ -17498,6 +18146,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuil0b_template_code)
 			etl_code := gvuil_etl_code
 			default_template := default_message_template (gvuil0b_default_template)
@@ -17540,6 +18189,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuio0a_template_code)
 			etl_code := gvuio_etl_code
 			default_template := default_message_template (gvuio0a_default_template)
@@ -17584,6 +18234,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuio0b_template_code)
 			etl_code := gvuio_etl_code
 			default_template := default_message_template (gvuio0b_default_template)
@@ -17626,6 +18277,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuio0c_template_code)
 			etl_code := gvuio_etl_code
 			default_template := default_message_template (gvuio0c_default_template)
@@ -17668,6 +18320,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuis0a_template_code)
 			etl_code := gvuis_etl_code
 			default_template := default_message_template (gvuis0a_default_template)
@@ -17712,6 +18365,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuis0b_template_code)
 			etl_code := gvuis_etl_code
 			default_template := default_message_template (gvuis0b_default_template)
@@ -17754,6 +18408,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class
 			position := a_name.position
+			ast_node := a_name
 			code := template_code (gvuis0c_template_code)
 			etl_code := gvuis_etl_code
 			default_template := default_message_template (gvuis0c_default_template)
@@ -17799,6 +18454,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_constant.value_position
+			ast_node := a_constant
 			code := template_code (gvwmc2a_template_code)
 			etl_code := gvwmc2_etl_code
 			default_template := default_message_template (gvwmc2a_default_template)
@@ -17853,6 +18509,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_constant.value_position
+			ast_node := a_constant
 			code := template_code (gvwmc2b_template_code)
 			etl_code := gvwmc2_etl_code
 			default_template := default_message_template (gvwmc2b_default_template)
@@ -17912,6 +18569,7 @@ feature {NONE} -- Initialization
 			current_class := a_class
 			class_impl := a_class_impl
 			position := a_constant.value_position
+			ast_node := a_constant
 			code := template_code (gvwmc2c_template_code)
 			etl_code := gvwmc2_etl_code
 			default_template := default_message_template (gvwmc2c_default_template)
@@ -18253,10 +18911,13 @@ feature {NONE} -- Implementation
 	vpca2a_default_template: STRING = "feature `$8' of class $9 is not exported to class $5."
 	vpca3a_default_template: STRING = "the number of actual arguments is not the same as the number of formal arguments of feature `$8' in class $9."
 	vpca3b_default_template: STRING = "the number of actual arguments is not the same as the number of formal arguments of feature `$8'."
+	vpca3c_default_template: STRING = "the number of actual arguments is not the same as the number of formal arguments of inline agent."
 	vpca4a_default_template: STRING = "the $10-th actual argument (of type '$11') does not conform to the corresponding formal argument (of type '$12') of feature `$8' in class $9."
 	vpca4b_default_template: STRING = "the $9-th actual argument (of type '$10') does not conform to the corresponding formal argument (of type '$11') of feature `$8'."
+	vpca4c_default_template: STRING = "the $7-th actual argument (of type '$8') does not conform to the corresponding formal argument (of type '$9') of inline agent."
 	vpca5a_default_template: STRING = "the type '$11' specified for the $10-th actual argument of Call_agent does not conform to the corresponding formal argument (of type '$12') of feature `$8' in class $9."
 	vpca5b_default_template: STRING = "the type '$10' specified for the $9-th actual argument of Call_agent does not conform to the corresponding formal argument (of type '$11') of feature `$8'."
+	vpca5c_default_template: STRING = "the type '$8' specified for the $7-th actual argument of inline agent does not conform to the corresponding formal argument (of type '$9')."
 	vpir1a_default_template: STRING = "argument name '$7' in inline agent is also the name of a formal argument of an enclosing feature or inline agent."
 	vpir1b_default_template: STRING = "argument name '$7' in inline agent is also the name of a local variable of an enclosing feature or inline agent."
 	vpir1c_default_template: STRING = "local variable name '$7' in inline agent is also the name of a formal argument of an enclosing feature or inline agent."
@@ -18830,10 +19491,13 @@ feature {NONE} -- Implementation
 	vpca2a_template_code: STRING = "vpca2a"
 	vpca3a_template_code: STRING = "vpca3a"
 	vpca3b_template_code: STRING = "vpca3b"
+	vpca3c_template_code: STRING = "vpca3c"
 	vpca4a_template_code: STRING = "vpca4a"
 	vpca4b_template_code: STRING = "vpca4b"
+	vpca4c_template_code: STRING = "vpca4c"
 	vpca5a_template_code: STRING = "vpca5a"
 	vpca5b_template_code: STRING = "vpca5b"
+	vpca5c_template_code: STRING = "vpca5c"
 	vpir1a_template_code: STRING = "vpir1a"
 	vpir1b_template_code: STRING = "vpir1b"
 	vpir1c_template_code: STRING = "vpir1c"
