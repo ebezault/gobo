@@ -207,7 +207,7 @@ feature {NONE} -- Processing
 					if not l_has_interface_error or system_processor.is_fault_tolerant then
 						if l_has_interface_error then
 							l_old_error_handler := system_processor.error_handler
---							system_processor.set_error_handler_only (tokens.null_error_handler)
+							system_processor.set_error_handler_only (tokens.null_error_handler)
 						end
 						current_class.set_checking_implementation (True)
 							-- Process parents first.
