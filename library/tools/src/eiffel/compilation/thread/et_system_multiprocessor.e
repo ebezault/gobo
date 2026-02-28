@@ -28,6 +28,7 @@ inherit
 			set_use_note_keyword,
 			set_use_reference_keyword,
 			set_default_keyword_usage,
+			set_unused_local_variable_check_enabled,
 			set_providers_enabled,
 			set_cluster_dependence_enabled,
 			set_use_cluster_dependence_pathnames,
@@ -310,6 +311,25 @@ feature -- Parser status setting
 			end
 		end
 
+	set_unused_local_variable_check_enabled (b: BOOLEAN)
+			-- Set `unused_local_variable_check_enabled' to `b' in current system processor
+			-- and all other system processors in case of a multiprocessor.
+		local
+			i: INTEGER
+		do
+			set_unused_local_variable_check_enabled_only (b)
+			from
+				i := other_processors.count
+			until
+				i <= 0
+			loop
+				other_processors.item (i).set_unused_local_variable_check_enabled_only (b)
+				i := i - 1
+			end
+		ensure then
+			other_unused_local_variable_check_enabled_set: across other_processors as i_other_processor all i_other_processor.unused_local_variable_check_enabled = b end
+		end
+		
 	set_providers_enabled (b: BOOLEAN)
 			-- Set `providers_enabled' to `b' in current system processor
 			-- and all other system processors in case of a multiprocessor.

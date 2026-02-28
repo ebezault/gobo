@@ -31,11 +31,13 @@ feature {NONE} -- Initialization
 			create {ET_EIFFEL_PREPARSER} eiffel_preparser.make (current)
 			create {ET_MASTER_CLASS_CHECKER} master_class_checker.make (Current)
 			create {ET_EIFFEL_PARSER} eiffel_parser.make (Current)
+			create {ET_UNUSED_LOCAL_VARIABLE_CHECKER} unused_local_variable_checker.make (Current)
 			create {ET_PROVIDER_CHECKER} provider_checker.make (Current)
 			create {ET_ANCESTOR_BUILDER} ancestor_builder.make (Current)
 			create {ET_FEATURE_FLATTENER} feature_flattener.make (Current)
 			create {ET_INTERFACE_CHECKER} interface_checker.make (Current)
 			create {ET_IMPLEMENTATION_CHECKER} implementation_checker.make (Current)
+			unused_local_variable_check_enabled := True
 			error_handler := tokens.standard_error_handler
 		end
 
@@ -50,6 +52,7 @@ feature {NONE} -- Initialization
 			eiffel_preparser := l_null_processor
 			master_class_checker := l_null_processor
 			eiffel_parser := l_null_processor
+			unused_local_variable_checker := l_null_processor
 			provider_checker := l_null_processor
 			ancestor_builder := l_null_processor
 			feature_flattener := l_null_processor
@@ -191,6 +194,9 @@ feature -- Parser status report
 	use_reference_keyword: BOOLEAN
 			-- Should 'reference' be considered as
 			-- a keyword (otherwise identifier)?
+
+	unused_local_variable_check_enabled: BOOLEAN
+			-- Should unused local variables be checked?
 
 	providers_enabled: BOOLEAN
 			-- Should providers be built when parsing a class?
@@ -343,6 +349,25 @@ feature -- Parser status setting
 			-- and all other system processors in case of a multiprocessor.
 		do
 			set_default_keyword_usage_only
+		end
+
+	set_unused_local_variable_check_enabled_only (b: BOOLEAN)
+			-- Set `unused_local_variable_check_enabled' to `b'.
+			-- Contrary to `set_unused_local_variables_check_enabled', do not set it
+			-- in other system processors in case of a multiprocessor.
+		do
+			unused_local_variable_check_enabled := b
+		ensure
+			unused_local_variable_check_enabled_set: unused_local_variable_check_enabled = b
+		end
+
+	set_unused_local_variable_check_enabled (b: BOOLEAN)
+			-- Set `unused_local_variable_check_enabled' to `b' in current system processor
+			-- and all other system processors in case of a multiprocessor.
+		do
+			set_unused_local_variable_check_enabled_only (b)
+		ensure
+			unused_local_variables_check_enabled_set: unused_local_variable_check_enabled = b
 		end
 
 	set_providers_enabled_only (b: BOOLEAN)
@@ -779,6 +804,9 @@ feature -- Access
 	master_class_checker: ET_AST_PROCESSOR
 			-- Master class checker
 
+	unused_local_variable_checker: ET_AST_PROCESSOR
+			-- Unused local variable checker
+
 	provider_checker: ET_AST_PROCESSOR
 			-- Provider checker
 
@@ -860,6 +888,16 @@ feature -- Setting
 			master_class_checker := a_master_class_checker
 		ensure
 			master_class_checker_set: master_class_checker = a_master_class_checker
+		end
+
+	set_unused_local_variable_checker (a_unused_local_variable_checker: like unused_local_variable_checker)
+			-- Set `unused_local_variable_checker' to `a_unused_local_variable_checker'.
+		require
+			a_unused_local_variable_checker_not_void: a_unused_local_variable_checker /= Void
+		do
+			unused_local_variable_checker := a_unused_local_variable_checker
+		ensure
+			unused_local_variable_checker_set: unused_local_variable_checker = a_unused_local_variable_checker
 		end
 
 	set_provider_checker (a_provider_checker: like provider_checker)
@@ -1083,6 +1121,7 @@ feature -- Processing
 		do
 			dt1 := benchmark_start_time
 			compile_degree_5_2 (a_classes, a_marked_only)
+			check_unused_local_variables (a_classes)
 			check_provider_validity (a_classes)
 			record_end_time (dt1, "Degree 5")
 		ensure
@@ -1277,6 +1316,37 @@ feature -- Processing
 					l_done := processed_class_count = 0
 				end
 				reset_processed_class_count
+			end
+		end
+
+	check_unused_local_variables (a_classes: DS_ARRAYED_LIST [ET_CLASS])
+			-- Check unused local variables in `a_classes' which have been parsed.
+			--
+			-- Note that this operation will be interrupted if a stop request
+			-- is received, i.e. `stop_request' starts returning True. No
+			-- interruption if `stop_request' is Void.
+		require
+			a_classes_not_void: a_classes /= Void
+			no_void_class: not a_classes.has_void
+		local
+			i, nb: INTEGER
+			l_class: ET_CLASS
+			l_unused_local_variable_checker: like unused_local_variable_checker
+		do
+			if unused_local_variable_check_enabled then
+				l_unused_local_variable_checker := unused_local_variable_checker
+				from
+					i := 1
+					nb := a_classes.count
+				until
+					i > nb or stop_requested
+				loop
+					l_class := a_classes.item (i)
+					if l_class.is_parsed then
+						l_class.process (unused_local_variable_checker)
+					end
+					i := i + 1
+				end
 			end
 		end
 
@@ -2170,6 +2240,7 @@ invariant
 	eiffel_parser_not_void: eiffel_parser /= Void
 	dotnet_assembly_consumer_not_void: dotnet_assembly_consumer /= Void
 	master_class_checker_not_void: master_class_checker /= Void
+	unused_local_variable_checker_not_void: unused_local_variable_checker /= Void
 	provider_checker_not_void: provider_checker /= Void
 	ancestor_builder_not_void: ancestor_builder /= Void
 	feature_flattener_not_void: feature_flattener /= Void

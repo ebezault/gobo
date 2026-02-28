@@ -32,6 +32,7 @@
   Useful in order to decorate the AST with useful information such
   as the seed of the feature in call instructions.
 * Keep as many components in the AST in case of syntax error.
+* Report unused local variables.
 
 ## Version 26.01.11 - 11 January 2026
 

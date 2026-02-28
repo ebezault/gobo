@@ -24,6 +24,7 @@ inherit
 			report_syntax_error,
 			report_syntax_warning,
 			report_validity_error,
+			report_eiffel_warning,
 			report_internal_error,
 			report_error_message
 		end
@@ -49,6 +50,7 @@ feature {NONE} -- Initialization
 			create syntax_error_actions
 			create syntax_warning_actions
 			create validity_error_actions
+			create eiffel_warning_actions
 			create internal_error_actions
 			create error_message_actions
 		end
@@ -67,6 +69,7 @@ feature {NONE} -- Initialization
 			create syntax_error_actions
 			create syntax_warning_actions
 			create validity_error_actions
+			create eiffel_warning_actions
 			create internal_error_actions
 			create error_message_actions
 		end
@@ -252,6 +255,28 @@ feature -- Validity errors
 			-- Actions to be executed when `report_validity_error'
 			-- is called
 
+feature -- Warnings
+
+	report_eiffel_warning (a_error: ET_VALIDITY_ERROR)
+			-- Report Eiffel warning.
+		do
+			if keep_default_actions then
+				precursor (a_error)
+			end
+			if
+				(is_ise and a_error.ise_reported) or
+				(is_ge and a_error.ge_reported)
+			then
+				mutex.lock
+				eiffel_warning_actions.call ([a_error])
+				mutex.unlock
+			end
+		end
+
+	eiffel_warning_actions: ACTION_SEQUENCE [TUPLE [ET_VALIDITY_ERROR]]
+			-- Actions to be executed when `report_eiffel_warning'
+			-- is called
+
 feature -- Internal errors
 
 	report_internal_error (a_error: ET_INTERNAL_ERROR)
@@ -297,6 +322,7 @@ invariant
 	syntax_error_actions_not_void: syntax_error_actions /= Void
 	syntax_warning_actions_not_void: syntax_warning_actions /= Void
 	validity_error_actions_not_void: validity_error_actions /= Void
+	eiffel_warning_actions_not_void: eiffel_warning_actions /= Void
 	internal_error_actions_not_void: internal_error_actions /= Void
 	error_message_actions_not_void: error_message_actions /= Void
 

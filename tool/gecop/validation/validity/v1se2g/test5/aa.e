@@ -22,6 +22,7 @@ feature
 					separate g as x do
 						print ("Failed")
 					end
+					x := 1
 				end
 		end
 
