@@ -14,6 +14,9 @@ inherit
 
 	ET_BROWSABLE_COMPLETION_BUILDER
 
+	ET_SHARED_TOKEN_CONSTANTS
+		export {NONE} all end
+
 create
 
 	make
@@ -205,7 +208,21 @@ feature -- Basic operations
 			create l_completion_item.make (l_label)
 			l_completion_item.set_detail ("keyword")
 			l_completion_item.set_kind ({LS_COMPLETION_ITEM_KINDS}.variable)
-			l_completion_item.set_insert_text_format ({LS_INSERT_TEXT_FORMATS}.plain_text)
+			if a_keyword.is_if then
+				set_if_components_snippet (l_completion_item, a_browsable_name)
+			elseif a_keyword.is_inspect then
+				set_inspect_components_snippet (l_completion_item, a_browsable_name)
+			elseif a_keyword.is_across then
+				set_across_components_snippet (l_completion_item, a_browsable_name)
+			elseif a_keyword.is_from then
+				set_from_components_snippet (l_completion_item, a_browsable_name)
+			elseif a_keyword.is_debug then
+				set_debug_components_snippet (l_completion_item, a_browsable_name)
+			elseif a_keyword.is_check then
+				set_check_components_snippet (l_completion_item, a_browsable_name)
+			else
+				l_completion_item.set_insert_text_format ({LS_INSERT_TEXT_FORMATS}.plain_text)
+			end
 			response.add_completion_item (l_completion_item)
 		end
 
@@ -563,6 +580,204 @@ feature {NONE} -- Implementation
 				create l_insert_text.make_from_utf8 (l_snippet)
 				a_completion_item.set_insert_text (l_insert_text)
 			end
+		end
+
+	set_if_components_snippet (a_completion_item: LS_COMPLETION_ITEM; a_browsable_name: ET_BROWSABLE_NAME)
+			-- Set snippet with the components of a if-instruction or a if-expression
+			-- in `a_completion_item`.
+		require
+			a_completion_item_not_void: a_completion_item /= Void
+			a_browsable_name_not_void: a_browsable_name /= Void
+		local
+			l_snippet: STRING_8
+			l_insert_text: LS_STRING
+		do
+			a_completion_item.set_insert_text_format ({LS_INSERT_TEXT_FORMATS}.snippet)
+			create l_snippet.make (50)
+			l_snippet.append_string (tokens.if_keyword.text)
+			l_snippet.append_character (' ')
+			if a_browsable_name.is_only_query_expected then
+				l_snippet.append_string ("${1:expr}")
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.then_keyword.text)
+				l_snippet.append_character (' ')
+				l_snippet.append_string ("${2:expr}")
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.else_keyword.text)
+				l_snippet.append_character (' ')
+				l_snippet.append_string ("${0:expr}")
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.end_keyword.text)
+			else
+				l_snippet.append_string ("${0:expr}")
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.then_keyword.text)
+				l_snippet.append_character ('%N')
+				l_snippet.append_string (tokens.end_keyword.text)
+			end
+			create l_insert_text.make_from_utf8 (l_snippet)
+			a_completion_item.set_insert_text (l_insert_text)
+		end
+
+	set_inspect_components_snippet (a_completion_item: LS_COMPLETION_ITEM; a_browsable_name: ET_BROWSABLE_NAME)
+			-- Set snippet with the components of a inspect-instruction or a inspect-expression
+			-- in `a_completion_item`.
+		require
+			a_completion_item_not_void: a_completion_item /= Void
+			a_browsable_name_not_void: a_browsable_name /= Void
+		local
+			l_snippet: STRING_8
+			l_insert_text: LS_STRING
+		do
+			a_completion_item.set_insert_text_format ({LS_INSERT_TEXT_FORMATS}.snippet)
+			create l_snippet.make (50)
+			l_snippet.append_string (tokens.inspect_keyword.text)
+			l_snippet.append_character (' ')
+			l_snippet.append_string ("${1:expr}")
+			if a_browsable_name.is_only_query_expected then
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.when_keyword.text)
+				l_snippet.append_character (' ')
+				l_snippet.append_string ("${2:expr}")
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.then_keyword.text)
+				l_snippet.append_character (' ')
+				l_snippet.append_string ("${0:expr}")
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.end_keyword.text)
+			else
+				l_snippet.append_character ('%N')
+				l_snippet.append_string (tokens.when_keyword.text)
+				l_snippet.append_character (' ')
+				l_snippet.append_string ("${2:expr}")
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.then_keyword.text)
+				l_snippet.append_character ('%N')
+				l_snippet.append_character ('%T')
+				l_snippet.append_string ("${0:instr}")
+				l_snippet.append_character ('%N')
+				l_snippet.append_string (tokens.end_keyword.text)
+			end
+			create l_insert_text.make_from_utf8 (l_snippet)
+			a_completion_item.set_insert_text (l_insert_text)
+		end
+
+	set_across_components_snippet (a_completion_item: LS_COMPLETION_ITEM; a_browsable_name: ET_BROWSABLE_NAME)
+			-- Set snippet with the components of a across-instruction or a across-expression
+			-- in `a_completion_item`.
+		require
+			a_completion_item_not_void: a_completion_item /= Void
+			a_browsable_name_not_void: a_browsable_name /= Void
+		local
+			l_snippet: STRING_8
+			l_insert_text: LS_STRING
+		do
+			a_completion_item.set_insert_text_format ({LS_INSERT_TEXT_FORMATS}.snippet)
+			create l_snippet.make (50)
+			l_snippet.append_string (tokens.across_keyword.text)
+			l_snippet.append_character (' ')
+			l_snippet.append_string ("${1:expr}")
+			l_snippet.append_character (' ')
+			l_snippet.append_string (tokens.as_keyword.text)
+			l_snippet.append_character (' ')
+			l_snippet.append_string ("${2:name}")
+			l_snippet.append_character (' ')
+			if a_browsable_name.is_only_query_expected then
+				l_snippet.append_string (tokens.all_keyword.text)
+				l_snippet.append_character (' ')
+				l_snippet.append_string ("${0:expr}")
+				l_snippet.append_character (' ')
+				l_snippet.append_string (tokens.end_keyword.text)
+			else
+				l_snippet.append_string (tokens.loop_keyword.text)
+				l_snippet.append_character ('%N')
+				l_snippet.append_character ('%T')
+				l_snippet.append_string ("${0:instr}")
+				l_snippet.append_character ('%N')
+				l_snippet.append_string (tokens.end_keyword.text)
+			end
+			create l_insert_text.make_from_utf8 (l_snippet)
+			a_completion_item.set_insert_text (l_insert_text)
+		end
+
+	set_from_components_snippet (a_completion_item: LS_COMPLETION_ITEM; a_browsable_name: ET_BROWSABLE_NAME)
+			-- Set snippet with the components of a from-instruction
+			-- in `a_completion_item`.
+		require
+			a_completion_item_not_void: a_completion_item /= Void
+			a_browsable_name_not_void: a_browsable_name /= Void
+		local
+			l_snippet: STRING_8
+			l_insert_text: LS_STRING
+		do
+			a_completion_item.set_insert_text_format ({LS_INSERT_TEXT_FORMATS}.snippet)
+			create l_snippet.make (50)
+			l_snippet.append_string (tokens.from_keyword.text)
+			l_snippet.append_character ('%N')
+			l_snippet.append_character ('%T')
+			l_snippet.append_string ("${1:instr}")
+			l_snippet.append_character ('%N')
+			l_snippet.append_string (tokens.until_keyword.text)
+			l_snippet.append_character ('%N')
+			l_snippet.append_character ('%T')
+			l_snippet.append_string ("${2:expr}")
+			l_snippet.append_character ('%N')
+			l_snippet.append_string (tokens.loop_keyword.text)
+			l_snippet.append_character ('%N')
+			l_snippet.append_character ('%T')
+			l_snippet.append_string ("${0:instr}")
+			l_snippet.append_character ('%N')
+			l_snippet.append_string (tokens.end_keyword.text)
+			create l_insert_text.make_from_utf8 (l_snippet)
+			a_completion_item.set_insert_text (l_insert_text)
+		end
+
+	set_debug_components_snippet (a_completion_item: LS_COMPLETION_ITEM; a_browsable_name: ET_BROWSABLE_NAME)
+			-- Set snippet with the components of a debug-instruction
+			-- in `a_completion_item`.
+		require
+			a_completion_item_not_void: a_completion_item /= Void
+			a_browsable_name_not_void: a_browsable_name /= Void
+		local
+			l_snippet: STRING_8
+			l_insert_text: LS_STRING
+		do
+			a_completion_item.set_insert_text_format ({LS_INSERT_TEXT_FORMATS}.snippet)
+			create l_snippet.make (50)
+			l_snippet.append_string (tokens.debug_keyword.text)
+			l_snippet.append_character ('%N')
+			l_snippet.append_character ('%T')
+			l_snippet.append_string ("${0:instr}")
+			l_snippet.append_character ('%N')
+			l_snippet.append_string (tokens.end_keyword.text)
+			create l_insert_text.make_from_utf8 (l_snippet)
+			a_completion_item.set_insert_text (l_insert_text)
+		end
+
+	set_check_components_snippet (a_completion_item: LS_COMPLETION_ITEM; a_browsable_name: ET_BROWSABLE_NAME)
+			-- Set snippet with the components of a check-instruction
+			-- in `a_completion_item`.
+		require
+			a_completion_item_not_void: a_completion_item /= Void
+			a_browsable_name_not_void: a_browsable_name /= Void
+		local
+			l_snippet: STRING_8
+			l_insert_text: LS_STRING
+		do
+			a_completion_item.set_insert_text_format ({LS_INSERT_TEXT_FORMATS}.snippet)
+			create l_snippet.make (50)
+			l_snippet.append_string (tokens.check_keyword.text)
+			l_snippet.append_character (' ')
+			l_snippet.append_string ("${1:expr}")
+			l_snippet.append_character (' ')
+			l_snippet.append_string (tokens.then_keyword.text)
+			l_snippet.append_character ('%N')
+			l_snippet.append_character ('%T')
+			l_snippet.append_string ("${0:instr}")
+			l_snippet.append_character ('%N')
+			l_snippet.append_string (tokens.end_keyword.text)
+			create l_insert_text.make_from_utf8 (l_snippet)
+			a_completion_item.set_insert_text (l_insert_text)
 		end
 
 invariant

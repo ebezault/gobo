@@ -540,9 +540,13 @@ feature {ET_AST_NODE} -- Processing
 
 	process_current (an_expression: ET_CURRENT)
 			-- Process `an_expression'.
+		local
+			l_last_browsable_name: ET_BROWSABLE_NAME
 		do
 			if an_expression.contains_position (current_position) then
-				create {ET_BROWSABLE_CURRENT_KEYWORD} last_browsable_name.make (an_expression, current_closure, current_class)
+				create {ET_BROWSABLE_CURRENT_KEYWORD} l_last_browsable_name.make (an_expression, current_closure, current_class)
+				l_last_browsable_name.set_only_query_expected (True)
+				last_browsable_name := l_last_browsable_name
 			end
 		end
 
@@ -737,9 +741,13 @@ feature {ET_AST_NODE} -- Processing
 
 	process_false_constant (a_constant: ET_FALSE_CONSTANT)
 			-- Process `a_constant'.
+		local
+			l_last_browsable_name: ET_BROWSABLE_NAME
 		do
 			if a_constant.contains_position (current_position) then
-				create {ET_BROWSABLE_BOOLEAN_KEYWORD} last_browsable_name.make (a_constant, current_closure, current_class)
+				create {ET_BROWSABLE_BOOLEAN_KEYWORD} l_last_browsable_name.make (a_constant, current_closure, current_class)
+				l_last_browsable_name.set_only_query_expected (True)
+				last_browsable_name := l_last_browsable_name
 			end
 		end
 
@@ -1443,9 +1451,13 @@ feature {ET_AST_NODE} -- Processing
 
 	process_result (a_expression: ET_RESULT)
 			-- Process `a_expression'.
+		local
+			l_last_browsable_name: ET_BROWSABLE_NAME
 		do
 			if a_expression.contains_position (current_position) then
-				create {ET_BROWSABLE_RESULT} last_browsable_name.make (a_expression, current_closure, current_class)
+				create {ET_BROWSABLE_RESULT} l_last_browsable_name.make (a_expression, current_closure, current_class)
+				l_last_browsable_name.set_only_query_expected (True)
+				last_browsable_name := l_last_browsable_name
 			end
 		end
 
@@ -1513,9 +1525,13 @@ feature {ET_AST_NODE} -- Processing
 
 	process_true_constant (a_constant: ET_TRUE_CONSTANT)
 			-- Process `a_constant'.
+		local
+			l_last_browsable_name: ET_BROWSABLE_NAME
 		do
 			if a_constant.contains_position (current_position) then
-				create {ET_BROWSABLE_BOOLEAN_KEYWORD} last_browsable_name.make (a_constant, current_closure, current_class)
+				create {ET_BROWSABLE_BOOLEAN_KEYWORD} l_last_browsable_name.make (a_constant, current_closure, current_class)
+				l_last_browsable_name.set_only_query_expected (True)
+				last_browsable_name := l_last_browsable_name
 			end
 		end
 
@@ -1610,6 +1626,8 @@ feature {ET_AST_NODE} -- Processing
 
 	process_unqualified_call_expression (a_expression: ET_UNQUALIFIED_CALL_EXPRESSION)
 			-- Process `a_expression'.
+		local
+			l_last_browsable_name: ET_BROWSABLE_NAME
 		do
 			if attached a_expression.parenthesis_call as l_parenthesis_call then
 				process_qualified_feature_call (l_parenthesis_call)
@@ -1617,7 +1635,9 @@ feature {ET_AST_NODE} -- Processing
 					precursor (a_expression)
 				end
 			elseif a_expression.name.contains_position (current_position) then
-				create {ET_BROWSABLE_UNQUALIFIED_CALL_NAME} last_browsable_name.make (a_expression.name, current_closure, current_class)
+				create {ET_BROWSABLE_UNQUALIFIED_CALL_NAME} l_last_browsable_name.make (a_expression.name, current_closure, current_class)
+				l_last_browsable_name.set_only_query_expected (True)
+				last_browsable_name := l_last_browsable_name
 			else
 				precursor (a_expression)
 			end
@@ -1640,9 +1660,13 @@ feature {ET_AST_NODE} -- Processing
 
 	process_void (a_expression: ET_VOID)
 			-- Process `a_expression'.
+		local
+			l_last_browsable_name: ET_BROWSABLE_NAME
 		do
 			if a_expression.contains_position (current_position) then
-				create {ET_BROWSABLE_VOID_KEYWORD} last_browsable_name.make (a_expression, current_closure, current_class)
+				create {ET_BROWSABLE_VOID_KEYWORD} l_last_browsable_name.make (a_expression, current_closure, current_class)
+				l_last_browsable_name.set_only_query_expected (True)
+				last_browsable_name := l_last_browsable_name
 			end
 		end
 
