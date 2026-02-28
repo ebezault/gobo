@@ -185,6 +185,7 @@ feature {NONE} -- Initialization
 			last_manifest_array := Void
 			last_manifest_tuple := Void
 			last_actual_arguments := Void
+			last_agent_open_operand := Void
 			last_agent_actual_arguments := Void
 			last_keys := Void
 			last_preconditions := Void
@@ -3555,7 +3556,7 @@ feature {NONE} -- Parsing
 				parse_address_expression
 				l_last_expression := last_expression
 			when Left_brace_code then
-				parse_typed_expression
+				parse_typed_expression (False)
 				l_last_expression := last_expression
 				l_is_dot_call_target := last_is_dot_call_target
 				l_is_bracket_call_target := last_is_bracket_call_target
@@ -3660,11 +3661,15 @@ feature {NONE} -- Parsing
 			end
 		end
 
-	parse_typed_expression
+	parse_typed_expression (a_agent_open_operand_accepted: BOOLEAN)
 			-- Parse expression which starts with a type.
 			-- Make the result available in `last_expression`.
 			-- Also update `last_is_dot_call_target` and
 			-- `last_is_bracket_call_target`.
+			-- When `a_agent_open_operand_accepted` is True,
+			-- accept agent open operand of the form
+			-- '{TYPE} ?', make it available in `last_agent_open_operand`
+			-- and set `last_is_agent_open_operand` to True.
 		local
 			l_sign_symbol: detachable ET_SYMBOL_OPERATOR
 			l_sign_code: INTEGER
@@ -3682,8 +3687,10 @@ feature {NONE} -- Parsing
 			l_is_bracket_call_target: BOOLEAN
 		do
 			last_expression := Void
+			last_agent_open_operand := Void
 			last_is_dot_call_target := False
 			last_is_bracket_call_target := False
+			last_is_agent_open_operand := False
 			if last_token = Left_brace_code then
 				l_left_brace_symbol := last_detachable_et_symbol_value
 				read_token
@@ -3774,6 +3781,10 @@ feature {NONE} -- Parsing
 						l_last_expression := ast_factory.new_static_call_expression (Void, l_target_type, new_dot_feature_name (l_dot_symbol, l_identifier), last_actual_arguments)
 						l_is_bracket_call_target := True
 						l_is_dot_call_target := True
+					elseif a_agent_open_operand_accepted and then last_token = Question_mark_code then
+							last_agent_open_operand := ast_factory.new_agent_typed_open_argument (l_left_brace_symbol, l_type, l_right_brace_symbol, last_detachable_et_question_mark_symbol_value)
+							last_is_agent_open_operand := True
+							read_token
 					elseif is_string_token (last_token) then
 						if attached last_detachable_et_manifest_string_value as l_manifest_string then
 							l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
@@ -5265,12 +5276,9 @@ feature {NONE} -- Parsing
 			l_old_last_agent_actual_argument_items_count: INTEGER
 			l_actual_argument: detachable ET_AGENT_ARGUMENT_OPERAND
 			l_actual_arguments: detachable ET_AGENT_ARGUMENT_OPERAND_LIST
-			l_left_brace_symbol: detachable ET_SYMBOL
-			l_right_brace_symbol: detachable ET_SYMBOL
-			l_type: detachable ET_TYPE
 			nb: INTEGER
 			l_done: BOOLEAN
-			l_expression_expected: BOOLEAN
+			l_operand_expected: BOOLEAN
 		do
 			last_agent_actual_arguments := Void
 			if last_token = Left_parenthesis_code then
@@ -5279,31 +5287,25 @@ feature {NONE} -- Parsing
 				l_old_last_agent_actual_argument_items_count := last_agent_actual_argument_items.count
 				from until l_done loop
 					if last_token = Right_parenthesis_code then
-						if l_expression_expected then
+						if l_operand_expected then
 							report_syntax_error (last_position, last_value, expression_expected)
 						end
 						l_done := True
 					else
-						l_expression_expected := False
+						l_operand_expected := False
 						if last_token = Question_mark_code then
 							l_actual_argument := last_detachable_et_question_mark_symbol_value
 							read_token
 						elseif last_token = Left_brace_code then
-							l_left_brace_symbol := last_detachable_et_symbol_value
-							read_token
-							parse_type
-							l_type := last_type
-							if last_token = Right_brace_code then
-								l_right_brace_symbol := last_detachable_et_symbol_value
-								read_token
-								if last_token = Question_mark_code then
-									l_actual_argument := ast_factory.new_agent_typed_open_argument (l_left_brace_symbol, l_type, l_right_brace_symbol, last_detachable_et_question_mark_symbol_value)
-									read_token
-								else
-									report_syntax_error (last_position, last_value, question_mark_symbol_expected)
-								end
+							parse_typed_expression (True)
+							if last_is_agent_open_operand then
+								l_actual_argument := last_agent_open_operand
 							else
-								report_syntax_error (last_position, last_value, right_brace_symbol_expected)
+								if (last_is_dot_call_target and last_token = Dot_code) or (last_is_bracket_call_target and last_token = Left_bracket_code) then
+									parse_qualified_call_expression (last_expression, last_is_dot_call_target, last_is_bracket_call_target)
+								end
+								parse_binary_expression (last_expression, True)
+								l_actual_argument := last_expression
 							end
 						else
 							parse_expression
@@ -5311,7 +5313,7 @@ feature {NONE} -- Parsing
 						end
 						if last_token = Comma_code then
 							last_agent_actual_argument_items.force (ast_factory.new_agent_argument_operand_comma (l_actual_argument, last_detachable_et_symbol_value))
-							l_expression_expected := True
+							l_operand_expected := True
 							read_token
 						else
 							last_agent_actual_argument_items.force (l_actual_argument)
@@ -7185,6 +7187,9 @@ feature {NONE} -- Access
 	last_actual_arguments: detachable ET_ACTUAL_ARGUMENT_LIST
 			-- Last actual arguments parsed
 
+	last_agent_open_operand: detachable ET_AGENT_ARGUMENT_OPERAND
+			-- Last agent open operand parsed
+
 	last_agent_actual_arguments: detachable ET_AGENT_ARGUMENT_OPERAND_LIST
 			-- Last agent actual arguments parsed
 
@@ -7241,6 +7246,10 @@ feature {NONE} -- Access
 
 	last_is_bracket_call_target: BOOLEAN
 			-- Can the last expression parsed be used as target of a bracket expression call?
+
+	last_is_agent_open_operand: BOOLEAN
+			-- Has an agent open operand been parsed and
+			-- made available `last_agent_open_operand`?
 
 	last_note_items: DS_ARRAYED_STACK [detachable ET_NOTE_ITEM]
 			-- Last note items read

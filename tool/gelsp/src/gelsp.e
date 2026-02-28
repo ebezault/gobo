@@ -1243,13 +1243,13 @@ feature {NONE} -- Eiffel processing
 			ecf_libraries.wipe_out
 			reset_class_mapping (False)
 			error_handler.syntax_error_actions.wipe_out
-			error_handler.syntax_error_actions.extend (agent report_syntax_error (?, ({LS_DIAGNOSTIC_SEVERITIES}.error)))
+			error_handler.syntax_error_actions.extend (agent report_syntax_error (?, {LS_DIAGNOSTIC_SEVERITIES}.error))
 			error_handler.syntax_warning_actions.wipe_out
-			error_handler.syntax_warning_actions.extend (agent report_syntax_error (?, ({LS_DIAGNOSTIC_SEVERITIES}.warning)))
+			error_handler.syntax_warning_actions.extend (agent report_syntax_error (?, {LS_DIAGNOSTIC_SEVERITIES}.warning))
 			error_handler.validity_error_actions.wipe_out
-			error_handler.validity_error_actions.extend (agent report_validity_error (?, ({LS_DIAGNOSTIC_SEVERITIES}.error)))
+			error_handler.validity_error_actions.extend (agent report_validity_error (?, {LS_DIAGNOSTIC_SEVERITIES}.error))
 			error_handler.eiffel_warning_actions.wipe_out
-			error_handler.eiffel_warning_actions.extend (agent report_validity_error (?, ({LS_DIAGNOSTIC_SEVERITIES}.warning)))
+			error_handler.eiffel_warning_actions.extend (agent report_validity_error (?, {LS_DIAGNOSTIC_SEVERITIES}.warning))
 		end
 
 	find_ecf_filename
