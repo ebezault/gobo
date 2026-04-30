@@ -19,10 +19,10 @@ is hosted at
 [Github](http://github.com/gobo-eiffel/gobo)
 while the official site (for stable releases) is located at
 [gobosoft.com](https://www.gobosoft.com). This package also contains files
-from the [Boehm GC](https://github.com/ivmai/bdwgc) project which is also
+from the [Boehm GC](https://github.com/bdwgc/bdwgc) project which is also
 released under a MIT-style [license](https://github.com/bdwgc/bdwgc/blob/master/LICENSE),
 and is bundled with the [Zig toolchain](https://ziglang.org/) which is also
-released under a MIT-style [license](https://github.com/ziglang/zig/blob/master/LICENSE).
+released under a MIT-style [license](https://codeberg.org/ziglang/zig/src/branch/master/LICENSE).
 
 *Gobo Eiffel* already consists of nineteen Eiffel libraries:
 
