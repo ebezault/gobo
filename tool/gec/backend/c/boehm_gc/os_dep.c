@@ -955,9 +955,25 @@ GC_get_stack_base(struct GC_stack_base *sb)
 #           endif
 #         endif /* !GC_IRIX_THREADS */
 #       else
-          old_segv_handler = signal(SIGSEGV, h);
-#         ifdef HAVE_SIGBUS
-            old_bus_handler = signal(SIGBUS, h);
+          /* Under Windows when compiling with zig/clang, 'signal'    */
+          /* indirectly calls 'RtlAllocateHeap' which uses mutual     */
+          /* exclusion when accessing the heap. If some other thread  */
+          /* was in the middle of calling 'RtlAllocateHeap' when it   */
+          /* was suspended (stop the world), this ends up in a        */
+          /* deadlock. Using 'SetUnhandledExceptionFilter' instead of */
+          /* 'signal' solves the deadlock issue, but this function is */
+          /* extremely slow when compiled with zig/clang. So do not   */
+          /* set fault handler in that case when threads have already */
+          /* been created. */
+#         if defined(GC_WIN32_THREADS) && defined(__clang__)
+            if (!GC_need_to_lock) {
+#         endif
+              old_segv_handler = signal(SIGSEGV, h);
+#             ifdef HAVE_SIGBUS
+                old_bus_handler = signal(SIGBUS, h);
+#             endif
+#         if defined(GC_WIN32_THREADS) && defined(__clang__)
+            }
 #         endif
 #       endif
 #       if defined(CPPCHECK) && defined(ADDRESS_SANITIZER)
@@ -999,9 +1015,15 @@ GC_get_stack_base(struct GC_stack_base *sb)
               (void) sigaction(SIGBUS, &old_bus_act, 0);
 #         endif
 #       else
-          (void) signal(SIGSEGV, old_segv_handler);
-#         ifdef HAVE_SIGBUS
-            (void) signal(SIGBUS, old_bus_handler);
+#         if defined(GC_WIN32_THREADS) && defined(__clang__)
+            if (!GC_need_to_lock) {
+#         endif
+              (void)signal(SIGSEGV, old_segv_handler);
+#             ifdef HAVE_SIGBUS
+                (void)signal(SIGBUS, old_bus_handler);
+#             endif
+#         if defined(GC_WIN32_THREADS) && defined(__clang__)
+            }
 #         endif
 #       endif
     }
