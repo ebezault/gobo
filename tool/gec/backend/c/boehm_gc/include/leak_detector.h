@@ -57,12 +57,15 @@
 #undef posix_memalign
 #define posix_memalign(p,a,n) GC_posix_memalign(p,a,n)
 
+#undef malloc_usable_size
+#define malloc_usable_size(p) GC_size(p)
+
 #ifndef CHECK_LEAKS
 # define CHECK_LEAKS() GC_gcollect()
   /* Note 1: CHECK_LEAKS does not have GC prefix (preserved for */
   /* backward compatibility).                                   */
   /* Note 2: GC_gcollect() is also called automatically in the  */
-  /* leak-finding mode at program exit.                         */
+  /* find-leak mode at program exit.                            */
 #endif
 
 #endif /* GC_LEAK_DETECTOR_H */

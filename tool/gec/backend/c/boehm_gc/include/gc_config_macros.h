@@ -4,13 +4,13 @@
  * Copyright (c) 1998 by Fergus Henderson.  All rights reserved.
  * Copyright (c) 2000-2009 by Hewlett-Packard Development Company.
  * All rights reserved.
- * Copyright (c) 2008-2020 Ivan Maidanski
+ * Copyright (c) 2008-2024 Ivan Maidanski
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
  *
  * Permission is hereby granted to use or copy this program
- * for any purpose, provided the above notices are retained on all copies.
+ * for any purpose,  provided the above notices are retained on all copies.
  * Permission to modify the code and to distribute modified code is granted,
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
@@ -20,34 +20,13 @@
 /* We separate it only to make gc.h more suitable as documentation.       */
 #if defined(GC_H)
 
-/* Convenient internal macro to test version of gcc.    */
+/* Convenient internal macro to test version of GCC.    */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
 # define GC_GNUC_PREREQ(major, minor) \
-            ((__GNUC__ << 8) + __GNUC_MINOR__ >= ((major) << 8) + (minor))
+            ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((major) << 16) + (minor))
 #else
 # define GC_GNUC_PREREQ(major, minor) 0 /* FALSE */
 #endif
-
-/* A macro to define integer types of a pointer size.  There seems to   */
-/* be no way to do this even semi-portably.  The following is probably  */
-/* no better/worse than almost anything else.                           */
-/* The ANSI standard suggests that size_t and ptrdiff_t might be        */
-/* better choices.  But those had incorrect definitions on some older   */
-/* systems; notably "typedef int size_t" is wrong.                      */
-#ifdef _WIN64
-# if defined(__int64) && !defined(CPPCHECK)
-#   define GC_SIGNEDWORD __int64
-# else
-#   define GC_SIGNEDWORD long long
-# endif
-#else
-# define GC_SIGNEDWORD long
-#endif
-#define GC_UNSIGNEDWORD unsigned GC_SIGNEDWORD
-
-/* The return type of GC_get_version().  A 32-bit unsigned integer  */
-/* or longer.                                                       */
-# define GC_VERSION_VAL_T unsigned
 
 /* Some tests for old macros.  These violate our namespace rules and    */
 /* will disappear shortly.  Use the GC_ names.                          */
@@ -171,6 +150,13 @@
 # define _REENTRANT 1
 #endif
 
+#if defined(__clang__) && defined(__CYGWIN__) && defined(GC_THREADS) \
+    && defined(__LP64__)
+  /* Workaround "__stdcall__ ignored for this target" clang warning.    */
+  /* Note: __stdcall is defined implicitly based on __stdcall__.        */
+# define __stdcall__ /* empty */
+#endif
+
 #define __GC
 #if !defined(_WIN32_WCE) || defined(__GNUC__)
 # include <stddef.h>
@@ -206,9 +192,9 @@
 #   endif
 
 # elif defined(__MINGW32__)
-#   if defined(__cplusplus) && defined(GC_BUILD)
+#   if defined(GC_BUILD)
 #     define GC_API extern __declspec(dllexport)
-#   elif defined(GC_BUILD) || defined(__MINGW32_DELAY_LOAD__)
+#   elif defined(__MINGW32_DELAY_LOAD__)
 #     define GC_API __declspec(dllexport)
 #   else
 #     define GC_API extern __declspec(dllimport)
