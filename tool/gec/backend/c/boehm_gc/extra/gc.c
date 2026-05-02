@@ -4,7 +4,7 @@
  * Copyright (c) 1998 by Fergus Henderson.  All rights reserved.
  * Copyright (c) 2000-2009 by Hewlett-Packard Development Company.
  * All rights reserved.
- * Copyright (c) 2009-2018 Ivan Maidanski
+ * Copyright (c) 2009-2025 Ivan Maidanski
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -16,24 +16,29 @@
  * modified is included with the above copyright notice.
  */
 
-/* This file could be used for the following purposes:          */
-/* - get the complete GC as a single link object file (module); */
-/* - enable more compiler optimizations.                        */
+/*
+ * This file could be used for the following purposes:
+ *   - get the complete collector as a single link object file (module);
+ *   - enable more compiler optimizations.
+ *
+ * Tip: to get the highest level of compiler optimizations, the typical
+ * compiler options to use (assuming gcc) are:
+ * `-O3 -march=native -fprofile-generate`
+ *
+ * Warning: gcc for Linux (for C++ clients only): use `-fexceptions` both for
+ * the collector library and the client as otherwise `GC_thread_exit_proc()`
+ * is not guaranteed to be invoked (see the comments in `pthread_start.c`
+ * file).
+ */
 
-/* Tip: to get the highest level of compiler optimizations, the typical */
-/* compiler options (GCC) to use are:                                   */
-/* -O3 -fno-strict-aliasing -march=native -Wall -fprofile-generate/use  */
-
-/* Warning: GCC for Linux (for C++ clients only): Use -fexceptions both */
-/* for GC and the client otherwise GC_thread_exit_proc() is not         */
-/* guaranteed to be invoked (see the comments in pthread_start.c).      */
+#define GC_SINGLE_OBJ_BUILD
 
 #ifndef __cplusplus
-  /* static is desirable here for more efficient linkage.               */
-  /* TODO: Enable this in case of the compilation as C++ code.          */
-# define GC_INNER STATIC
-# define GC_EXTERN GC_INNER
-                /* STATIC is defined in gcconfig.h. */
+/* `static` is desirable here for more efficient linkage. */
+/* TODO: Enable this in case of the compilation as C++ code. */
+#  define GC_INNER STATIC
+#  define GC_EXTERN GC_INNER
+/* Note: `STATIC` macro is defined in `gcconfig.h` file. */
 #endif
 
 /* Small files go first... */
@@ -43,7 +48,6 @@
 #include "../gcj_mlc.c"
 #include "../headers.c"
 #include "../new_hblk.c"
-#include "../obj_map.c"
 #include "../ptr_chck.c"
 
 #include "../allchblk.c"
@@ -67,26 +71,27 @@
 #include "../dyn_load.c"
 #include "../gc_dlopen.c"
 #if !defined(PLATFORM_MACH_DEP)
-# include "../mach_dep.c"
+#  include "../mach_dep.c"
 #endif
 #if !defined(PLATFORM_STOP_WORLD)
-# include "../pthread_stop_world.c"
+#  include "../pthread_stop_world.c"
 #endif
 #include "../pthread_support.c"
 #include "../specific.c"
 #include "../win32_threads.c"
 
 #ifndef GC_PTHREAD_START_STANDALONE
-# include "../pthread_start.c"
+#  include "../pthread_start.c"
 #endif
 
-/* Restore pthread calls redirection (if altered in             */
-/* pthread_stop_world.c, pthread_support.c or win32_threads.c). */
-/* This is only useful if directly included from application    */
-/* (instead of linking gc).                                     */
-#ifndef GC_NO_THREAD_REDIRECTS
-# define GC_PTHREAD_REDIRECTS_ONLY
-# include "gc/gc_pthread_redirects.h"
+/*
+ * Restore `pthreads` calls redirection (if altered in `pthread_stop_world.c`
+ * or `pthread_support.c` file).  This is only useful if directly included
+ * from client code (instead of linking with `gc.o` file).
+ */
+#if !defined(GC_NO_THREAD_REDIRECTS) && defined(GC_PTHREADS)
+#  define GC_PTHREAD_REDIRECTS_ONLY
+#  include "gc/gc_pthread_redirects.h"
 #endif
 
-/* The files from "extra" folder are not included. */
+/* Note: the files from `extra` folder are not included. */

@@ -1396,7 +1396,9 @@ extern void* GE_memset(void* str, int c, size_t n);
 #	define EMPTY_GETENV_RESULTS
 #	define DONT_USE_USER32_DLL
 #else
-#	if !defined(GE_MACOS)
+#	if defined(GE_MACOS)
+#		define FORCE_DESC_CATCH_EXCEPTION_RAISE
+#	else
 #		define GC_PTHREAD_START_STANDALONE
 #	endif
 #	ifndef _REENTRANT
