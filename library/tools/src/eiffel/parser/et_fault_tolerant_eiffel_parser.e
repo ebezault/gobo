@@ -3396,7 +3396,7 @@ feature {NONE} -- Parsing
 				end
 			when E_FREEOP, At_code then
 				if last_token = At_code then
-					l_operator := ast_factory.new_infix_free_operator_from_symbol (last_detachable_et_symbol_operator_value)
+					l_operator := ast_factory.new_infix_free_operator_from_symbol (last_detachable_et_symbol_value)
 				else
 					l_operator := ast_factory.new_infix_free_operator (last_detachable_et_free_operator_value)
 				end
@@ -3437,7 +3437,7 @@ feature {NONE} -- Parsing
 			l_identifier: detachable ET_IDENTIFIER
 			l_is_dot_call_target: BOOLEAN
 			l_is_bracket_call_target: BOOLEAN
-			l_at_symbol: detachable ET_SYMBOL_OPERATOR
+			l_at_symbol: detachable ET_SYMBOL
 			l_not_keyword: detachable ET_KEYWORD_OPERATOR
 			l_not_symbol: detachable ET_SYMBOL_OPERATOR
 			l_old_keyword: detachable ET_KEYWORD
@@ -3564,7 +3564,7 @@ feature {NONE} -- Parsing
 				l_is_dot_call_target := last_is_dot_call_target
 				l_is_bracket_call_target := last_is_bracket_call_target
 			when At_code then
-				l_at_symbol := last_detachable_et_symbol_operator_value
+				l_at_symbol := last_detachable_et_symbol_value
 				read_token
 				parse_cursor_name_identifier
 				if current_universe.use_obsolete_syntax_mode then
@@ -8058,8 +8058,10 @@ feature {NONE} -- Scanner
 				Result := last_detachable_et_bracket_symbol_value
 			when Right_bracket_code then
 				Result := last_detachable_et_symbol_value
-			when question_mark_code then
+			when Question_mark_code then
 				Result := last_detachable_et_question_mark_symbol_value
+			when At_code then
+				Result := last_detachable_et_symbol_value
 			when Minus_code then
 				Result := last_detachable_et_symbol_operator_value
 			when Plus_code then

@@ -1,5 +1,16 @@
 # Release History
 
+## Version xx.xx.xx - xxxxxx
+
+### gec
+
+* Upgraded Zig toolchain to version 0.16.0.
+
+### Gobo Eiffel Tools Library
+
+* Fixed bug in fault tolerant Eiffel parser when processing binary
+  expressions with `@` operator symbol.
+
 ## Version 26.04.22 - 22 April 2026
 
 ### gecop
