@@ -4,13 +4,13 @@
  * Copyright (c) 1998 by Fergus Henderson.  All rights reserved.
  * Copyright (c) 2000-2009 by Hewlett-Packard Development Company.
  * All rights reserved.
- * Copyright (c) 2009-2018 Ivan Maidanski
+ * Copyright (c) 2009-2025 Ivan Maidanski
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
  *
  * Permission is hereby granted to use or copy this program
- * for any purpose, provided the above notices are retained on all copies.
+ * for any purpose,  provided the above notices are retained on all copies.
  * Permission to modify the code and to distribute modified code is granted,
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
@@ -27,6 +27,8 @@
 /* Warning: GCC for Linux (for C++ clients only): Use -fexceptions both */
 /* for GC and the client otherwise GC_thread_exit_proc() is not         */
 /* guaranteed to be invoked (see the comments in pthread_start.c).      */
+
+#define GC_SINGLE_OBJ_BUILD
 
 #ifndef __cplusplus
   /* static is desirable here for more efficient linkage.               */
@@ -46,6 +48,7 @@
 #include "../obj_map.c"
 #include "../ptr_chck.c"
 
+#include "gc_inline.h"
 #include "../allchblk.c"
 #include "../alloc.c"
 #include "../dbg_mlc.c"
@@ -86,7 +89,7 @@
 /* (instead of linking gc).                                     */
 #ifndef GC_NO_THREAD_REDIRECTS
 # define GC_PTHREAD_REDIRECTS_ONLY
-# include "gc/gc_pthread_redirects.h"
+# include "gc_pthread_redirects.h"
 #endif
 
 /* The files from "extra" folder are not included. */
