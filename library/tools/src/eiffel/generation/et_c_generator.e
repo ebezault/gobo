@@ -1409,6 +1409,9 @@ extern void* GE_memset(void* str, int c, size_t n);
 
 #if defined(__clang__) || defined(__GNUC__) || defined(__MINGW32__) || defined(__MINGW64__)
 #	define GC_BUILTIN_ATOMIC
+#	if defined(GE_WINDOWS)
+#		define NO_WRAP_MARK_SOME
+#	endif
 #endif
 
 #if defined(__clang__)
