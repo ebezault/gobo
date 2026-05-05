@@ -5,6 +5,7 @@
 ### gec
 
 * Upgraded Zig toolchain to version 0.16.0.
+* Upgraded Boehm GC to version 8.2.12.
 
 ### Gobo Eiffel Tools Library
 
