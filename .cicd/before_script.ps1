@@ -136,7 +136,8 @@ if ("$GOBO_CI_C_COMPILER" -eq "") {
 					$GOBO_CI_OS = "windows"
 					if ($GOBO_CI_C_COMPILER -eq "msc") {
 						# Setting the environment variables for `cl`.
-						$vs2026_setting_script = "C:\Program Files\Microsoft Visual Studio\2026\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat"
+						# See https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-VS2026-Readme.md
+						$vs2026_setting_script = "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat"
 						$vs2022_setting_script = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat"
 						$vs2019_setting_script = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat"
 						if (Test-Path "$vs2026_setting_script") {
