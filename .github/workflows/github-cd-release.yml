@@ -118,9 +118,9 @@ jobs:
         eiffel_compiler: [ge, debug_ge, ise, debug_ise]
         system_under_test: [library, tool]
         exclude:
-          - c_compiler: gcc
+          - c_compiler: zig
             eiffel_compiler: ise
-          - c_compiler: gcc
+          - c_compiler: zig
             eiffel_compiler: debug_ise
     steps:
       - uses: actions/checkout@v6
@@ -142,9 +142,9 @@ jobs:
         eiffel_compiler: [ge, debug_ge, ise, debug_ise]
         system_under_test: [library, tool]
         exclude:
-          - c_compiler: gcc
+          - c_compiler: zig
             eiffel_compiler: ise
-          - c_compiler: gcc
+          - c_compiler: zig
             eiffel_compiler: debug_ise
     steps:
       - uses: actions/checkout@v6
@@ -166,9 +166,9 @@ jobs:
         eiffel_compiler: [ge, debug_ge, ise, debug_ise]
         system_under_test: [library, tool]
         exclude:
-          - c_compiler: clang
+          - c_compiler: zig
             eiffel_compiler: ise
-          - c_compiler: clang
+          - c_compiler: zig
             eiffel_compiler: debug_ise
     steps:
       - uses: actions/checkout@v6
@@ -189,6 +189,11 @@ jobs:
         c_compiler: [zig, clang]
         eiffel_compiler: [ge, debug_ge]
         system_under_test: [library, tool]
+        exclude:
+          - c_compiler: zig
+            eiffel_compiler: ise
+          - c_compiler: zig
+            eiffel_compiler: debug_ise
     steps:
       - uses: actions/checkout@v6
       - uses: actions/download-artifact@v8
@@ -200,7 +205,7 @@ jobs:
         shell: pwsh
 
   windows_x86_64_test:
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: windows_x86_64_build
     strategy:
       fail-fast: false
@@ -209,9 +214,9 @@ jobs:
         eiffel_compiler: [ge, debug_ge, ise, debug_ise]
         system_under_test: [library, tool]
         exclude:
-          - c_compiler: msc
+          - c_compiler: zig
             eiffel_compiler: ise
-          - c_compiler: msc
+          - c_compiler: zig
             eiffel_compiler: debug_ise
     steps:
       - uses: actions/checkout@v6
@@ -232,9 +237,9 @@ jobs:
         eiffel_compiler: [ge, debug_ge, ise, debug_ise]
         system_under_test: [library, tool]
         exclude:
-          - c_compiler: msc
+          - c_compiler: zig
             eiffel_compiler: ise
-          - c_compiler: msc
+          - c_compiler: zig
             eiffel_compiler: debug_ise
     steps:
       - uses: actions/checkout@v6
