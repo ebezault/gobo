@@ -6,6 +6,14 @@
 
 * Upgraded Zig toolchain to version 0.16.0.
 * Upgraded Boehm GC to version 8.2.12.
+* Added command-line option `--init` to create ECF and Eiffel root
+  class files if missing.
+* Added command-line option `--compile` to compile the Eiffel system.
+  This is the default unless `--init` or `--run` is specified.
+* Added command-line option `--run` to run Eiffel system.
+  Do not compile unless the executable is not found.
+* If the input filename has no extension, the extension `.ecf` is
+  assumed.
 
 ### Gobo Eiffel Tools Library
 

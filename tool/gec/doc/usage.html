@@ -24,7 +24,7 @@
     This will read the description of your program in the ECF file
     <font color="#800000"><i><tt>ecf_filename</tt></i></font>, compile it and invoke the
     back-end C compiler on the generated C code as explained
-    below. 
+    below.
     
    </p>
    
@@ -36,6 +36,22 @@
      	<font color="#800000"><i><tt>gec eiffel_filename</tt></i></font>
      
     </blockquote>
+    
+   </p>
+   
+   <p>
+    Note that if the input filename has no extension, the extension
+    <font color="#800000"><i><tt>.ecf</tt></i></font> is assumed. These two instructions
+    are equivalent:
+    
+    <blockquote><pre>
+<font color="#800000"><i><tt>gec foo</tt></i></font>
+<font color="#800000"><i><tt>gec foo.ecf</tt></i></font>
+</pre></blockquote>
+    
+   </p>
+   
+   <p>
     Here is the list of options that can be
     used with <i>gec</i>:
     
@@ -51,6 +67,34 @@
      </dt>
      <dd>
       			Print a summary of the command-line options of <i>gec</i> and exit.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--init</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Initialize Eiffel system: create ECF and Eiffel root class files if missing.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--compile</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Compile Eiffel system.
+      			(default: true unless <font color="#800000"><i><tt>--init</tt></i></font> or <font color="#800000"><i><tt>--run</tt></i></font> is specified)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--run</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Run Eiffel system. Do not compile unless executable not found.
       		
      </dd>
      	
@@ -407,6 +451,18 @@
     
    </p>
    
+   <p>
+    Alternatively, this command can be used:
+    
+    <blockquote>
+     	<font color="#800000"><i><tt>gec --init hello_world</tt></i></font>
+     
+    </blockquote>
+    to generate two files: <font color="#800000"><i><tt>hello_word.e</tt></i></font> containing a
+    <font color="#008080"><i><tt>HELLO_WORLD</tt></i></font> Eiffel class text, and
+    <font color="#800000"><i><tt>hello_word.ecf</tt></i></font> containing the associated ECF file.
+    
+   </p>
    
   </div>
   <div>
@@ -473,7 +529,7 @@ lflags_finalize:
   <table border="0" width="100%">
    <tr>
     <td>
-     <address><font size="2"><b>Copyright © 2006-2025, Eric Bezault</b><br /><b>mailto:</b><a href="mailto:ericb@gobosoft.com">ericb@gobosoft.com</a><br /><b>https://</b><a href="https://www.gobosoft.com">www.gobosoft.com</a><br /><b>Last Updated: </b>6 December 2025</font></address>
+     <address><font size="2"><b>Copyright © 2006-2026, Eric Bezault</b><br /><b>mailto:</b><a href="mailto:ericb@gobosoft.com">ericb@gobosoft.com</a><br /><b>https://</b><a href="https://www.gobosoft.com">www.gobosoft.com</a><br /><b>Last Updated: </b>10 May 2026</font></address>
     </td>
     <td align="right" valign="top"><a href="https://www.gobosoft.com"><img src="image/home.gif" alt="Home" border="0" /></a><a href="index.html"><img src="image/toc.gif" alt="Toc" border="0" /></a><a href="index.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="technology.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
    </tr>

@@ -6,21 +6,21 @@
 		"Using gec"
 
 	tool: "Gobo Eiffel Compiler"
-	copyright: "Copyright (c) 2006-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2006-2026, Eric Bezault and others"
 	license: "MIT License"
 -->
 
 <chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="gec/usage">
 <chapterinfo>
 	<copyright>
-		<year>2006-2025</year>
+		<year>2006-2026</year>
 		<holder>Eric Bezault</holder>
 	</copyright>
 	<author>
 		<firstname>Eric</firstname><surname>Bezault</surname>
 	</author>
 	<email>ericb@gobosoft.com</email>
-	<date>6 December 2025</date>
+	<date>10 May 2026</date>
 </chapterinfo>
 
 <title>Using gec</title>
@@ -34,7 +34,7 @@ The usual way to invoke <projectname>gec</projectname> is as follows:
 This will read the description of your program in the ECF file
 <filename>ecf_filename</filename>, compile it and invoke the
 back-end C compiler on the generated C code as explained
-below. 
+below.
 </para>
 <para>
 For simple programs, one can just provide the Eiffel file containing
@@ -42,6 +42,17 @@ the root class:
 <blockquote>
 	<filename>gec eiffel_filename</filename>
 </blockquote>
+</para>
+<para>
+Note that if the input filename has no extension, the extension
+<filename>.ecf</filename> is assumed. These two instructions
+are equivalent:
+<blockquote><programlisting>
+<filename>gec foo</filename>
+<filename>gec foo.ecf</filename>
+</programlisting></blockquote>
+</para>
+<para>
 Here is the list of options that can be
 used with <projectname>gec</projectname>:
 <variablelist>
@@ -54,6 +65,31 @@ used with <projectname>gec</projectname>:
 		</term>
 		<listitem><para>
 			Print a summary of the command-line options of <projectname>gec</projectname> and exit.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+			<filename>--init</filename>
+		</term>
+		<listitem><para>
+			Initialize Eiffel system: create ECF and Eiffel root class files if missing.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+			<filename>--compile</filename>
+		</term>
+		<listitem><para>
+			Compile Eiffel system.
+			(default: true unless <filename>--init</filename> or <filename>--run</filename> is specified)
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+			<filename>--run</filename>
+		</term>
+		<listitem><para>
+			Run Eiffel system. Do not compile unless executable not found.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -364,7 +400,15 @@ You can give it a try using the <classname>HELLO_WORLD</classname> class provide
 An ECF file will be needed when you want to use classes from other libraries
 or if you want to override the default settings (e.g. console application, SCOOP mode).
 </para>
-
+<para>
+Alternatively, this command can be used:
+<blockquote>
+	<filename>gec --init hello_world</filename>
+</blockquote>
+to generate two files: <filename>hello_word.e</filename> containing a
+<classname>HELLO_WORLD</classname> Eiffel class text, and
+<filename>hello_word.ecf</filename> containing the associated ECF file.
+</para>
 </section>
 
 <section><title>Back-end C compiler</title>
