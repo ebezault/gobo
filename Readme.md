@@ -18,14 +18,14 @@
 
 One of the main concerns of the *Gobo Eiffel Project* is to provide
 the Eiffel community with Eiffel tools and libraries that are
-[free](License.md) and [portable](./library/common/doc/portability/index.html)
+[free](./License.md) and [portable](./library/common/doc/portability/index.html)
 across various Eiffel compilers available on the market.
 That way, you can still use your favorite Eiffel compiler while taking
 advantage of the goodies included in *Gobo Eiffel*.
 
 The software included in this package is copyrighted freeware distributed
 under the terms and conditions of the MIT License as specified in
-[License](License.md) file.
+[License](./License.md) file.
 *Gobo Eiffel* is a multi-developer open-source project whose development
 is hosted at
 [Github](http://github.com/gobo-eiffel/gobo)
