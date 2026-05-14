@@ -36,12 +36,25 @@ param
 $ErrorActionPreference = "Stop"
 
 $output = @"
-The Gobo Eiffel Project provides the Eiffel community with free and portable Eiffel tools and libraries.
-Please see the [release notes](https://github.com/gobo-eiffel/gobo/blob/master/History.md). Gobo Eiffel works fine with EiffelStudio 25.12 and Gobo Eiffel $Version itself.
-The Gobo Eiffel documentation can be browsed on-line at: https://www.gobosoft.com.
-Gobo Eiffel is also available from [VS Code](https://marketplace.visualstudio.com/items?itemName=gobosoft.gobo-eiffel) and [VSCodium](https://open-vsx.org/extension/gobosoft/gobo-eiffel).
+Gobo Eiffel is an open-source collection of compilers, tools and libraries for the Eiffel programming language.
 
-Happy Eiffeling.
+### Overview
+
+- 📋 [Release notes](https://github.com/gobo-eiffel/gobo/blob/master/History.md)
+- 📚 [Documentation](https://www.gobosoft.com/eiffel/gobo)
+- 🌐 [Official website](https://www.gobosoft.com)
+
+### Integrations
+
+- [VS Code extension](https://marketplace.visualstudio.com/items?itemName=gobosoft.gobo-eiffel)
+- [VSCodium extension](https://open-vsx.org/extension/gobosoft/gobo-eiffel)
+- [Cursor extension](https://open-vsx.org/extension/gobosoft/gobo-eiffel)
+
+### Compatibility
+
+Gobo Eiffel works with EiffelStudio 25.12 and with Gobo Eiffel $Version itself.
+
+Happy Eiffel coding!
 "@
 
 $output | Set-Content -Path $OutputFilePath -Encoding utf8
