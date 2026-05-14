@@ -1,3 +1,15 @@
+<div align="center"><center>
+
+<table border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td nowrap><img src="https://www.gobosoft.com/image/gobo_logo.gif" alt="Gobo Logo"
+        align="middle" width="370" height="146"></td>
+    </tr>
+</table>
+</center></div>
+
+<hr size="1">
+
 [![GitHub Actions](https://github.com/gobo-eiffel/gobo/actions/workflows/github-ci.yml/badge.svg)](https://github.com/gobo-eiffel/gobo/actions/workflows/github-ci.yml)
 [![GitLab CI/CD](https://gitlab.com/ebezault/gobo/badges/master/pipeline.svg?key_text=GitLab+CI/CD&key_width=85)](https://gitlab.com/ebezault/gobo/-/pipelines)
 [![Azure Pipelines](https://dev.azure.com/ericb0733/gobo/_apis/build/status/gobo?branchName=master)](https://dev.azure.com/ericb0733/gobo/_build?definitionId=1&branchName=master)
@@ -69,7 +81,7 @@ library classes provided in this package.
 
 The supported Eiffel compilers, in alphabetical order, are:
 
-* Gobo Eiffel Compiler (gec) 26.04.22
+* Gobo Eiffel Compiler (gec) 26.05.14
 * ISE Eiffel 25.12.9.8922 (Classic and .NET)
 
 For more details about the supported Eiffel compilers, please see the file
