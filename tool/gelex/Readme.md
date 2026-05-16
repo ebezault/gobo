@@ -2,12 +2,12 @@
 
 This folder contains the source code of *Gobo Eiffel Lex* (`gelex`).
 The code of `gelex` is mainly based on the *Gobo Eiffel Lexical Library*
-(`$GOBO/library/lexical`).
+([`$GOBO/library/lexical`](../../library/lexical/Readme.md)).
 
 **Included in this folder:**
 
 * `doc`: this folder contains the documentation for this tool,
-  in HTML format. Start with `index.html`.
+  in HTML format. Start with [`index.html`](./doc).
 * `src`: this folder contains the classes necessary to compile this tool.
 * `test`: this folder contains tests to exercise this tool.
 

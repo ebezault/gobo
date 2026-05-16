@@ -9,7 +9,7 @@
 	license: "MIT License"
 -->
 
-<chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="argument/parser">
+<chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="argument/parser">
 <chapterinfo>
 	<copyright>
 		<year>2001-2019</year>

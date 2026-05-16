@@ -10,7 +10,7 @@
 	license: "MIT License"
 -->
 
-<chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="gec/usage">
+<chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="gec/usage">
 <chapterinfo>
 	<copyright>
 		<year>2006-2026</year>
@@ -392,8 +392,8 @@ in which Eiffel file it can find the root class of the Eiffel system:
 It will use the first creation procedure declared in the `create` clause
 of the root class as root creation procedure. This will work fine provided
 that all classes used in your simple program are part of one of the libraries
-provided in the <ulink url="https://www.gobosoft.com/eiffel/gobo"><projectname>Gobo
-Eiffel Project</projectname></ulink>. 
+provided in the <link linkend="${root}/"><projectname>Gobo
+Eiffel Project</projectname></link>. 
 You can give it a try using the <classname>HELLO_WORLD</classname> class provided in
 <ulink url="../../../library/common/example/hello_world/hello_world.e">
 <filename>$GOBO/library/common/example/hello_world/hello_world.e</filename></ulink>.

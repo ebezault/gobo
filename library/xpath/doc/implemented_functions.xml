@@ -10,7 +10,7 @@
 	license: "MIT License"
 -->
 
-<chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="xpath_implemented_functions">
+<chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="xpath_implemented_functions">
   <chapterinfo>
     <copyright>
       <year>2004-2016</year>

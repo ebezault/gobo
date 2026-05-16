@@ -10,7 +10,7 @@
 	license: "MIT License"
 -->
 
-<chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="guidelines/naming_conventions">
+<chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="guidelines/naming_conventions">
 <chapterinfo>
 	<copyright>
 		<year>2001-2019</year>

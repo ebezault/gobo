@@ -10,7 +10,7 @@
 	license: "MIT License"
 -->
 
-<chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="xslt_output_extensions">
+<chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="xslt_output_extensions">
   <chapterinfo>
     <copyright>
       <year>2004-2016</year>
@@ -186,7 +186,7 @@
       You can also add your own serialization parameters in a namespace, for use
       with a <exmlsyntax>QName-but-not-NCName</exmlsyntax> output method that you have written. This must be a non-null namespace,
       and it must <emphasis>not</emphasis> be the XSLT namespace, nor can it be
-      <uri>https://www.gobosoft.com/eiffel/gobo/tool/gexslt/doc/extension</uri>. Apart from that, you may use any namespace you wish, 
+      <uri>http://gobo-eiffel.gobosoft.com/tool/gexslt/doc/extension</uri>. Apart from that, you may use any namespace you wish, 
       but it is strongly recommanded that this be a URI which you control, so as to prevent clashes with other possible
       extensions. I would suggest using the same namespace as you do for your <exmlsyntax>QName</exmlsyntax> output method.
     </para>

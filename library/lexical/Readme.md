@@ -5,7 +5,7 @@ nondeterministic finite automata (NFA) and deterministic finite automata
 (DFA), lexical analyzers (also known as scanners or tokenizers). This
 library is mainly used by *Gobo Eiffel Lex* (`gelex`). To get information
 about `gelex`, have a look at
-[`$GOBO/tool/gelex/doc`](https://www.gobosoft.com/eiffel/gobo/tool/gelex/doc/index.html).
+[`$GOBO/tool/gelex/doc`](../../tool/gelex/doc).
 
 **Included in this library:**
 

@@ -3,7 +3,7 @@
 This folder contains the source code for the string
 concatenator used as an example in `getest` documentation.
 Please refer to
-[`$GOBO/tool/getest/doc/examples.html`](https://www.gobosoft.com/eiffel/gobo/tool/getest/doc/examples.html)
+[`$GOBO/tool/getest/doc/examples.html`](http://gobo-eiffel.gobosoft.com/tool/getest/doc/examples.html)
 for details.
 
 **To run this example:**

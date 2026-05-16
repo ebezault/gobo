@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="ISO-8859-1" ?>
 <xsl:transform 
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:gexslt="https://www.gobosoft.com/eiffel/gobo/tool/gexslt/doc/xtension"  
+  xmlns:gexslt="http://gobo-eiffel.gobosoft.com/tool/gexslt/doc/xtension"  
   version="2.0">
 
 <xsl:output method="text" />

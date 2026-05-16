@@ -4,8 +4,8 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	xmlns:gexslt="https://www.gobosoft.com/eiffel/gobo/tool/gexslt/doc/extension"
-	xmlns:gobodoc="https://www.gobosoft.com/eiffel/gobo/documentation"
+	xmlns:gexslt="http://gobo-eiffel.gobosoft.com/tool/gexslt/doc/extension"
+	xmlns:gobodoc="http://gobo-eiffel.gobosoft.com/documentation"
 	gexslt:explain="no"
 	exclude-result-prefixes="xs gexslt gobodoc"
 	version="2.0">
@@ -160,7 +160,7 @@
 			</font></address>
 		</td>
 		<td align="right" valign="top">
-			<a href="https://www.gobosoft.com">
+			<a href="http://gobo-eiffel.gobosoft.com">
 				<img src="{$images}home.gif" alt="Home" border="0"/>
 			</a>
 			<xsl:choose>
@@ -346,7 +346,7 @@
 
 <xsl:template match="gobodoc:copyright" mode="footer">
 	<b>
-	<xsl:text>Copyright &#169; </xsl:text>
+	<xsl:text>Copyright (c) </xsl:text>
 	<xsl:for-each select="gobodoc:year">
 		<xsl:apply-templates/>
 		<xsl:text>, </xsl:text>

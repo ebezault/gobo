@@ -3,7 +3,7 @@
 This folder contains the source code for the infix notation calculator 
 used as an example in `geyacc` documentation.
 Please refer to
-[`$GOBO/tool/geyacc/doc/examples.html`](https://www.gobosoft.com/eiffel/gobo/tool/geyacc/doc/examples.html)
+[`$GOBO/tool/geyacc/doc/examples.html`](http://gobo-eiffel.gobosoft.com/tool/geyacc/doc/examples.html)
 for details.
 
 **To compile and run this example:**

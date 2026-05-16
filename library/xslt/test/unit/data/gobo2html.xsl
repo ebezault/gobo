@@ -408,7 +408,7 @@ table.header tbody tr td {
 
 <xsl:template match="copyright" mode="footer">
 	<b>
-	<xsl:text>Copyright &#169; </xsl:text>
+	<xsl:text>Copyright (c) </xsl:text>
 	<xsl:for-each select="year">
 		<xsl:apply-templates/>
 		<xsl:text>, </xsl:text>

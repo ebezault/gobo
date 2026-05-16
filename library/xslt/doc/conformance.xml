@@ -10,7 +10,7 @@
 	license: "MIT License"
 -->
 
-<chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="xslt_conformance">
+<chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="xslt_conformance">
   <chapterinfo>
     <copyright>
       <year>2004-2016</year>
@@ -342,7 +342,7 @@
 	</para>
 	<para>
 	 Additional system properties in other namespaces may be registered. The standard implementation
-	 provides the following properties in the namespace <uri>https://www.gobosoft.com/eiffel/gobo/tool/gexslt/doc/extension</uri>:
+	 provides the following properties in the namespace <uri>http://gobo-eiffel.gobosoft.com/tool/gexslt/doc/extension</uri>:
 	 <variablelist>
 	  <varlistentry>
 	   <term>gexslt:standard-file-collection</term>

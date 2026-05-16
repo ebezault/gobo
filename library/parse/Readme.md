@@ -3,7 +3,7 @@
 This library provides parsing functionalities such as syntactical analyzers
 (also known as parsers). This library is mainly used by *Gobo Eiffel Yacc*
 (`geyacc`). To get information about `geyacc`, have a look at
-[`$GOBO/tool/geyacc/doc`](https://www.gobosoft.com/eiffel/gobo/tool/geyacc/doc/index.html).
+[`$GOBO/tool/geyacc/doc`](../../tool/geyacc/doc).
 
 **Included in this library:**
 
