@@ -1225,6 +1225,9 @@
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:when>
+		<xsl:when test="compare($linkend,'${root}/')=0">
+			<xsl:value-of select="'http://gobo-eiffel.gobosoft.com'"/>
+		</xsl:when>
 		<xsl:when test="starts-with($linkend,'${root}/')">
 			<xsl:value-of select="$path_to_gobo"/>
 			<xsl:if test="not(ends-with($path_to_gobo,'/'))">
@@ -1246,6 +1249,15 @@
 		</xsl:choose>
 	</xsl:variable>
 	<xsl:choose>
+		<xsl:when test="ends-with($linkend_relative_name,'.txt')">
+			<xsl:value-of select="$linkend_relative_name"/>
+		</xsl:when>
+		<xsl:when test="compare($linkend,'${root}/')=0">
+			<xsl:value-of select="''"/>
+		</xsl:when>
+		<xsl:when test="ends-with($linkend_relative_name,'/')">
+			<xsl:value-of select="concat($linkend_relative_name,'index.html')"/>
+		</xsl:when>
 		<xsl:when test="contains($linkend_relative_name,'#')">
 			<xsl:value-of select="concat(substring-before($linkend_relative_name,'#'),'.html#',substring-after($linkend_relative_name,'#'))"/>
 		</xsl:when>
