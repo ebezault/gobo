@@ -3,7 +3,7 @@
 This library provides testing functionalities. This library is mainly
 used by *Gobo Eiffel Test* (`getest`). To get information
 about `gelex`, have a look at
-[`$GOBO/tool/getest/doc`](https://www.gobosoft.com/eiffel/gobo/tool/getest/doc/index.html).
+[`$GOBO/tool/getest/doc`](../../tool/getest/doc).
 
 **Included in this library:**
 

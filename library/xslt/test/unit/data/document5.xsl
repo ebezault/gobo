@@ -5,7 +5,7 @@
 
 <xsl:template name="initial" >
   <output>
-    <xsl:value-of select="document('books3.xml#xmlns(gexslt%20=%20https://www.gobosoft.com/eiffel/gobo/tool/gexslt/doc/extension)gexslt:xpath(/BOOKLIST/BOOKS/ITEM)')"/>
+    <xsl:value-of select="document('books3.xml#xmlns(gexslt%20=%20http://gobo-eiffel.gobosoft.com/tool/gexslt/doc/extension)gexslt:xpath(/BOOKLIST/BOOKS/ITEM)')"/>
   </output>
 </xsl:template>
 

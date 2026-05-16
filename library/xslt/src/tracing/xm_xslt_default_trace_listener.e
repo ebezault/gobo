@@ -53,7 +53,7 @@ feature -- Access
 	opening_namespace_declarations: STRING
 			-- XML namespace declarations
 		do
-			Result := "xmlns=%"https://www.gobosoft.com/eiffel/gobo/tool/gexslt/doc/trace%" xmlns:xsl=%"" + Xslt_uri + "%""
+			Result := "xmlns=%"http://gobo-eiffel.gobosoft.com/tool/gexslt/doc/trace%" xmlns:xsl=%"" + Xslt_uri + "%""
 		ensure
 			result_not_void: Result /= Void
 		end

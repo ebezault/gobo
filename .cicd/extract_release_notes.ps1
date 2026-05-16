@@ -41,7 +41,7 @@ Gobo Eiffel is an open-source collection of compilers, tools and libraries for t
 ### Overview
 
 - 📋 [Release notes](https://github.com/gobo-eiffel/gobo/blob/master/History.md)
-- 📚 [Documentation](https://www.gobosoft.com/eiffel/gobo)
+- 📚 [Documentation](http://gobo-eiffel.gobosoft.com)
 - 🌐 [Official website](https://www.gobosoft.com)
 
 ### Integrations
@@ -52,7 +52,7 @@ Gobo Eiffel is an open-source collection of compilers, tools and libraries for t
 
 ### Compatibility
 
-Gobo Eiffel works with EiffelStudio 25.12 and with Gobo Eiffel $Version itself.
+- Gobo Eiffel works with EiffelStudio 25.12 and with Gobo Eiffel $Version itself.
 
 Happy Eiffel coding!
 "@

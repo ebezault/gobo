@@ -10,7 +10,7 @@
 	license: "MIT License"
 -->
 
-<chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="tools/new_builtin_routine">
+<chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="tools/new_builtin_routine">
 <chapterinfo>
 	<copyright>
 		<year>2010-2017</year>

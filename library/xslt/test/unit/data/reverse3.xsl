@@ -2,7 +2,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:str="http://example.com/namespace"
-  xmlns:gexslt="https://www.gobosoft.com/eiffel/gobo/tool/gexslt/doc/extension"
+  xmlns:gexslt="http://gobo-eiffel.gobosoft.com/tool/gexslt/doc/extension"
   version="2.0"
   exclude-result-prefixes="gexslt str">
 

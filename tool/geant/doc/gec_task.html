@@ -1,215 +1,215 @@
 <?xml version="1.0" encoding="ISO-8859-1"?><html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
- <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-  <title>gec</title>
- </head>
- <body bgcolor="#FFFFFF">
-  <table border="0" width="100%">
-   <tr>
-    <td><font size="6"><strong>gec</strong></font></td>
-    <td align="right"><a href="geant_task.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="gecc_task.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
-   </tr>
-  </table>
-  <hr size="1" />
-  <div><a name="gec_description"></a>
-   		
-   <h2>Description</h2>
-   		
-   <p>
-    			Execute gec.
-    		
-   </p>
-   	
-  </div>
-  <div><a name="gec_parameters"></a>
-   		
-   <h2>Parameters</h2>
-   
-   		
-   <dl>
-    			
-    <dt>ecf</dt>
-    <dd><i>Description: </i>Name of ECF file
-     <p><i>Domain: </i>Valid filename pointing to existing file
-     </p>
-     <p><i>Default: </i>-
-     </p>
-    </dd>
-    
-    			
-    <dt>target</dt>
-    <dd><i>Name of target to be used in ECF file</i><p><i>Domain: </i>valid target name
-     </p>
-     <p><i>Default: </i>Last target in ECF file
-     </p>
-    </dd>
-    			
-    			
-    <dt>finalize</dt>
-    <dd><i>Description: </i>Should system be compiled in finalized mode?
-     <p><i>Domain: </i>Boolean (true|false)
-     </p>
-     <p><i>Default: </i>false
-     </p>
-    </dd>
-    
-    			
-    <dt>gelint</dt>
-    <dd><i>Description: </i>Should gelint be run on the full content of each class being compiled?
-     <p><i>Domain: </i>Boolean (true|false)
-     </p>
-     <p><i>Default: </i>false
-     </p>
-    </dd>
-    
-    			
-    <dt>catcall</dt>
-    <dd><i>Description: </i>Should CAT-call errors be considered as fatal errors, as warnings, or just ignored?
-     <p><i>Domain: </i>(no|error|warning)
-     </p>
-     <p><i>Default: </i>warning
-     </p>
-    </dd>
-    
-    			
-    <dt>split</dt>
-    <dd><i>Description: </i>Should C code be generated into several files?
-     <p><i>Domain: </i>Boolean (true|false)
-     </p>
-     <p><i>Default: </i>true
-     </p>
-    </dd>
-    
-    			
-    <dt>split_size</dt>
-    <dd><i>Description: </i>Size (in bytes) of generated C files in bytes when in split mode
-     <p><i>Domain: </i>Positive integer
-     </p>
-     <p><i>Default: </i>2,500,000 bytes
-     </p>
-    </dd>
-    
-    			
-    <dt>c_compile</dt>
-    <dd><i>Description: </i>Should the back-end C compiler be invoked on the generated C code, and if yes with what method?
-     <p><i>Domain: </i>(no|script|make|gecc)
-     </p>
-     <p><i>Default: </i>gecc
-     </p>
-    </dd>
-    
-    			
-    <dt>gc</dt>
-    <dd><i>Description: </i>Which garbage collector should the application be compiled with?
-     <p><i>Domain: </i>(no|boehm)
-     </p>
-     <p><i>Default: </i>no
-     </p>
-    </dd>
-    
-    			
-    <dt>new_instance_types</dt>
-    <dd><i>Description: </i>File containing
-     					the list of types which can have instances created by 
-     					'TYPE.new_instance' or 'TYPE.new_special_any_instance'
-     <p><i>Domain: </i>Valid filename pointing to existing file
-     </p>
-     <p><i>Default: </i>Use all non-deferred, non-NONE, alive types
-     </p>
-    </dd>
-    
-    			
-    <dt>thread</dt>
-    <dd><i>Description: </i>Number of threads to be used to run gec. Negative numbers -N mean "number of CPUs - N"
-     <p><i>Domain: </i>Integer
-     </p>
-     <p><i>Default: </i>-3, aka "max (number of CPUs -3, 1)"
-     </p>
-    </dd>
-    
-    			
-    <dt>silent</dt>
-    <dd><i>Description: </i>Run gec in silent mode
-     <p><i>Domain: </i>Boolean (true|false)
-     </p>
-     <p><i>Default: </i>false
-     </p>
-    </dd>
-    
-    			
-    <dt>verbose</dt>
-    <dd><i>Description: </i>Run gec in verbose mode
-     <p><i>Domain: </i>Boolean (true|false)
-     </p>
-     <p><i>Default: </i>false
-     </p>
-    </dd>
-    
-    			
-    <dt>no_benchmark</dt>
-    <dd><i>Description: </i>Should no benchmark information be displayed? (default: display non-nested benchmark information)
-     <p><i>Domain: </i>Boolean (true|false)
-     </p>
-     <p><i>Default: </i>false
-     </p>
-    </dd>
-    
-    			
-    <dt>nested_benchmark</dt>
-    <dd><i>Description: </i>Should nested benchmark information be displayed?
-     <p><i>Domain: </i>Boolean (true|false)
-     </p>
-     <p><i>Default: </i>false
-     </p>
-    </dd>
-    
-    			
-    <dt>metrics</dt>
-    <dd><i>Description: </i>Should metrics information be displayed?
-     <p><i>Domain: </i>Boolean (true|false)
-     </p>
-     <p><i>Default: </i>false
-     </p>
-    </dd>
-    
-    			
-    <dt>executable</dt>
-    <dd><i>Description: </i>Filename (optionally with a pathname) of gec executable.
-     					
-     <p><i>Domain: </i>Valid filename pointing to existing executable
-     </p>
-     <p><i>Default: </i>Version of 'gec' in the PATH
-     </p>
-    </dd>
-    
-    			
-    <dt>clean</dt>
-    <dd><i>Description: </i>clean
-     <p><i>Domain: </i>valid system name
-     </p>
-     <p><i>Default: </i>empty string
-     </p>
-    </dd>
-    
-    			
-    <dt>exit_code_variable</dt>
-    <dd><i>Description: </i>Name of variable holding the compiler process's return code after it's run
-     					
-     <p><i>Domain: </i>Integer (usually 0 for OK, and any other number for not OK)
-     </p>
-     <p><i>Default: </i>`Void' (no variable is set if attribute is not specified)
-     </p>
-    </dd>
-    
-    		
-   </dl>
-   	
-  </div>
-  <div><a name="gec_specification"></a>
-   		
-   <h2>RNG Specification</h2>
-   
-   		<pre>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+      <title>gec</title>
+   </head>
+   <body bgcolor="#FFFFFF">
+      <table border="0" width="100%">
+         <tr>
+            <td><font size="6"><strong>gec</strong></font></td>
+            <td align="right"><a href="geant_task.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="gecc_task.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
+         </tr>
+      </table>
+      <hr size="1" />
+      <div><a name="gec_description"></a>
+         		
+         <h2>Description</h2>
+         		
+         <p>
+            			Execute gec.
+            		
+         </p>
+         	
+      </div>
+      <div><a name="gec_parameters"></a>
+         		
+         <h2>Parameters</h2>
+         
+         		
+         <dl>
+            			
+            <dt>ecf</dt>
+            <dd><i>Description: </i>Name of ECF file
+               <p><i>Domain: </i>Valid filename pointing to existing file
+               </p>
+               <p><i>Default: </i>-
+               </p>
+            </dd>
+            
+            			
+            <dt>target</dt>
+            <dd><i>Name of target to be used in ECF file</i><p><i>Domain: </i>valid target name
+               </p>
+               <p><i>Default: </i>Last target in ECF file
+               </p>
+            </dd>
+            			
+            			
+            <dt>finalize</dt>
+            <dd><i>Description: </i>Should system be compiled in finalized mode?
+               <p><i>Domain: </i>Boolean (true|false)
+               </p>
+               <p><i>Default: </i>false
+               </p>
+            </dd>
+            
+            			
+            <dt>gelint</dt>
+            <dd><i>Description: </i>Should gelint be run on the full content of each class being compiled?
+               <p><i>Domain: </i>Boolean (true|false)
+               </p>
+               <p><i>Default: </i>false
+               </p>
+            </dd>
+            
+            			
+            <dt>catcall</dt>
+            <dd><i>Description: </i>Should CAT-call errors be considered as fatal errors, as warnings, or just ignored?
+               <p><i>Domain: </i>(no|error|warning)
+               </p>
+               <p><i>Default: </i>warning
+               </p>
+            </dd>
+            
+            			
+            <dt>split</dt>
+            <dd><i>Description: </i>Should C code be generated into several files?
+               <p><i>Domain: </i>Boolean (true|false)
+               </p>
+               <p><i>Default: </i>true
+               </p>
+            </dd>
+            
+            			
+            <dt>split_size</dt>
+            <dd><i>Description: </i>Size (in bytes) of generated C files in bytes when in split mode
+               <p><i>Domain: </i>Positive integer
+               </p>
+               <p><i>Default: </i>2,500,000 bytes
+               </p>
+            </dd>
+            
+            			
+            <dt>c_compile</dt>
+            <dd><i>Description: </i>Should the back-end C compiler be invoked on the generated C code, and if yes with what method?
+               <p><i>Domain: </i>(no|script|make|gecc)
+               </p>
+               <p><i>Default: </i>gecc
+               </p>
+            </dd>
+            
+            			
+            <dt>gc</dt>
+            <dd><i>Description: </i>Which garbage collector should the application be compiled with?
+               <p><i>Domain: </i>(no|boehm)
+               </p>
+               <p><i>Default: </i>no
+               </p>
+            </dd>
+            
+            			
+            <dt>new_instance_types</dt>
+            <dd><i>Description: </i>File containing
+               					the list of types which can have instances created by 
+               					'TYPE.new_instance' or 'TYPE.new_special_any_instance'
+               <p><i>Domain: </i>Valid filename pointing to existing file
+               </p>
+               <p><i>Default: </i>Use all non-deferred, non-NONE, alive types
+               </p>
+            </dd>
+            
+            			
+            <dt>thread</dt>
+            <dd><i>Description: </i>Number of threads to be used to run gec. Negative numbers -N mean "number of CPUs - N"
+               <p><i>Domain: </i>Integer
+               </p>
+               <p><i>Default: </i>-3, aka "max (number of CPUs -3, 1)"
+               </p>
+            </dd>
+            
+            			
+            <dt>silent</dt>
+            <dd><i>Description: </i>Run gec in silent mode
+               <p><i>Domain: </i>Boolean (true|false)
+               </p>
+               <p><i>Default: </i>false
+               </p>
+            </dd>
+            
+            			
+            <dt>verbose</dt>
+            <dd><i>Description: </i>Run gec in verbose mode
+               <p><i>Domain: </i>Boolean (true|false)
+               </p>
+               <p><i>Default: </i>false
+               </p>
+            </dd>
+            
+            			
+            <dt>no_benchmark</dt>
+            <dd><i>Description: </i>Should no benchmark information be displayed? (default: display non-nested benchmark information)
+               <p><i>Domain: </i>Boolean (true|false)
+               </p>
+               <p><i>Default: </i>false
+               </p>
+            </dd>
+            
+            			
+            <dt>nested_benchmark</dt>
+            <dd><i>Description: </i>Should nested benchmark information be displayed?
+               <p><i>Domain: </i>Boolean (true|false)
+               </p>
+               <p><i>Default: </i>false
+               </p>
+            </dd>
+            
+            			
+            <dt>metrics</dt>
+            <dd><i>Description: </i>Should metrics information be displayed?
+               <p><i>Domain: </i>Boolean (true|false)
+               </p>
+               <p><i>Default: </i>false
+               </p>
+            </dd>
+            
+            			
+            <dt>executable</dt>
+            <dd><i>Description: </i>Filename (optionally with a pathname) of gec executable.
+               					
+               <p><i>Domain: </i>Valid filename pointing to existing executable
+               </p>
+               <p><i>Default: </i>Version of 'gec' in the PATH
+               </p>
+            </dd>
+            
+            			
+            <dt>clean</dt>
+            <dd><i>Description: </i>clean
+               <p><i>Domain: </i>valid system name
+               </p>
+               <p><i>Default: </i>empty string
+               </p>
+            </dd>
+            
+            			
+            <dt>exit_code_variable</dt>
+            <dd><i>Description: </i>Name of variable holding the compiler process's return code after it's run
+               					
+               <p><i>Domain: </i>Integer (usually 0 for OK, and any other number for not OK)
+               </p>
+               <p><i>Default: </i>`Void' (no variable is set if attribute is not specified)
+               </p>
+            </dd>
+            
+            		
+         </dl>
+         	
+      </div>
+      <div><a name="gec_specification"></a>
+         		
+         <h2>RNG Specification</h2>
+         
+         		<pre>
   &lt;define name="gec"&gt;
     &lt;element name="gec"&gt;
       &lt;ref name="dir_if_unless"/&gt;
@@ -274,12 +274,12 @@
   &lt;/define&gt;
 
 	</pre>
-   
-   	</div>
-  <div><a name="gec_examples"></a>
-   		
-   <h2>Examples</h2>
-   	<pre>
+         
+         	</div>
+      <div><a name="gec_examples"></a>
+         		
+         <h2>Examples</h2>
+         	<pre>
   &lt;gec ecf="system.ecf"/&gt;
 
   &lt;gec ecf="system.ecf" finalize="true"/&gt;
@@ -287,15 +287,15 @@
   &lt;gec clean="${system}"/&gt;
 
 	</pre>
-   	</div>
-  <hr size="1" />
-  <table border="0" width="100%">
-   <tr>
-    <td>
-     <address><font size="2"><b>Copyright © 2006-2023, Eric Bezault</b><br /><b>mailto:</b><a href="mailto:ericb@gobosoft.com">ericb@gobosoft.com</a><br /><b>https://</b><a href="https://www.gobosoft.com">www.gobosoft.com</a><br /><b>Last Updated: </b>20 December 2023</font></address>
-    </td>
-    <td align="right" valign="top"><a href="https://www.gobosoft.com"><img src="image/home.gif" alt="Home" border="0" /></a><a href="overview.html"><img src="image/toc.gif" alt="Toc" border="0" /></a><a href="geant_task.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="gecc_task.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
-   </tr>
-  </table>
- </body>
+         	</div>
+      <hr size="1" />
+      <table border="0" width="100%">
+         <tr>
+            <td>
+               <address><font size="2"><b>Copyright (c) 2006-2023, Eric Bezault</b><br /><b>mailto:</b><a href="mailto:ericb@gobosoft.com">ericb@gobosoft.com</a><br /><b>https://</b><a href="https://www.gobosoft.com">www.gobosoft.com</a><br /><b>Last Updated: </b>20 December 2023</font></address>
+            </td>
+            <td align="right" valign="top"><a href="http://gobo-eiffel.gobosoft.com"><img src="image/home.gif" alt="Home" border="0" /></a><a href="overview.html"><img src="image/toc.gif" alt="Toc" border="0" /></a><a href="geant_task.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="gecc_task.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
+         </tr>
+      </table>
+   </body>
 </html>

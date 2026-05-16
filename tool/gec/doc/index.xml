@@ -10,7 +10,7 @@
 	license: "MIT License"
 -->
 
-<chapter xmlns="https://www.gobosoft.com/eiffel/gobo/documentation" id="gec/index">
+<chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="gec/index">
 <chapterinfo>
 	<copyright>
 		<year>2006-2025</year>
@@ -113,8 +113,8 @@ This documentation of <projectname>gec</projectname> is structured as follows:
 	</varlistentry>
 	<varlistentry>
 		<term>
-			<ulink url="https://www.gobosoft.com/eiffel/gobo/index.html">Downloading
-			Instructions</ulink>
+			<link linkend="${root}/">Downloading
+			Instructions</link>
 		</term>
 		<listitem><para>
 			License agreement and downloading instructions.
