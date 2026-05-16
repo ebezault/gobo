@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="ISO-8859-1"?><html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-   <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-      <title>Adding a new Eiffel built-in routine</title>
-   </head>
-   <body bgcolor="#FFFFFF">
-      <table border="0" width="100%">
-         <tr>
-            <td><font size="6"><strong>Adding a new Eiffel built-in routine</strong></font></td>
-            <td align="right"><a href="builtin_routines.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="applications.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
-         </tr>
-      </table>
-      <hr size="1" />
-      <p>
-         The following sections will describe step by step what needs to be done
-         in order to add support for new built-in routines in the Eiffel compiler.
-         
-      </p>
-      <div>
-         <h2>Class and Feature names</h2>
-         
-         <p>
-            The first thing to do is to declare the name of the built-in feature and
-            the name of its class. Let's assume that the built-in function <font color="#008080"><i><tt>foo</tt></i></font>
-            and built-in procedure <font color="#008080"><i><tt>poo</tt></i></font>
-            have been declared in class <font color="#008080"><i><tt>BAR</tt></i></font>. These feature and
-            class names will have to be declared as follows in class <font color="#008080"><i><tt>ET_TOKEN_CONSTANTS</tt></i></font>
-            if not already done:
-            
-            <blockquote><pre>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+  <title>Adding a new Eiffel built-in routine</title>
+ </head>
+ <body bgcolor="#FFFFFF">
+  <table border="0" width="100%">
+   <tr>
+    <td><font size="6"><strong>Adding a new Eiffel built-in routine</strong></font></td>
+    <td align="right"><a href="builtin_routines.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="applications.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
+   </tr>
+  </table>
+  <hr size="1" />
+  <p>
+   The following sections will describe step by step what needs to be done
+   in order to add support for new built-in routines in the Eiffel compiler.
+   
+  </p>
+  <div>
+   <h2>Class and Feature names</h2>
+   
+   <p>
+    The first thing to do is to declare the name of the built-in feature and
+    the name of its class. Let's assume that the built-in function <font color="#008080"><i><tt>foo</tt></i></font>
+    and built-in procedure <font color="#008080"><i><tt>poo</tt></i></font>
+    have been declared in class <font color="#008080"><i><tt>BAR</tt></i></font>. These feature and
+    class names will have to be declared as follows in class <font color="#008080"><i><tt>ET_TOKEN_CONSTANTS</tt></i></font>
+    if not already done:
+    
+    <blockquote><pre>
 feature -- Class names
 
 	bar_class_name: ET_CLASS_NAME
@@ -67,13 +67,13 @@ feature -- Keyword and symbol names
 	poo_name: STRING = "poo"
 			-- Name of Eiffel feature 'poo'
 </pre></blockquote>
-            It is a good practice to keep these features in alphabetic order in their
-            respective feature clauses. Note that <font color="#008080"><i><tt>capitalized_bar_name</tt></i></font>,
-            <font color="#008080"><i><tt>foo_name</tt></i></font> and <font color="#008080"><i><tt>poo_name</tt></i></font> also 
-            need to be listed in feature <font color="#008080"><i><tt>strings</tt></i></font>
-            from class <font color="#008080"><i><tt>ET_EIFFEL_SCANNER_SKELETON</tt></i></font>:
-            
-            <blockquote><pre>
+    It is a good practice to keep these features in alphabetic order in their
+    respective feature clauses. Note that <font color="#008080"><i><tt>capitalized_bar_name</tt></i></font>,
+    <font color="#008080"><i><tt>foo_name</tt></i></font> and <font color="#008080"><i><tt>poo_name</tt></i></font> also 
+    need to be listed in feature <font color="#008080"><i><tt>strings</tt></i></font>
+    from class <font color="#008080"><i><tt>ET_EIFFEL_SCANNER_SKELETON</tt></i></font>:
+    
+    <blockquote><pre>
 	strings: DS_HASH_TABLE [INTEGER, STRING]
 			-- Strings known by the current scanner, and the associated
 			-- hash codes when they are used as identifier
@@ -89,24 +89,24 @@ feature -- Keyword and symbol names
 			...
 		end
 </pre></blockquote>
-            Again, try to keep them in alphabetic order in their respective sections.
-            
-         </p>
-         
-      </div>
-      <div>
-         <h2>Built-in feature codes</h2>
-         
-         <p>
-            Each built-in feature is associated with a code which is made up of a
-            class identifier and a feature identifier within this class. Still assuming that
-            the built-in function <font color="#008080"><i><tt>foo</tt></i></font> and the built-in
-            procedure <font color="#008080"><i><tt>poo</tt></i></font>
-            have been declared in class <font color="#008080"><i><tt>BAR</tt></i></font>, the following
-            features need to be declared in class <font color="#008080"><i><tt>ET_TOKEN_CODES</tt></i></font>
-            if not already done:
-            
-            <blockquote><pre>
+    Again, try to keep them in alphabetic order in their respective sections.
+    
+   </p>
+   
+  </div>
+  <div>
+   <h2>Built-in feature codes</h2>
+   
+   <p>
+    Each built-in feature is associated with a code which is made up of a
+    class identifier and a feature identifier within this class. Still assuming that
+    the built-in function <font color="#008080"><i><tt>foo</tt></i></font> and the built-in
+    procedure <font color="#008080"><i><tt>poo</tt></i></font>
+    have been declared in class <font color="#008080"><i><tt>BAR</tt></i></font>, the following
+    features need to be declared in class <font color="#008080"><i><tt>ET_TOKEN_CODES</tt></i></font>
+    if not already done:
+    
+    <blockquote><pre>
 feature -- Built-in codes
 
 	...
@@ -120,18 +120,18 @@ feature -- Built-in codes
 	builtin_bar_poo: NATURAL_8 = ZZ
 			-- Codes for built-in procedures from class "BAR"
 </pre></blockquote>
-            where XX is the class identifier whose value should be different from all other
-            <font color="#008080"><i><tt>builtin_*_class</tt></i></font> declared in this feature clause, 
-            and YY and ZZ are unique identifiers within the built-in features of this 
-            class. Note that the identifiers for the built-in functions should be listed
-            first, followed by the identifiers for the built-in procedures.
-            
-         </p>
-         
-         <p>
-            This convenience routine should also be added in class <font color="#008080"><i><tt>ET_DYNAMIC_FEATURE</tt></i></font>:
-            
-            <blockquote><pre>
+    where XX is the class identifier whose value should be different from all other
+    <font color="#008080"><i><tt>builtin_*_class</tt></i></font> declared in this feature clause, 
+    and YY and ZZ are unique identifiers within the built-in features of this 
+    class. Note that the identifiers for the built-in functions should be listed
+    first, followed by the identifiers for the built-in procedures.
+    
+   </p>
+   
+   <p>
+    This convenience routine should also be added in class <font color="#008080"><i><tt>ET_DYNAMIC_FEATURE</tt></i></font>:
+    
+    <blockquote><pre>
 	is_builtin_bar_class: BOOLEAN
 			-- Is current feature the built-in feature of class "BAR"?
 		do
@@ -141,23 +141,23 @@ feature -- Built-in codes
 			definition: Result = (builtin_class_code = {ET_TOKEN_CODES}.builtin_bar_class)
 		end
 </pre></blockquote>
-            
-         </p>
-         
-      </div>
-      <div>
-         <h2>Validity checker</h2>
-         
-         <p>
-            When features are flattened, the Eiffel compiler checks whether features declared
-            as built-in are known and if they have the expected signature. This is done in class
-            <font color="#008080"><i><tt>ET_BUILTIN_FEATURE_CHECKER</tt></i></font>. Let's assume that the feature
-            <font color="#008080"><i><tt>foo</tt></i></font> is a built-in function with no argument and a result
-            of type 'like Current', and the feature <font color="#008080"><i><tt>poo</tt></i></font> is a built-in procedure
-            with one argument of type INTEGER. The following features need to be modified 
-            or added in class <font color="#008080"><i><tt>ET_BUILTIN_FEATURE_CHECKER</tt></i></font>:
-            
-            <blockquote><pre>
+    
+   </p>
+   
+  </div>
+  <div>
+   <h2>Validity checker</h2>
+   
+   <p>
+    When features are flattened, the Eiffel compiler checks whether features declared
+    as built-in are known and if they have the expected signature. This is done in class
+    <font color="#008080"><i><tt>ET_BUILTIN_FEATURE_CHECKER</tt></i></font>. Let's assume that the feature
+    <font color="#008080"><i><tt>foo</tt></i></font> is a built-in function with no argument and a result
+    of type 'like Current', and the feature <font color="#008080"><i><tt>poo</tt></i></font> is a built-in procedure
+    with one argument of type INTEGER. The following features need to be modified 
+    or added in class <font color="#008080"><i><tt>ET_BUILTIN_FEATURE_CHECKER</tt></i></font>:
+    
+    <blockquote><pre>
 	check_builtin_feature_validity (a_feature: ET_EXTERNAL_ROUTINE)
 			-- Check validity of built-in `a_feature', written in `current_class'.
 			-- Set `has_fatal_error' if a fatal error occurred.
@@ -211,35 +211,35 @@ feature -- Built-in codes
 			check_expected_builtin_feature_validity (a_feature, l_builtin_class_code, l_builtin_features)
 		end
 </pre></blockquote>
-            
-         </p>
-         
-         <p>
-            Various examples with different combinations of argument and result types can be
-            found in class <font color="#008080"><i><tt>ET_BUILTIN_FEATURE_CHECKER</tt></i></font>.
-            
-         </p>
-         
-      </div>
-      <div>
-         <h2>Dynamic type sets</h2>
-         
-         <p>
-            The Gobo Eiffel compiler uses the dynamic type sets of the target of the
-            feature calls to implement dynamic binding and CAT-call checking. Each
-            expression is associated with a dynamic type set which is then propagated
-            when there is an assignment or argument passing. The dynamic type set of
-            the 'Result' entity of built-in functions needs to be built. If it is only
-            made up of exactly one type which is the declared type of the 'Result'
-            entity of the built-in function, then nothing special needs to be done.
-            The default implementation will take care of this case. On the other
-            hand, if the dynamic type set is more complicated or if the built-in
-            feature calls internally another feature whose dynamic type sets need to
-            be updated as well (for example feature <font color="#008080"><i><tt>twin</tt></i></font>
-            calls feature <font color="#008080"><i><tt>copy</tt></i></font>), then the following code
-            needs to appear in class <font color="#008080"><i><tt>ET_DYNAMIC_TYPE_BUILDER</tt></i></font>:
-            
-            <blockquote><pre>
+    
+   </p>
+   
+   <p>
+    Various examples with different combinations of argument and result types can be
+    found in class <font color="#008080"><i><tt>ET_BUILTIN_FEATURE_CHECKER</tt></i></font>.
+    
+   </p>
+   
+  </div>
+  <div>
+   <h2>Dynamic type sets</h2>
+   
+   <p>
+    The Gobo Eiffel compiler uses the dynamic type sets of the target of the
+    feature calls to implement dynamic binding and CAT-call checking. Each
+    expression is associated with a dynamic type set which is then propagated
+    when there is an assignment or argument passing. The dynamic type set of
+    the 'Result' entity of built-in functions needs to be built. If it is only
+    made up of exactly one type which is the declared type of the 'Result'
+    entity of the built-in function, then nothing special needs to be done.
+    The default implementation will take care of this case. On the other
+    hand, if the dynamic type set is more complicated or if the built-in
+    feature calls internally another feature whose dynamic type sets need to
+    be updated as well (for example feature <font color="#008080"><i><tt>twin</tt></i></font>
+    calls feature <font color="#008080"><i><tt>copy</tt></i></font>), then the following code
+    needs to appear in class <font color="#008080"><i><tt>ET_DYNAMIC_TYPE_BUILDER</tt></i></font>:
+    
+    <blockquote><pre>
 feature {NONE} -- Feature validity
 
 	check_external_builtin_function_validity (a_feature: ET_EXTERNAL_FUNCTION)
@@ -284,28 +284,28 @@ feature {NONE} -- Built-in features
 			end
 		end
 </pre></blockquote>
-            By default, nothing needs to be done for built-in procedures. But there are some
-            special cases when the built-in procedure will call internally another feature or
-            will have an effect on the dynamic type set of some entities (for example in class
-            <font color="#008080"><i><tt>SPECIAL</tt></i></font>, the procedure <font color="#008080"><i><tt>put</tt></i></font> will
-            have an effect on the dynamic type set of <font color="#008080"><i><tt>item</tt></i></font>).
-            In this case, code similar to the one above will be needed for these built-in
-            procedures. Examples can be found in class <font color="#008080"><i><tt>ET_DYNAMIC_TYPE_BUILDER</tt></i></font>.
-            
-         </p>
-         
-      </div>
-      <div>
-         <h2>Generation of C code</h2>
-         
-         <p>
-            The last thing to do is to make sure that the C code of the built-in feature is
-            properly generated. Still assuming that <font color="#008080"><i><tt>foo</tt></i></font> is
-            a built-in function and <font color="#008080"><i><tt>poo</tt></i></font> is a built-in procedure 
-            declared in class <font color="#008080"><i><tt>BAR</tt></i></font>. Then the following code needs to
-            appear in class <font color="#008080"><i><tt>ET_C_GENERATOR</tt></i></font>:
-            
-            <blockquote><pre>
+    By default, nothing needs to be done for built-in procedures. But there are some
+    special cases when the built-in procedure will call internally another feature or
+    will have an effect on the dynamic type set of some entities (for example in class
+    <font color="#008080"><i><tt>SPECIAL</tt></i></font>, the procedure <font color="#008080"><i><tt>put</tt></i></font> will
+    have an effect on the dynamic type set of <font color="#008080"><i><tt>item</tt></i></font>).
+    In this case, code similar to the one above will be needed for these built-in
+    procedures. Examples can be found in class <font color="#008080"><i><tt>ET_DYNAMIC_TYPE_BUILDER</tt></i></font>.
+    
+   </p>
+   
+  </div>
+  <div>
+   <h2>Generation of C code</h2>
+   
+   <p>
+    The last thing to do is to make sure that the C code of the built-in feature is
+    properly generated. Still assuming that <font color="#008080"><i><tt>foo</tt></i></font> is
+    a built-in function and <font color="#008080"><i><tt>poo</tt></i></font> is a built-in procedure 
+    declared in class <font color="#008080"><i><tt>BAR</tt></i></font>. Then the following code needs to
+    appear in class <font color="#008080"><i><tt>ET_C_GENERATOR</tt></i></font>:
+    
+    <blockquote><pre>
 feature {NONE} -- Feature generation
 
 	print_external_builtin_function_body (a_feature: ET_EXTERNAL_ROUTINE)
@@ -420,16 +420,16 @@ feature {NONE} -- Built-in feature generation
 			...
 		end
 </pre></blockquote>
-            In some cases, the C code can be inlined. This is when the call to the C function
-            can be avoided by calling the C code directly. In that case the code above in class
-            <font color="#008080"><i><tt>ET_C_GENERATOR</tt></i></font> can be changed by replacing
-            <font color="#008080"><i><tt>print_builtin_bar_foo_body</tt></i></font> by <font color="#008080"><i><tt>print_builtin_bar_foo_call</tt></i></font>
-            and <font color="#008080"><i><tt>print_builtin_bar_poo_body</tt></i></font> by <font color="#008080"><i><tt>print_builtin_bar_poo_call</tt></i></font>,
-            and by modifying features <font color="#008080"><i><tt>print_external_builtin_bar_function_body</tt></i></font>
-            and <font color="#008080"><i><tt>print_external_builtin_bar_procedure_body</tt></i></font>
-            as follows:
-            
-            <blockquote><pre>
+    In some cases, the C code can be inlined. This is when the call to the C function
+    can be avoided by calling the C code directly. In that case the code above in class
+    <font color="#008080"><i><tt>ET_C_GENERATOR</tt></i></font> can be changed by replacing
+    <font color="#008080"><i><tt>print_builtin_bar_foo_body</tt></i></font> by <font color="#008080"><i><tt>print_builtin_bar_foo_call</tt></i></font>
+    and <font color="#008080"><i><tt>print_builtin_bar_poo_body</tt></i></font> by <font color="#008080"><i><tt>print_builtin_bar_poo_call</tt></i></font>,
+    and by modifying features <font color="#008080"><i><tt>print_external_builtin_bar_function_body</tt></i></font>
+    and <font color="#008080"><i><tt>print_external_builtin_bar_procedure_body</tt></i></font>
+    as follows:
+    
+    <blockquote><pre>
 feature {NONE} -- Feature generation
 
 	print_external_builtin_bar_function_body (a_feature: ET_EXTERNAL_ROUTINE)
@@ -615,18 +615,18 @@ feature {NONE} -- Built-in feature generation
 			...
 		end
 </pre></blockquote>
-            
-         </p>
-         
-      </div>
-      <hr size="1" />
-      <table border="0" width="100%">
-         <tr>
-            <td>
-               <address><font size="2"><b>Copyright (c) 2010-2017, Eric Bezault</b><br /><b>mailto:</b><a href="mailto:ericb@gobosoft.com">ericb@gobosoft.com</a><br /><b>https://</b><a href="https://www.gobosoft.com">www.gobosoft.com</a><br /><b>Last Updated: </b>15 April 2017</font></address>
-            </td>
-            <td align="right" valign="top"><a href="http://gobo-eiffel.gobosoft.com"><img src="image/home.gif" alt="Home" border="0" /></a><a href="index.html"><img src="image/toc.gif" alt="Toc" border="0" /></a><a href="builtin_routines.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="applications.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
-         </tr>
-      </table>
-   </body>
+    
+   </p>
+   
+  </div>
+  <hr size="1" />
+  <table border="0" width="100%">
+   <tr>
+    <td>
+     <address><font size="2"><b>Copyright (c) 2010-2017, Eric Bezault</b><br /><b>mailto:</b><a href="mailto:ericb@gobosoft.com">ericb@gobosoft.com</a><br /><b>https://</b><a href="https://www.gobosoft.com">www.gobosoft.com</a><br /><b>Last Updated: </b>15 April 2017</font></address>
+    </td>
+    <td align="right" valign="top"><a href="http://gobo-eiffel.gobosoft.com"><img src="image/home.gif" alt="Home" border="0" /></a><a href="index.html"><img src="image/toc.gif" alt="Toc" border="0" /></a><a href="builtin_routines.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="applications.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
+   </tr>
+  </table>
+ </body>
 </html>

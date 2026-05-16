@@ -1,491 +1,491 @@
 <?xml version="1.0" encoding="ISO-8859-1"?><html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-   <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-      <title>Using gec</title>
-   </head>
-   <body bgcolor="#FFFFFF">
-      <table border="0" width="100%">
-         <tr>
-            <td><font size="6"><strong>Using gec</strong></font></td>
-            <td align="right"><a href="index.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="technology.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
-         </tr>
-      </table>
-      <hr size="1" />
-      <div>
-         <h2>Command-line options</h2>
-         
-         <p>
-            The usual way to invoke <i>gec</i> is as follows:
-            
-            <blockquote>
-               	<font color="#800000"><i><tt>gec ecf_filename</tt></i></font>
-               
-            </blockquote>
-            This will read the description of your program in the ECF file
-            <font color="#800000"><i><tt>ecf_filename</tt></i></font>, compile it and invoke the
-            back-end C compiler on the generated C code as explained
-            below.
-            
-         </p>
-         
-         <p>
-            For simple programs, one can just provide the Eiffel file containing
-            the root class: 
-            
-            <blockquote>
-               	<font color="#800000"><i><tt>gec eiffel_filename</tt></i></font>
-               
-            </blockquote>
-            
-         </p>
-         
-         <p>
-            Note that if the input filename has no extension, the extension
-            <font color="#800000"><i><tt>.ecf</tt></i></font> is assumed. These two instructions
-            are equivalent:
-            
-            <blockquote><pre>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+  <title>Using gec</title>
+ </head>
+ <body bgcolor="#FFFFFF">
+  <table border="0" width="100%">
+   <tr>
+    <td><font size="6"><strong>Using gec</strong></font></td>
+    <td align="right"><a href="index.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="technology.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
+   </tr>
+  </table>
+  <hr size="1" />
+  <div>
+   <h2>Command-line options</h2>
+   
+   <p>
+    The usual way to invoke <i>gec</i> is as follows:
+    
+    <blockquote>
+     	<font color="#800000"><i><tt>gec ecf_filename</tt></i></font>
+     
+    </blockquote>
+    This will read the description of your program in the ECF file
+    <font color="#800000"><i><tt>ecf_filename</tt></i></font>, compile it and invoke the
+    back-end C compiler on the generated C code as explained
+    below.
+    
+   </p>
+   
+   <p>
+    For simple programs, one can just provide the Eiffel file containing
+    the root class: 
+    
+    <blockquote>
+     	<font color="#800000"><i><tt>gec eiffel_filename</tt></i></font>
+     
+    </blockquote>
+    
+   </p>
+   
+   <p>
+    Note that if the input filename has no extension, the extension
+    <font color="#800000"><i><tt>.ecf</tt></i></font> is assumed. These two instructions
+    are equivalent:
+    
+    <blockquote><pre>
 <font color="#800000"><i><tt>gec foo</tt></i></font>
 <font color="#800000"><i><tt>gec foo.ecf</tt></i></font>
 </pre></blockquote>
-            
-         </p>
-         
-         <p>
-            Here is the list of options that can be
-            used with <i>gec</i>:
-            
-            <dl>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>-h</tt></i></font>
-                  		
-               </dt>
-               <dt>
-                  			<font color="#800000"><i><tt>--help</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Print a summary of the command-line options of <i>gec</i> and exit.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--init</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Initialize Eiffel system: create ECF and Eiffel root class files if missing.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--compile</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Compile Eiffel system.
-                  			(default: true unless <font color="#800000"><i><tt>--init</tt></i></font> or <font color="#800000"><i><tt>--run</tt></i></font> is specified)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--run</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Run Eiffel system. Do not compile unless executable not found.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--target=&lt;target_name&gt;</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Name of target to be used in ECF file.
-                  			(default: last target in ECF file)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--finalize</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Compile with optimizations turned on.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--gelint</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Run gelint on the full content of each class being compiled.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--ise=major[.minor[.revision[.build]]]</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Version of ISE Eiffel whose semantics should be used during compilation.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--catcall=&lt;no|error|warning&gt;</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Should CAT-call errors be considered as fatal errors, as warnings, or just ignored? 
-                  			(default: no)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--split=&lt;no|yes&gt;</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Should generated C code be split over several C files instead of being held in a single possibly large C file? 
-                  			(default: yes)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--split-size=&lt;size&gt;</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Size (in bytes) of generated C files in bytes when in split mode.
-                  			(default: 2,500,000)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--cc=&lt;no|script|gecc&gt;</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Should the back-end C compiler be invoked on the generated C code, and if yes with what method?
-                  			Use `gecc` to allow the generated C code to be compiled using multiple threads.
-                  			(default: gecc)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--new-instance-types=&lt;filename&gt;</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			File containing the list of types which can have instances created 
-                  			by 'TYPE.new_instance' or 'TYPE.new_special_any_instance'.
-                  			(default: use all non-deferred, non-NONE, alive types)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--gc=&lt;no|boehm&gt;</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Which garbage collector should the application be compiled with?
-                  			Note that the Boehm GC is included into the
-                  			<i>Gobo Eiffel package</i>.
-                  			(default: boehm if available, no otherwise)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--setting=name=value</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override settings defined in ECF file. This option can be used several
-                  			times to override several settings.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--capability=name=value</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override capability usage defined in ECF file. This option can be used several
-                  			times to override several capabilities.
-                  		
-               </dd>	
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--variable=NAME=VALUE</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override variables defined in ECF file. This option can be used several
-                  			times to override several variables.
-                  		
-               </dd>	
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--thread=&lt;thread_count&gt;</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Number of threads to be used to run <i>gec</i>.
-                  			Negative numbers -N mean "number of CPUs - N".
-                  			(default: -3, aka "max (number of CPUs -3, 1)")
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--silent</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Run <i>gec</i> in silent mode.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--verbose</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Run <i>gec</i> in verbose mode.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--no-benchmark</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Should no benchmark information be displayed?
-                  			(default: display non-nested benchmark information)
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--nested-benchmark</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Should nested benchmark information be displayed?
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>--metrics</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Should metrics information be displayed?
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>-V</tt></i></font>
-                  		
-               </dt>
-               <dt>
-                  			<font color="#800000"><i><tt>--version</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Print the version number of <i>gec</i> and exit.
-                  		
-               </dd>
-               
-            </dl>
-            
-         </p>
-         
-      </div>
-      <div>
-         <h2>Environment variables</h2>
-         
-         <p>
-            It is possible to override some of the command-line options above, or
-            the default values for these options, using environment variables.
-            
-            <dl>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>$GOBO_CLI_GC</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override the command-line option <font color="#800000"><i><tt>--gc</tt></i></font>.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>$GOBO_DEFAULT_GC</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override the default value when the command-line option <font color="#800000"><i><tt>--gc</tt></i></font>
-                  			has not been specified and the environment variable <font color="#800000"><i><tt>$GOBO_CLI_GC</tt></i></font>
-                  			has not been set.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>$GOBO_CLI_SETTING</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override settings as if they were specified with the command-line
-                  			option <font color="#800000"><i><tt>--setting</tt></i></font>, or override their values
-                  			if they are also specified with the command-line option.
-                  			Several settings can be specified in this environment variable,
-                  			separated by a comma or a space.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>$GOBO_DEFAULT_SETTING</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override the default value for a given setting when the command-line
-                  			option <font color="#800000"><i><tt>--setting</tt></i></font> or the environment variable
-                  			<font color="#800000"><i><tt>$GOBO_CLI_SETTING</tt></i></font> did not set it. Several settings
-                  			can be specified in this environment variable, separated by a comma or
-                  			a space.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>$GOBO_CLI_CAPABILITY</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override capabilities as if they were specified with the command-line
-                  			option <font color="#800000"><i><tt>--capability</tt></i></font>, or override their values
-                  			if they are also specified with the command-line option.
-                  			Several capabilities can be specified in this environment variable,
-                  			separated by a comma or a space.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>$GOBO_DEFAULT_CAPABILITY</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override the default value for a given capability when the command-line
-                  			option <font color="#800000"><i><tt>--capability</tt></i></font> or the environment variable
-                  			<font color="#800000"><i><tt>$GOBO_CLI_CAPABILITY</tt></i></font> did not set it. Several capabilities
-                  			can be specified in this environment variable, separated by a comma or
-                  			a space.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>$GOBO_CLI_THREAD</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override the command-line option <font color="#800000"><i><tt>--thread</tt></i></font>.
-                  		
-               </dd>
-               	
-               <dt>
-                  			<font color="#800000"><i><tt>$GOBO_DEFAULT_THREAD</tt></i></font>
-                  		
-               </dt>
-               <dd>
-                  			Override the default value when the command-line option <font color="#800000"><i><tt>--thread</tt></i></font>
-                  			has not been specified and the environment variable <font color="#800000"><i><tt>$GOBO_CLI_THREAD</tt></i></font>
-                  			has not been set.
-                  		
-               </dd>
-               
-            </dl>
-            
-         </p>
-         
-      </div>
-      <div>
-         <h2>ECF files</h2>
-         
-         <p>
-            An ECF file contains the description of the Eiffel program to be compiled.
-            <i>gec</i> is able to read the same ECF files as
-            ISE Eiffel. So if you already have your ECF files, you can use them
-            without any modifications with <i>gec</i>.
-            
-         </p>
-         
-         <p>
-            If you are new to Eiffel and don't know what an ECF file is, please have
-            a look at this <a href="../../../library/tools/doc/ecf.html">description</a> from the
-            documentation of the <i>Gobo Eiffel Tools Library</i>
-            on which <i>gec</i> is based.
-            
-         </p>
-         
-         <p>
-            Note that for simple programs like a hello_world program, it is not necessary
-            to provide an ECF file. You can just let <i>gec</i> know
-            in which Eiffel file it can find the root class of the Eiffel system:
-            
-            <blockquote>
-               	<font color="#800000"><i><tt>gec hello_world.e</tt></i></font>
-               
-            </blockquote>
-            It will use the first creation procedure declared in the `create` clause
-            of the root class as root creation procedure. This will work fine provided
-            that all classes used in your simple program are part of one of the libraries
-            provided in the <a href="http://gobo-eiffel.gobosoft.com"><i>Gobo
-                  Eiffel Project</i></a>. 
-            You can give it a try using the <font color="#008080"><i><tt>HELLO_WORLD</tt></i></font> class provided in
-            <a href="../../../library/common/example/hello_world/hello_world.e">
-               <font color="#800000"><i><tt>$GOBO/library/common/example/hello_world/hello_world.e</tt></i></font></a>.
-            An ECF file will be needed when you want to use classes from other libraries
-            or if you want to override the default settings (e.g. console application, SCOOP mode).
-            
-         </p>
-         
-         <p>
-            Alternatively, this command can be used:
-            
-            <blockquote>
-               	<font color="#800000"><i><tt>gec --init hello_world</tt></i></font>
-               
-            </blockquote>
-            to generate two files: <font color="#800000"><i><tt>hello_word.e</tt></i></font> containing a
-            <font color="#008080"><i><tt>HELLO_WORLD</tt></i></font> Eiffel class text, and
-            <font color="#800000"><i><tt>hello_word.ecf</tt></i></font> containing the associated ECF file.
-            
-         </p>
-         
-      </div>
-      <div>
-         <h2>Back-end C compiler</h2>
-         
-         <p>
-            <i>gec</i> translates your Eiffel programs into C code.
-            This C code is then passed to a back-end C compiler to generate an executable.
-            By default <i>gec</i> uses the <a href="https://ziglang.org/">
-               Zig toolchain</a> which is included into the <i>Gobo Eiffel package</i>.
-            This section explains how to override this default if you want to use another
-            back-end C compiler or if you want to specify different C compilation options.
-            
-         </p>
-         
-         <p>
-            For each C compiler that you want to use as back-end C compiler, you should
-            provide a config file that should be located in
-            <font color="#800000"><i><tt>$GOBO/tool/gec/backend/c/config/</tt></i></font>. Here is an
-            example of such config file, <font color="#800000"><i><tt>gcc.cfg</tt></i></font> for the
-            <i>gcc</i> compiler:
-            
-            <blockquote><pre>
+    
+   </p>
+   
+   <p>
+    Here is the list of options that can be
+    used with <i>gec</i>:
+    
+    <dl>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>-h</tt></i></font>
+      		
+     </dt>
+     <dt>
+      			<font color="#800000"><i><tt>--help</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Print a summary of the command-line options of <i>gec</i> and exit.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--init</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Initialize Eiffel system: create ECF and Eiffel root class files if missing.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--compile</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Compile Eiffel system.
+      			(default: true unless <font color="#800000"><i><tt>--init</tt></i></font> or <font color="#800000"><i><tt>--run</tt></i></font> is specified)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--run</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Run Eiffel system. Do not compile unless executable not found.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--target=&lt;target_name&gt;</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Name of target to be used in ECF file.
+      			(default: last target in ECF file)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--finalize</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Compile with optimizations turned on.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--gelint</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Run gelint on the full content of each class being compiled.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--ise=major[.minor[.revision[.build]]]</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Version of ISE Eiffel whose semantics should be used during compilation.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--catcall=&lt;no|error|warning&gt;</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Should CAT-call errors be considered as fatal errors, as warnings, or just ignored? 
+      			(default: no)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--split=&lt;no|yes&gt;</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Should generated C code be split over several C files instead of being held in a single possibly large C file? 
+      			(default: yes)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--split-size=&lt;size&gt;</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Size (in bytes) of generated C files in bytes when in split mode.
+      			(default: 2,500,000)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--cc=&lt;no|script|gecc&gt;</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Should the back-end C compiler be invoked on the generated C code, and if yes with what method?
+      			Use `gecc` to allow the generated C code to be compiled using multiple threads.
+      			(default: gecc)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--new-instance-types=&lt;filename&gt;</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			File containing the list of types which can have instances created 
+      			by 'TYPE.new_instance' or 'TYPE.new_special_any_instance'.
+      			(default: use all non-deferred, non-NONE, alive types)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--gc=&lt;no|boehm&gt;</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Which garbage collector should the application be compiled with?
+      			Note that the Boehm GC is included into the
+      			<i>Gobo Eiffel package</i>.
+      			(default: boehm if available, no otherwise)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--setting=name=value</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override settings defined in ECF file. This option can be used several
+      			times to override several settings.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--capability=name=value</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override capability usage defined in ECF file. This option can be used several
+      			times to override several capabilities.
+      		
+     </dd>	
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--variable=NAME=VALUE</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override variables defined in ECF file. This option can be used several
+      			times to override several variables.
+      		
+     </dd>	
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--thread=&lt;thread_count&gt;</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Number of threads to be used to run <i>gec</i>.
+      			Negative numbers -N mean "number of CPUs - N".
+      			(default: -3, aka "max (number of CPUs -3, 1)")
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--silent</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Run <i>gec</i> in silent mode.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--verbose</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Run <i>gec</i> in verbose mode.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--no-benchmark</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Should no benchmark information be displayed?
+      			(default: display non-nested benchmark information)
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--nested-benchmark</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Should nested benchmark information be displayed?
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>--metrics</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Should metrics information be displayed?
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>-V</tt></i></font>
+      		
+     </dt>
+     <dt>
+      			<font color="#800000"><i><tt>--version</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Print the version number of <i>gec</i> and exit.
+      		
+     </dd>
+     
+    </dl>
+    
+   </p>
+   
+  </div>
+  <div>
+   <h2>Environment variables</h2>
+   
+   <p>
+    It is possible to override some of the command-line options above, or
+    the default values for these options, using environment variables.
+    
+    <dl>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>$GOBO_CLI_GC</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override the command-line option <font color="#800000"><i><tt>--gc</tt></i></font>.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>$GOBO_DEFAULT_GC</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override the default value when the command-line option <font color="#800000"><i><tt>--gc</tt></i></font>
+      			has not been specified and the environment variable <font color="#800000"><i><tt>$GOBO_CLI_GC</tt></i></font>
+      			has not been set.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>$GOBO_CLI_SETTING</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override settings as if they were specified with the command-line
+      			option <font color="#800000"><i><tt>--setting</tt></i></font>, or override their values
+      			if they are also specified with the command-line option.
+      			Several settings can be specified in this environment variable,
+      			separated by a comma or a space.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>$GOBO_DEFAULT_SETTING</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override the default value for a given setting when the command-line
+      			option <font color="#800000"><i><tt>--setting</tt></i></font> or the environment variable
+      			<font color="#800000"><i><tt>$GOBO_CLI_SETTING</tt></i></font> did not set it. Several settings
+      			can be specified in this environment variable, separated by a comma or
+      			a space.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>$GOBO_CLI_CAPABILITY</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override capabilities as if they were specified with the command-line
+      			option <font color="#800000"><i><tt>--capability</tt></i></font>, or override their values
+      			if they are also specified with the command-line option.
+      			Several capabilities can be specified in this environment variable,
+      			separated by a comma or a space.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>$GOBO_DEFAULT_CAPABILITY</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override the default value for a given capability when the command-line
+      			option <font color="#800000"><i><tt>--capability</tt></i></font> or the environment variable
+      			<font color="#800000"><i><tt>$GOBO_CLI_CAPABILITY</tt></i></font> did not set it. Several capabilities
+      			can be specified in this environment variable, separated by a comma or
+      			a space.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>$GOBO_CLI_THREAD</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override the command-line option <font color="#800000"><i><tt>--thread</tt></i></font>.
+      		
+     </dd>
+     	
+     <dt>
+      			<font color="#800000"><i><tt>$GOBO_DEFAULT_THREAD</tt></i></font>
+      		
+     </dt>
+     <dd>
+      			Override the default value when the command-line option <font color="#800000"><i><tt>--thread</tt></i></font>
+      			has not been specified and the environment variable <font color="#800000"><i><tt>$GOBO_CLI_THREAD</tt></i></font>
+      			has not been set.
+      		
+     </dd>
+     
+    </dl>
+    
+   </p>
+   
+  </div>
+  <div>
+   <h2>ECF files</h2>
+   
+   <p>
+    An ECF file contains the description of the Eiffel program to be compiled.
+    <i>gec</i> is able to read the same ECF files as
+    ISE Eiffel. So if you already have your ECF files, you can use them
+    without any modifications with <i>gec</i>.
+    
+   </p>
+   
+   <p>
+    If you are new to Eiffel and don't know what an ECF file is, please have
+    a look at this <a href="../../../library/tools/doc/ecf.html">description</a> from the
+    documentation of the <i>Gobo Eiffel Tools Library</i>
+    on which <i>gec</i> is based.
+    
+   </p>
+   
+   <p>
+    Note that for simple programs like a hello_world program, it is not necessary
+    to provide an ECF file. You can just let <i>gec</i> know
+    in which Eiffel file it can find the root class of the Eiffel system:
+    
+    <blockquote>
+     	<font color="#800000"><i><tt>gec hello_world.e</tt></i></font>
+     
+    </blockquote>
+    It will use the first creation procedure declared in the `create` clause
+    of the root class as root creation procedure. This will work fine provided
+    that all classes used in your simple program are part of one of the libraries
+    provided in the <a href="http://gobo-eiffel.gobosoft.com"><i>Gobo
+      Eiffel Project</i></a>. 
+    You can give it a try using the <font color="#008080"><i><tt>HELLO_WORLD</tt></i></font> class provided in
+    <a href="../../../library/common/example/hello_world/hello_world.e">
+     <font color="#800000"><i><tt>$GOBO/library/common/example/hello_world/hello_world.e</tt></i></font></a>.
+    An ECF file will be needed when you want to use classes from other libraries
+    or if you want to override the default settings (e.g. console application, SCOOP mode).
+    
+   </p>
+   
+   <p>
+    Alternatively, this command can be used:
+    
+    <blockquote>
+     	<font color="#800000"><i><tt>gec --init hello_world</tt></i></font>
+     
+    </blockquote>
+    to generate two files: <font color="#800000"><i><tt>hello_word.e</tt></i></font> containing a
+    <font color="#008080"><i><tt>HELLO_WORLD</tt></i></font> Eiffel class text, and
+    <font color="#800000"><i><tt>hello_word.ecf</tt></i></font> containing the associated ECF file.
+    
+   </p>
+   
+  </div>
+  <div>
+   <h2>Back-end C compiler</h2>
+   
+   <p>
+    <i>gec</i> translates your Eiffel programs into C code.
+    This C code is then passed to a back-end C compiler to generate an executable.
+    By default <i>gec</i> uses the <a href="https://ziglang.org/">
+     Zig toolchain</a> which is included into the <i>Gobo Eiffel package</i>.
+    This section explains how to override this default if you want to use another
+    back-end C compiler or if you want to specify different C compilation options.
+    
+   </p>
+   
+   <p>
+    For each C compiler that you want to use as back-end C compiler, you should
+    provide a config file that should be located in
+    <font color="#800000"><i><tt>$GOBO/tool/gec/backend/c/config/</tt></i></font>. Here is an
+    example of such config file, <font color="#800000"><i><tt>gcc.cfg</tt></i></font> for the
+    <i>gcc</i> compiler:
+    
+    <blockquote><pre>
 cc: gcc $cflags $includes -c $c
 link: gcc $lflags -lm -o $exe $objs $libs
 obj: .o
@@ -495,44 +495,44 @@ lflags:
 cflags_finalize: -O2
 lflags_finalize:
 </pre></blockquote>
-            This config file is used by <i>gec</i> to generate a
-            .bat file on Windows or a shell script on other platforms that will be
-            executed to compile the generated C code. The variable "cc" represents the
-            command-line template to turn C files into object files, and "link" to
-            turn object files into executables. The variables "$cflags", "$includes",
-            "$c" in the first template, and "$lflags", "$exe", "$objs" and "$libs"
-            in the second template will be replaced by appropriate values by 
-            <i>gec</i>. Next, the variables "obj" and "exe"
-            represent the file extensions for object files and executables on the
-            platform on which this C compiler will be invoked. And finally we find
-            C compilation and linker flags that should be used when
-            <i>gec</i> is invoked with or without the
-            command-line option <font color="#800000"><i><tt>--finalize</tt></i></font>. Note that Eiffel-style comments,
-            starting with "--", can be included in these config files.
-            
-         </p>
-         
-         <p>
-            There are several ways to instruct <i>gec</i> to
-            use a different back-end C compiler. You can either write the name
-            of the chosen C compiler in the file <font color="#800000"><i><tt>$GOBO/tool/gec/backend/c/config/default.cfg</tt></i></font>.
-            You might need to create this file if it does not exist yet. Alternatively
-            you can specify the name of the chosen C compiler in the environment
-            variable <font color="#800000"><i><tt>$GOBO_CC</tt></i></font>. Let's say that the name of your chosen C compiler
-            is <i>my_cc</i>. <i>gec</i> will
-            then look for the config file <font color="#800000"><i><tt>$GOBO/tool/gec/backend/c/config/my_cc.cfg</tt></i></font>.
-            
-         </p>
-         
-      </div>
-      <hr size="1" />
-      <table border="0" width="100%">
-         <tr>
-            <td>
-               <address><font size="2"><b>Copyright (c) 2006-2026, Eric Bezault</b><br /><b>mailto:</b><a href="mailto:ericb@gobosoft.com">ericb@gobosoft.com</a><br /><b>https://</b><a href="https://www.gobosoft.com">www.gobosoft.com</a><br /><b>Last Updated: </b>10 May 2026</font></address>
-            </td>
-            <td align="right" valign="top"><a href="http://gobo-eiffel.gobosoft.com"><img src="image/home.gif" alt="Home" border="0" /></a><a href="index.html"><img src="image/toc.gif" alt="Toc" border="0" /></a><a href="index.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="technology.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
-         </tr>
-      </table>
-   </body>
+    This config file is used by <i>gec</i> to generate a
+    .bat file on Windows or a shell script on other platforms that will be
+    executed to compile the generated C code. The variable "cc" represents the
+    command-line template to turn C files into object files, and "link" to
+    turn object files into executables. The variables "$cflags", "$includes",
+    "$c" in the first template, and "$lflags", "$exe", "$objs" and "$libs"
+    in the second template will be replaced by appropriate values by 
+    <i>gec</i>. Next, the variables "obj" and "exe"
+    represent the file extensions for object files and executables on the
+    platform on which this C compiler will be invoked. And finally we find
+    C compilation and linker flags that should be used when
+    <i>gec</i> is invoked with or without the
+    command-line option <font color="#800000"><i><tt>--finalize</tt></i></font>. Note that Eiffel-style comments,
+    starting with "--", can be included in these config files.
+    
+   </p>
+   
+   <p>
+    There are several ways to instruct <i>gec</i> to
+    use a different back-end C compiler. You can either write the name
+    of the chosen C compiler in the file <font color="#800000"><i><tt>$GOBO/tool/gec/backend/c/config/default.cfg</tt></i></font>.
+    You might need to create this file if it does not exist yet. Alternatively
+    you can specify the name of the chosen C compiler in the environment
+    variable <font color="#800000"><i><tt>$GOBO_CC</tt></i></font>. Let's say that the name of your chosen C compiler
+    is <i>my_cc</i>. <i>gec</i> will
+    then look for the config file <font color="#800000"><i><tt>$GOBO/tool/gec/backend/c/config/my_cc.cfg</tt></i></font>.
+    
+   </p>
+   
+  </div>
+  <hr size="1" />
+  <table border="0" width="100%">
+   <tr>
+    <td>
+     <address><font size="2"><b>Copyright (c) 2006-2026, Eric Bezault</b><br /><b>mailto:</b><a href="mailto:ericb@gobosoft.com">ericb@gobosoft.com</a><br /><b>https://</b><a href="https://www.gobosoft.com">www.gobosoft.com</a><br /><b>Last Updated: </b>10 May 2026</font></address>
+    </td>
+    <td align="right" valign="top"><a href="http://gobo-eiffel.gobosoft.com"><img src="image/home.gif" alt="Home" border="0" /></a><a href="index.html"><img src="image/toc.gif" alt="Toc" border="0" /></a><a href="index.html"><img src="image/previous.gif" alt="Previous" border="0" /></a><a href="technology.html"><img src="image/next.gif" alt="Next" border="0" /></a></td>
+   </tr>
+  </table>
+ </body>
 </html>
