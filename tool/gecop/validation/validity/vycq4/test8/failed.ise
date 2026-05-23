@@ -1,0 +1,15 @@
+-------------------------------------------------------------------------------
+
+Error code: VNCP
+
+Convertibility error: Validity error in convert clause specification or usage.
+What to do: Fix the error....
+
+Class: BB
+Routine specified twice in Convert_clause.
+Line: 6
+    f: {CC},
+->  f: {DD}
+  
+
+-------------------------------------------------------------------------------

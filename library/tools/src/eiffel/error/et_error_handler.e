@@ -8291,6 +8291,447 @@ feature -- Validity errors
 			end
 		end
 
+	report_vycp1a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
+			-- Report VYCP-1 error: `a_name', appearing in a conversion
+			-- procedure of `a_class', is not the final name of a feature
+			-- in `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp1_error (a_class) then
+				create l_error.make_vycp1a (a_class, a_name)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp1b_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
+			-- Report VYCP-1 error: `a_name', appearing in a conversion
+			-- procedure of `a_class', is not the final name of a creation
+			-- procedurein `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp1_error (a_class) then
+				create l_error.make_vycp1b (a_class, a_name)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp2a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCP-2 error: `a_type`, which is a type appearing
+			-- in a conversion query of `a_class' named `a_name`, conforms to 
+			-- `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp2_error (a_class) then
+				create l_error.make_vycp2a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp3a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCP-3 error: `a_class` is a conforming ancestor
+			-- of the base class of `a_type`, which is a type appearing in a
+			-- conversion procedure of `a_class' named `a_name`.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp3_error (a_class) then
+				create l_error.make_vycp3a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp4a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type1, a_type2: ET_TYPE)
+			-- Report VYCP-4 error: `a_type1`, which is a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, has the same
+			-- base class as `a_type2` also appearing a conversion procedure of
+			-- `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type1_not_void: a_type1 /= Void
+			a_type2_not_void: a_type2 /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp4_error (a_class) then
+				create l_error.make_vycp4a (a_class, a_name, a_type1, a_type2)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp5a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCP-5 error: the base class of `a_type`, which is
+			-- a type appearing in a conversion procedure of `a_class' named `a_name`,
+			-- has a conversion query with a convert type whose base class is `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp5_error (a_class) then
+				create l_error.make_vycp5a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp6a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_procedure: ET_PROCEDURE)
+			-- Report VYCP-6 error: `a_procedure`, whose name appears in
+			-- a conversion procedure of `a_class' named `a_name`, has not
+			-- exactly one argument.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_procedure_not_void: a_procedure /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp6_error (a_class) then
+				create l_error.make_vycp6a (a_class, a_name, a_procedure)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp7a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE; a_argument_type: ET_NAMED_TYPE)
+			-- Report VYCP-7 error: `a_type`, which is  a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, does not conform
+			-- to its argument.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+			a_argument_type_not_void: a_argument_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp7_error (a_class) then
+				create l_error.make_vycp7a (a_class, a_name, a_type, a_argument_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp8a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCP-8 error: `a_type`, which is  a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, contains
+			-- anchored types.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp8_error (a_class) then
+				create l_error.make_vycp8a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp8b_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCP-8 error: `a_type`, which is  a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, is a formal generic
+			-- parameter of `a_class`.
+			--
+			-- ECMA-367-3-115,8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp8_error (a_class) then
+				create l_error.make_vycp8b (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycp9a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCP-9 error: `a_type`, which is  a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, is not attached.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycp9_error (a_class) then
+				create l_error.make_vycp9a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq1a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
+			-- Report VYCQ-1 error: `a_name', appearing in a conversion
+			-- query of `a_class', is not the final name of a feature
+			-- in `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq1_error (a_class) then
+				create l_error.make_vycq1a (a_class, a_name)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq1b_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
+			-- Report VYCQ-1 error: `a_name', appearing in a conversion
+			-- query of `a_class', is not the final name of a query
+			-- in `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq1_error (a_class) then
+				create l_error.make_vycq1b (a_class, a_name)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq2a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCQ-2 error: `a_class` conforms to `a_type`, which is
+			-- a type appearing in a conversion query of `a_class' named `a_name`.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq2_error (a_class) then
+				create l_error.make_vycq2a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq3a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCQ-3 error: the base class of `a_type`, which is
+			-- a type appearing in a conversion procedure of `a_class' named
+			-- `a_name`, is a conforming ancestor of `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq3_error (a_class) then
+				create l_error.make_vycq3a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq4a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type1, a_type2: ET_TYPE)
+			-- Report VYCQ-4 error: `a_type1`, which is a type appearing in
+			-- a conversion query of `a_class' named `a_name`, has the same
+			-- base class as `a_type2` also appearing a conversion query of
+			-- `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type1_not_void: a_type1 /= Void
+			a_type2_not_void: a_type2 /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq4_error (a_class) then
+				create l_error.make_vycq4a (a_class, a_name, a_type1, a_type2)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq5a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCQ-5 error: the base class of `a_type`, which is
+			-- a type appearing in a conversion query of `a_class' named `a_name`,
+			-- has a conversion procedure with a convert type whose base class
+			-- is `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq5_error (a_class) then
+				create l_error.make_vycq5a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq6a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_query: ET_QUERY)
+			-- Report VYCQ-6 error: `a_query`, whose name appears in
+			-- a conversion query of `a_class' named `a_name`, has one
+			-- or more arguments.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_query_not_void: a_query /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq6_error (a_class) then
+				create l_error.make_vycq6a (a_class, a_name, a_query)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq7a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE; a_query_type: ET_NAMED_TYPE)
+			-- Report VYCQ-7 error: the type `a_query_type` of the query
+			-- whose name appears in a conversion query of `a_class' named
+			-- `a_name`, does not conform to `a_type` listed in this
+			-- conversion query.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+			a_query_type_not_void: a_query_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq7_error (a_class) then
+				create l_error.make_vycq7a (a_class, a_name, a_type, a_query_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq8a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCQ-8 error: `a_type`, which is  a type appearing in
+			-- a conversion query of `a_class' named `a_name`, contains
+			-- anchored types.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq8_error (a_class) then
+				create l_error.make_vycq8a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq8b_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCQ-8 error: `a_type`, which is  a type appearing in
+			-- a conversion query of `a_class' named `a_name`, is a formal generic
+			-- parameter of `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq8_error (a_class) then
+				create l_error.make_vycq8b (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vycq9a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Report VYCQ-9 error: `a_type`, which is  a type appearing in
+			-- a conversion query of `a_class' named `a_name`, is not attached.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vycq9_error (a_class) then
+				create l_error.make_vycq9a (a_class, a_name, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
 	report_gvagp0a_error (a_class: ET_CLASS; anc1, anc2: ET_BASE_TYPE)
 			-- Report GVAGP error: `anc1' and `anc2' are two ancestors
 			-- of `a_class' with the same base class but different generic
@@ -10641,6 +11082,186 @@ feature -- Validity error status
 
 	reportable_vxrt_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VXRT error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp1_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-1 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp2_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-2 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp3_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-3 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-4 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp5_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-5 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp6_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-6 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp7_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-7 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp8_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-8 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycp9_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-9 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq1_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-1 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq2_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-2 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq3_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-3 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-4 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq5_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-5 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq6_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-6 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq7_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-7 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq8_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-8 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vycq9_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-9 error be reported when it
 			-- appears in `a_class'?
 		require
 			a_class_not_void: a_class /= Void

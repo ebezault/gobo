@@ -14,14 +14,15 @@ inherit
 
 	ET_FEATURE
 		redefine
-			reset, type
+			type,
+			reset_after_features_flattened
 		end
 
 
 feature -- Initialization
 
-	reset
-			-- Reset current feature as it was just after it was last parsed.
+	reset_after_features_flattened
+			-- Reset current feature as it was just after it was last flattened.
 		do
 			precursor
 			if attached assigner as l_assigner then

@@ -5,7 +5,7 @@
 		"Eiffel variable attributes with extended syntax"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2009-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2009-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_EXTENDED_ATTRIBUTE
@@ -32,7 +32,7 @@ inherit
 
 	ET_INTERNAL_FEATURE
 		undefine
-			reset,
+			reset_after_features_flattened,
 			is_attribute,
 			is_transient_attribute,
 			is_stable_attribute,

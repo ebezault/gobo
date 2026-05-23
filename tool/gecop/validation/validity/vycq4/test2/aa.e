@@ -1,0 +1,21 @@
+class AA
+
+create
+
+	make
+
+feature
+
+	make
+		local
+			b: BB
+			c1: CC [STRING]
+			c2: CC [INTEGER]
+		do
+			create b
+			c1 := b
+			c2 := b
+			print ("Failed")
+		end
+
+end

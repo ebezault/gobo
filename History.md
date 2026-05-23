@@ -1,5 +1,16 @@
 # Release History
 
+## Version xx.xx.xx - xxxxxx
+
+### gecop
+
+* Added validation tests for `VYCP` (Conversion Procedure rule) and
+  `VYCQ` (Conversion Query rule).
+
+### Gobo Eiffel Tools Library
+
+* Check validity of convert clauses. Validity errors `VYCP` and `VYCQ`.
+
 ## Version 26.05.14 - 14 May 2026
 
 ### gec

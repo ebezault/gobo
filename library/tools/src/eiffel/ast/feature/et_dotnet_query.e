@@ -5,7 +5,7 @@
 		"Queries (functions or attributes) implemented in .NET"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2006-2017, Eric Bezault and others"
+	copyright: "Copyright (c) 2006-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_DOTNET_QUERY
@@ -21,7 +21,7 @@ inherit
 
 	ET_DOTNET_FEATURE
 		undefine
-			reset, type
+			reset_after_features_flattened, type
 		end
 
 end

@@ -367,6 +367,28 @@ create
 	make_vwst1b,
 	make_vwst2a,
 	make_vxrt0a,
+	make_vycp1a,
+	make_vycp1b,
+	make_vycp2a,
+	make_vycp3a,
+	make_vycp4a,
+	make_vycp5a,
+	make_vycp6a,
+	make_vycp7a,
+	make_vycp8a,
+	make_vycp8b,
+	make_vycp9a,
+	make_vycq1a,
+	make_vycq1b,
+	make_vycq2a,
+	make_vycq3a,
+	make_vycq4a,
+	make_vycq5a,
+	make_vycq6a,
+	make_vycq7a,
+	make_vycq8a,
+	make_vycq8b,
+	make_vycq9a,
 	make_gvagp0a,
 	make_gvhpr5a,
 	make_gvhso1a,
@@ -16926,6 +16948,993 @@ feature {NONE} -- Initialization
 			-- dollar6: $6 = implementation class name
 		end
 
+	make_vycp1a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
+			-- Create a new VYCP-1 error: `a_name', appearing in a conversion
+			-- procedure of `a_class', is not the final name of a feature
+			-- in `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_name.position
+			ast_node := a_name
+			code := template_code (vycp1a_template_code)
+			etl_code := vycp1_etl_code
+			default_template := default_message_template (vycp1a_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+		end
+
+	make_vycp1b (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
+			-- Create a new VYCP-1 error: `a_name', appearing in a conversion
+			-- procedure of `a_class', is not the final name of a creation
+			-- procedurein `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_name.position
+			ast_node := a_name
+			code := template_code (vycp1b_template_code)
+			etl_code := vycp1_etl_code
+			default_template := default_message_template (vycp1b_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+		end
+
+	make_vycp2a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCP-2 error: `a_type`, which is a type appearing
+			-- in a conversion query of `a_class' named `a_name`, conforms to 
+			-- `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycp2a_template_code)
+			etl_code := vycp2_etl_code
+			default_template := default_message_template (vycp2a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycp3a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCP-3 error: `a_class` is a conforming ancestor
+			-- of the base class of `a_type`, which is a type appearing in a
+			-- conversion procedure of `a_class' named `a_name`.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycp3a_template_code)
+			etl_code := vycp3_etl_code
+			default_template := default_message_template (vycp3a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycp4a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type1, a_type2: ET_TYPE)
+			-- Create a new VYCP-4 error: `a_type1`, which is a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, has the same
+			-- base class as `a_type2` also appearing a conversion procedure of
+			-- `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type1_not_void: a_type1 /= Void
+			a_type2_not_void: a_type2 /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type1.position
+			ast_node := a_type1
+			code := template_code (vycp4a_template_code)
+			etl_code := vycp4_etl_code
+			default_template := default_message_template (vycp4a_default_template)
+			create parameters.make_filled (empty_string, 1, 9)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type1.to_text, 8)
+			parameters.put (a_type2.to_text, 9)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+			-- dollar8: $8 = conversion type
+			-- dollar9: $9 = other conversion type
+		end
+
+	make_vycp5a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCP-5 error: the base class of `a_type`, which is
+			-- a type appearing in a conversion procedure of `a_class' named `a_name`,
+			-- has a conversion query with a convert type whose base class is `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycp5a_template_code)
+			etl_code := vycp5_etl_code
+			default_template := default_message_template (vycp5a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycp6a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_procedure: ET_PROCEDURE)
+			-- Create a new VYCP-6 error: `a_procedure`, whose name appears in
+			-- a conversion procedure of `a_class' named `a_name`, has not
+			-- exactly one argument.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_procedure_not_void: a_procedure /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_name.position
+			ast_node := a_name
+			code := template_code (vycp6a_template_code)
+			etl_code := vycp6_etl_code
+			default_template := default_message_template (vycp6a_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+		end
+
+	make_vycp7a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE; a_argument_type: ET_NAMED_TYPE)
+			-- Create a new VYCP-7 error: `a_type`, which is  a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, does not conform
+			-- to its argument.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+			a_argument_type_not_void: a_argument_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycp7a_template_code)
+			etl_code := vycp7_etl_code
+			default_template := default_message_template (vycp7a_default_template)
+			create parameters.make_filled (empty_string, 1, 9)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			parameters.put (a_argument_type.to_text, 9)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+			-- dollar8: $8 = conversion type
+			-- dollar9: $9 = creation procedure argument type
+		end
+
+	make_vycp8a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCP-8 error: `a_type`, which is  a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, contains
+			-- anchored types.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycp8a_template_code)
+			etl_code := vycp8_etl_code
+			default_template := default_message_template (vycp8a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycp8b (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCP-8 error: `a_type`, which is  a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, is a formal generic
+			-- parameter of `a_class`.
+			--
+			-- ECMA-367-3-115,8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycp8b_template_code)
+			etl_code := vycp8_etl_code
+			default_template := default_message_template (vycp8b_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycp9a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCP-9 error: `a_type`, which is  a type appearing in
+			-- a conversion procedure of `a_class' named `a_name`, is not attached.
+			--
+			-- ECMA-367-3-115, 8.18.7 page 181.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycp9a_template_code)
+			etl_code := vycp9_etl_code
+			default_template := default_message_template (vycp9a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion procedure name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycq1a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
+			-- Create a new VYCQ-1 error: `a_name', appearing in a conversion
+			-- query of `a_class', is not the final name of a feature
+			-- in `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_name.position
+			ast_node := a_name
+			code := template_code (vycq1a_template_code)
+			etl_code := vycq1_etl_code
+			default_template := default_message_template (vycq1a_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+		end
+
+	make_vycq1b (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
+			-- Create a new VYCQ-1 error: `a_name', appearing in a conversion
+			-- query of `a_class', is not the final name of a query
+			-- in `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_name.position
+			ast_node := a_name
+			code := template_code (vycq1b_template_code)
+			etl_code := vycq1_etl_code
+			default_template := default_message_template (vycq1b_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+		end
+
+	make_vycq2a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCQ-2 error: `a_class` conforms to `a_type`, which is
+			-- a type appearing in a conversion query of `a_class' named `a_name`.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycq2a_template_code)
+			etl_code := vycq2_etl_code
+			default_template := default_message_template (vycq2a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycq3a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCQ-3 error: the base class of `a_type`, which is
+			-- a type appearing in a conversion procedure of `a_class' named
+			-- `a_name`, is a conforming ancestor of `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycq3a_template_code)
+			etl_code := vycq3_etl_code
+			default_template := default_message_template (vycq3a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycq4a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type1, a_type2: ET_TYPE)
+			-- Create a new VYCQ-4 error: `a_type1`, which is a type appearing in
+			-- a conversion query of `a_class' named `a_name`, has the same
+			-- base class as `a_type2` also appearing a conversion query of
+			-- `a_class'.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type1_not_void: a_type1 /= Void
+			a_type2_not_void: a_type2 /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type1.position
+			ast_node := a_type1
+			code := template_code (vycq4a_template_code)
+			etl_code := vycq4_etl_code
+			default_template := default_message_template (vycq4a_default_template)
+			create parameters.make_filled (empty_string, 1, 9)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type1.to_text, 8)
+			parameters.put (a_type2.to_text, 9)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+			-- dollar8: $8 = conversion type
+			-- dollar9: $9 = other conversion type
+		end
+
+	make_vycq5a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCQ-5 error: the base class of `a_type`, which is
+			-- a type appearing in a conversion query of `a_class' named `a_name`,
+			-- has a conversion procedure with a convert type whose base class
+			-- is `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycq5a_template_code)
+			etl_code := vycq5_etl_code
+			default_template := default_message_template (vycq5a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycq6a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_query: ET_QUERY)
+			-- Create a new VYCQ-6 error: `a_query`, whose name appears in
+			-- a conversion query of `a_class' named `a_name`, has one
+			-- or more arguments.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_query_not_void: a_query /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_name.position
+			ast_node := a_name
+			code := template_code (vycq6a_template_code)
+			etl_code := vycq6_etl_code
+			default_template := default_message_template (vycq6a_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+		end
+
+	make_vycq7a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE; a_query_type: ET_NAMED_TYPE)
+			-- Create a new VYCQ-7 error: the type `a_query_type` of the query
+			-- whose name appears in a conversion query of `a_class' named
+			-- `a_name`, does not conform to `a_type` listed in this
+			-- conversion query.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+			a_query_type_not_void: a_query_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycq7a_template_code)
+			etl_code := vycq7_etl_code
+			default_template := default_message_template (vycq7a_default_template)
+			create parameters.make_filled (empty_string, 1, 9)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			parameters.put (a_query_type.to_text, 9)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+			-- dollar8: $8 = conversion type
+			-- dollar9: $9 = query type
+		end
+
+	make_vycq8a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCQ-8 error: `a_type`, which is  a type appearing in
+			-- a conversion query of `a_class' named `a_name`, contains
+			-- anchored types.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycq8a_template_code)
+			etl_code := vycq8_etl_code
+			default_template := default_message_template (vycq8a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycq8b (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCQ-8 error: `a_type`, which is  a type appearing in
+			-- a conversion query of `a_class' named `a_name`, is a formal generic
+			-- parameter of `a_class`.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycq8b_template_code)
+			etl_code := vycq8_etl_code
+			default_template := default_message_template (vycq8b_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+			-- dollar8: $8 = conversion type
+		end
+
+	make_vycq9a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_type: ET_TYPE)
+			-- Create a new VYCQ-9 error: `a_type`, which is  a type appearing in
+			-- a conversion query of `a_class' named `a_name`, is not attached.
+			--
+			-- ECMA-367-3-115, 8.18.8 page 182.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_name_not_void: a_name /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vycq9a_template_code)
+			etl_code := vycq9_etl_code
+			default_template := default_message_template (vycq9a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_name.lower_name, 7)
+			parameters.put (a_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = conversion query name
+			-- dollar8: $8 = conversion type
+		end
+
 	make_gvagp0a (a_class: ET_CLASS; anc1, anc2: ET_BASE_TYPE)
 			-- Create a new GVAGP error: `anc1' and `anc2' are two ancestors
 			-- of `a_class' with the same base class but different generic
@@ -19575,6 +20584,28 @@ feature {NONE} -- Implementation
 	vwst1b_default_template: STRING = "feature name `$7' is not the final name of an attribute in class $5."
 	vwst2a_default_template: STRING = "feature name `$7' appears twice in strip expression."
 	vxrt0a_default_template: STRING = "Retry instruction does not appear in a Rescue clause."
+	vycp1a_default_template: STRING = "convert feature name `$7' is not the final name of a feature in class $5."
+	vycp1b_default_template: STRING = "convert feature name `$7' is not the final name of a creation procedure in class $5."
+	vycp2a_default_template: STRING = "convert type '$8' of conversion procedure `$7' conforms to current class $5."
+	vycp3a_default_template: STRING = "current class $5 is a conforming ancestor of the base class of '$8' of conversion procedure `$7'."
+	vycp4a_default_template: STRING = "convert type '$8' of conversion procedure `$7' has the same base class as another conversion procedure type."
+	vycp5a_default_template: STRING = "the base class of '$8' of conversion procedure `$7' has a conversion query whose convert type's base class is $5."
+	vycp6a_default_template: STRING = "convert feature name `$7' is the final name of a procedure with not exactly one formal argument."
+	vycp7a_default_template: STRING = "convert type '$8' of conversion procedure `$7' does not conform to the type '$9' of its argument."
+	vycp8a_default_template: STRING = "convert type '$8' of conversion procedure `$7' contains anchored types."
+	vycp8b_default_template: STRING = "convert type '$8' of conversion procedure `$7' is a formal generic parameter of $5."
+	vycp9a_default_template: STRING = "convert type '$8' of conversion procedure `$7' is not attached."
+	vycq1a_default_template: STRING = "convert feature name `$7' is not the final name of a feature in class $5."
+	vycq1b_default_template: STRING = "convert feature name `$7' is not the final name of a query in class $5."
+	vycq2a_default_template: STRING = "current class $5 conforms to the convert type '$8' of its conversion query `$7'."
+	vycq3a_default_template: STRING = "the base class of '$8' of conversion query `$7' is a conforming ancestor of $5."
+	vycq4a_default_template: STRING = "convert type '$8' of conversion query `$7' has the same base class as another conversion query type."
+	vycq5a_default_template: STRING = "the base class of '$8' of conversion query `$7' has a conversion procedure whose convert type's base class is $5."
+	vycq6a_default_template: STRING = "convert feature name `$7' is the final name of a query with one or more formal arguments."
+	vycq7a_default_template: STRING = "the result type '$9' of the query `$7' does not conforms to the convert type '$8'."
+	vycq8a_default_template: STRING = "convert type '$8' of conversion query `$7' contains anchored types."
+	vycq8b_default_template: STRING = "convert type '$8' of conversion query `$7' is a formal generic parameter of $5."
+	vycq9a_default_template: STRING = "convert type '$8' of conversion query `$7' is not attached."
 	gvagp0a_default_template: STRING = "ancestors with generic parameter mismatch: '$7' and '$8'."
 	gvhpr5a_default_template: STRING = "cannot inherit from Tuple_type '$7'."
 	gvhso1a_default_template: STRING = "implicitly inherits from unknown class SYSTEM_OBJECT."
@@ -19772,6 +20803,24 @@ feature {NONE} -- Implementation
 	vwst1_etl_code: STRING = "VWST-1"
 	vwst2_etl_code: STRING = "VWST-2"
 	vxrt_etl_code: STRING = "VXRT"
+	vycp1_etl_code: STRING = "VYCP-1"
+	vycp2_etl_code: STRING = "VYCP-2"
+	vycp3_etl_code: STRING = "VYCP-3"
+	vycp4_etl_code: STRING = "VYCP-4"
+	vycp5_etl_code: STRING = "VYCP-5"
+	vycp6_etl_code: STRING = "VYCP-6"
+	vycp7_etl_code: STRING = "VYCP-7"
+	vycp8_etl_code: STRING = "VYCP-8"
+	vycp9_etl_code: STRING = "VYCP-9"
+	vycq1_etl_code: STRING = "VYCQ-1"
+	vycq2_etl_code: STRING = "VYCQ-2"
+	vycq3_etl_code: STRING = "VYCQ-3"
+	vycq4_etl_code: STRING = "VYCQ-4"
+	vycq5_etl_code: STRING = "VYCQ-5"
+	vycq6_etl_code: STRING = "VYCQ-6"
+	vycq7_etl_code: STRING = "VYCQ-7"
+	vycq8_etl_code: STRING = "VYCQ-8"
+	vycq9_etl_code: STRING = "VYCQ-9"
 	gvagp_etl_code: STRING = "GVAGP"
 	gvhpr4_etl_code: STRING = "GVHPR-4"
 	gvhpr5_etl_code: STRING = "GVHPR-5"
@@ -20168,6 +21217,28 @@ feature {NONE} -- Implementation
 	vwst1b_template_code: STRING = "vwst1b"
 	vwst2a_template_code: STRING = "vwst2a"
 	vxrt0a_template_code: STRING = "vxrt0a"
+	vycp1a_template_code: STRING = "vycq1a"
+	vycp1b_template_code: STRING = "vycp1b"
+	vycp2a_template_code: STRING = "vycp2a"
+	vycp3a_template_code: STRING = "vycp3a"
+	vycp4a_template_code: STRING = "vycp4a"
+	vycp5a_template_code: STRING = "vycp5a"
+	vycp6a_template_code: STRING = "vycp6a"
+	vycp7a_template_code: STRING = "vycp7a"
+	vycp8a_template_code: STRING = "vycp8a"
+	vycp8b_template_code: STRING = "vycp8b"
+	vycp9a_template_code: STRING = "vycp9a"
+	vycq1a_template_code: STRING = "vycq1a"
+	vycq1b_template_code: STRING = "vycq1b"
+	vycq2a_template_code: STRING = "vycq2a"
+	vycq3a_template_code: STRING = "vycq3a"
+	vycq4a_template_code: STRING = "vycq4a"
+	vycq5a_template_code: STRING = "vycq5a"
+	vycq6a_template_code: STRING = "vycq6a"
+	vycq7a_template_code: STRING = "vycq7a"
+	vycq8a_template_code: STRING = "vycq8a"
+	vycq8b_template_code: STRING = "vycq8b"
+	vycq9a_template_code: STRING = "vycq9a"
 	gvagp0a_template_code: STRING = "gvagp0a"
 	gvhpr5a_template_code: STRING = "gvhpr5a"
 	gvhso1a_template_code: STRING = "gvhso1a"

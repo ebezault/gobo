@@ -180,6 +180,8 @@ feature {NONE} -- Processing
 						error_handler.report_compilation_status (Current, current_class, system_processor)
 						check_qualified_anchored_signatures_validity
 						resolve_signatures_unfolded_tuple_actual_parameters
+						check_assigners_validity
+						check_convert_validity
 						if not current_class.is_dotnet then
 								-- No need to check validity of .NET classes.
 							check_constraint_renamings_validity
@@ -272,6 +274,446 @@ feature {NONE} -- Signature validity
 
 	qualified_anchored_type_checker: ET_QUALIFIED_ANCHORED_TYPE_CHECKER
 			-- Qualified anchored type checker
+
+feature {NONE} -- Convert validity
+
+	check_convert_validity
+			-- Check validity of convert clause of `current_class'.
+		local
+			l_convert_feature: ET_CONVERT_FEATURE
+			i, nb: INTEGER
+		do
+			if attached current_class.convert_features as l_convert_features then
+				nb := l_convert_features.count
+				from i := 1 until i > nb loop
+					l_convert_feature := l_convert_features.convert_feature (i)
+					if l_convert_feature.is_convert_to then
+						check_convert_query_validity (l_convert_feature, l_convert_features, i)
+					elseif l_convert_feature.is_convert_from then
+						check_convert_procedure_validity (l_convert_feature, l_convert_features, i)
+					else
+							-- Internal error: the convert feature should be either
+							-- a conversion query or a conversion procedure.
+						set_fatal_error (current_class)
+						error_handler.report_giaac_error (generator, "check_convert_validity", 1, "convert feature is not a conversion query nor a conversion procedure.")
+					end
+					i := i + 1
+				end
+			end
+		end
+
+	check_convert_query_validity (a_convert_query: ET_CONVERT_FEATURE; a_convert_features: ET_CONVERT_FEATURE_LIST; a_index: INTEGER)
+			-- Check validity of convert query `a_convert_query`, appearing at index `a_index`
+			-- in convert features `a_convert_features` of `current_class'.
+		require
+			a_convert_query_not_void: a_convert_query /= Void
+			a_convert_query_is_convert_to: a_convert_query.is_convert_to
+			a_convert_features_not_void: a_convert_features /= Void
+			valid_convert_features: current_class.convert_features = a_convert_features
+			a_index_large_enough: a_index >= 1
+			a_index_small_enough: a_index <= a_convert_features.count
+			valid_convert_query: a_convert_features.convert_feature (a_index) = a_convert_query
+		local
+			l_name: ET_FEATURE_NAME
+			l_query_type: detachable ET_TYPE
+			l_types: ET_TYPE_LIST
+			l_type: ET_TYPE
+			l_other_convert_feature: ET_CONVERT_FEATURE
+			l_other_types: ET_TYPE_LIST
+			l_other_type: ET_TYPE
+			i, j, nb: INTEGER
+			k, nb2: INTEGER
+			l_base_class: ET_CLASS
+		do
+			l_name := a_convert_query.name
+			if attached current_class.named_query (l_name) as l_query then
+				l_name.set_seed (l_query.first_seed)
+				l_query_type := l_query.type
+				if l_query.arguments_count > 0 then
+						-- Error: the query should have no formal argument.
+					set_fatal_error (current_class)
+					error_handler.report_vycq6a_error (current_class, l_name, l_query)
+				end
+			elseif attached current_class.named_procedure (l_name) then
+					-- Error: this name is not the final name of
+					-- a query on `current_class'.
+				set_fatal_error (current_class)
+				error_handler.report_vycq1b_error (current_class, l_name)
+			else
+					-- Error: this name is not the final name of
+					-- a feature on `current_class'.
+				set_fatal_error (current_class)
+				error_handler.report_vycq1a_error (current_class, l_name)
+			end
+			l_types := a_convert_query.types
+			nb := l_types.count
+			from i := 1 until i > nb loop
+				l_type := l_types.type (i)
+				if not l_type.is_named_type then
+						-- Error: `l_type` should not be made up of anchored types.
+					set_fatal_error (current_class)
+					error_handler.report_vycq8a_error (current_class, l_name, l_type)
+				elseif attached {ET_FORMAL_PARAMETER_TYPE} l_type then
+						-- Error: `l_type` should not be a formal generic paremeter
+						-- of `current_class`.
+					set_fatal_error (current_class)
+					error_handler.report_vycq8b_error (current_class, l_name, l_type)
+				else
+					if current_class.is_generic then
+						if current_class.has_conforming_ancestor (l_type.base_class (current_class)) then
+								-- Error: the base class of `l_type` should not be a
+								-- conforming ancestor of `current_class`.
+							set_fatal_error (current_class)
+							error_handler.report_vycq3a_error (current_class, l_name, l_type)
+						end
+					else
+						if  current_class.conforms_to_type (l_type, current_class, current_class, system_processor) then
+								-- Error: the current type should not conform to `l_type`.
+							set_fatal_error (current_class)
+							error_handler.report_vycq2a_error (current_class, l_name, l_type)
+						end
+					end
+					l_base_class := l_type.base_class (current_class)
+					from j := 1 until j > a_index loop
+						l_other_convert_feature := a_convert_features.convert_feature (j)
+						if l_other_convert_feature.is_convert_to then
+							l_other_types := l_other_convert_feature.types
+							if j = a_index then
+								nb2 := i - 1
+							else
+								nb2 := l_other_types.count
+							end
+							from k := 1 until k > nb2 loop
+								l_other_type := l_other_types.type (k)
+								if l_other_type.base_class (current_class) = l_base_class then
+										-- Error: `l_type` should not have the same base class as
+										-- any other type of a convert query of `current_class`.
+									set_fatal_error (current_class)
+									error_handler.report_vycq4a_error (current_class, l_name, l_type, l_other_type)
+								end
+								k := k + 1
+							end
+						end
+						j := j + 1
+					end
+					if l_type.base_class (current_class).has_convert_from_with_base_class (current_class) then
+							-- Error: the base class of `l_type` has a conversion procedure with
+							-- a convert type whose base class is `current_class`.
+						set_fatal_error (current_class)
+						error_handler.report_vycq5a_error (current_class, l_name, l_type)
+					end
+					if l_query_type /= Void and then not l_query_type.conforms_to_type (l_type, current_class, current_class, system_processor) then
+							-- Error: the type of the query should conform to `l_type`.
+						set_fatal_error (current_class)
+						error_handler.report_vycq7a_error (current_class, l_name, l_type, l_query_type.named_type (current_class))
+					end
+					if current_system.attachment_type_conformance_mode and then not l_type.is_type_attached (current_class) then
+							-- Error: `l_type` should be attached.
+						set_fatal_error (current_class)
+						error_handler.report_vycq9a_error (current_class, l_name, l_type)
+					end
+				end
+				i := i + 1
+			end
+		end
+
+	check_convert_procedure_validity (a_convert_procedure: ET_CONVERT_FEATURE; a_convert_features: ET_CONVERT_FEATURE_LIST; a_index: INTEGER)
+			-- Check validity of convert procedure `a_convert_procedure`, appearing at index `a_index`
+			-- in convert features `a_convert_features` of `current_class'.
+		require
+			a_convert_procedure_not_void: a_convert_procedure /= Void
+			a_convert_procedure_is_convert_from: a_convert_procedure.is_convert_from
+			a_convert_features_not_void: a_convert_features /= Void
+			valid_convert_features: current_class.convert_features = a_convert_features
+			a_index_large_enough: a_index >= 1
+			a_index_small_enough: a_index <= a_convert_features.count
+			valid_convert_procedure: a_convert_features.convert_feature (a_index) = a_convert_procedure
+		local
+			l_name: ET_FEATURE_NAME
+			l_argument_type: detachable ET_TYPE
+			l_types: ET_TYPE_LIST
+			l_type: ET_TYPE
+			l_other_convert_feature: ET_CONVERT_FEATURE
+			l_other_types: ET_TYPE_LIST
+			l_other_type: ET_TYPE
+			i, j, nb: INTEGER
+			k, nb2: INTEGER
+			l_base_class: ET_CLASS
+		do
+			l_name := a_convert_procedure.name
+			if attached current_class.named_procedure (l_name) as l_procedure then
+				l_name.set_seed (l_procedure.first_seed)
+				if not attached current_class.creators as l_creators or else not l_creators.has_feature_name (l_name) then
+						-- Error: this name is not the final name of
+						-- a creation procedure on `current_class'.
+					set_fatal_error (current_class)
+					error_handler.report_vycp1b_error (current_class, l_name)
+				end
+				if attached l_procedure.arguments as l_arguments and then l_arguments.count = 1 then
+					l_argument_type := l_arguments.formal_argument (1).type
+				else
+						-- Error: the procedure should have exactly one formal argument.
+					set_fatal_error (current_class)
+					error_handler.report_vycp6a_error (current_class, l_name, l_procedure)
+				end
+			elseif attached current_class.named_query (l_name) then
+					-- Error: this name is not the final name of
+					-- a procedure on `current_class'.
+				set_fatal_error (current_class)
+				error_handler.report_vycp1b_error (current_class, l_name)
+			else
+					-- Error: this name is not the final name of
+					-- a feature on `current_class'.
+				set_fatal_error (current_class)
+				error_handler.report_vycp1a_error (current_class, l_name)
+			end
+			l_types := a_convert_procedure.types
+			nb := l_types.count
+			from i := 1 until i > nb loop
+				l_type := l_types.type (i)
+				if not l_type.is_named_type then
+						-- Error: `l_type` should not be made up of anchored types.
+					set_fatal_error (current_class)
+					error_handler.report_vycp8a_error (current_class, l_name, l_type)
+				elseif attached {ET_FORMAL_PARAMETER_TYPE} l_type then
+						-- Error: `l_type` should not be a formal generic paremeter
+						-- of `current_class`.
+					set_fatal_error (current_class)
+					error_handler.report_vycp8b_error (current_class, l_name, l_type)
+				else
+					if current_class.is_generic then
+						if l_type.base_class (current_class).has_conforming_ancestor (current_class) then
+								-- Error: `current_class` should not be a conforming ancestor
+								-- of the base class of `l_type`.
+							set_fatal_error (current_class)
+							error_handler.report_vycp3a_error (current_class, l_name, l_type)
+						end
+					else
+						if l_type.conforms_to_type (current_class, current_class, current_class, system_processor) then
+								-- Error: `l_type` should not conform to the current type.
+							set_fatal_error (current_class)
+							error_handler.report_vycp2a_error (current_class, l_name, l_type)
+						end
+					end
+					l_base_class := l_type.base_class (current_class)
+					from j := 1 until j > a_index loop
+						l_other_convert_feature := a_convert_features.convert_feature (j)
+						if l_other_convert_feature.is_convert_from then
+							l_other_types := l_other_convert_feature.types
+							if j = a_index then
+								nb2 := i - 1
+							else
+								nb2 := l_other_types.count
+							end
+							from k := 1 until k > nb2 loop
+								l_other_type := l_other_types.type (k)
+								if l_other_type.base_class (current_class) = l_base_class then
+										-- Error: `l_type` should not have the same base class as
+										-- any other type of a convert procedure of `current_class`.
+									set_fatal_error (current_class)
+									error_handler.report_vycp4a_error (current_class, l_name, l_type, l_other_type)
+								end
+								k := k + 1
+							end
+						end
+						j := j + 1
+					end
+					if l_type.base_class (current_class).has_convert_to_with_base_class (current_class) then
+							-- Error: the base class of `l_type` has a conversion query with
+							-- a convert type whose base class is `current_class`.
+						set_fatal_error (current_class)
+						error_handler.report_vycp5a_error (current_class, l_name, l_type)
+					end
+					if l_argument_type /= Void and then not l_type.conforms_to_type (l_argument_type, current_class, current_class, system_processor) then
+							-- Error: `l_type` should conform to the type of the creation procedure's argument.
+						set_fatal_error (current_class)
+						error_handler.report_vycp7a_error (current_class, l_name, l_type, l_argument_type.named_type (current_class))
+					end
+					if current_system.attachment_type_conformance_mode and then not l_type.is_type_attached (current_class) then
+							-- Error: `l_type` should be attached.
+						set_fatal_error (current_class)
+						error_handler.report_vycp9a_error (current_class, l_name, l_type)
+					end
+				end
+				i := i + 1
+			end
+		end
+
+feature -- Assigner validity
+
+	check_assigners_validity
+			-- Check validity of assigner clauses of queries of `current_class'.
+		local
+			l_queries: ET_QUERY_LIST
+			l_query: ET_QUERY
+			l_feature_name: ET_FEATURE_NAME
+			l_query_arguments: detachable ET_FORMAL_ARGUMENT_LIST
+			l_procedure_arguments: detachable ET_FORMAL_ARGUMENT_LIST
+			i, nb: INTEGER
+			j, nb_args: INTEGER
+			l_arg_offset: INTEGER
+			l_type, l_other_type: ET_TYPE
+			l_seed: INTEGER
+		do
+			l_queries := current_class.queries
+				-- Process queries declared or redeclared in `current_class'.
+			nb := l_queries.declared_count
+			from i := 1 until i > nb loop
+				l_query := l_queries.item (i)
+				if attached l_query.assigner as l_assigner then
+					l_feature_name := l_assigner.feature_name
+					if attached current_class.named_procedure (l_feature_name) as l_procedure then
+						l_feature_name.set_seed (l_procedure.first_seed)
+						l_procedure_arguments := l_procedure.arguments
+						if l_procedure_arguments = Void then
+							set_fatal_error (current_class)
+							error_handler.report_vfac2a_error (current_class, l_feature_name, l_query, l_procedure)
+						elseif l_procedure_arguments.count /= l_query.arguments_count + 1 then
+							set_fatal_error (current_class)
+							error_handler.report_vfac2a_error (current_class, l_feature_name, l_query, l_procedure)
+						else
+							l_type := l_query.type
+							if current_class.is_dotnet then
+									-- Under .NET the value is passed as the last argument of the assigner.
+								l_other_type := l_procedure_arguments.formal_argument (l_procedure_arguments.count).type
+								l_arg_offset := 0
+							else
+								l_other_type := l_procedure_arguments.formal_argument (1).type
+								l_arg_offset := 1
+							end
+							if system_processor.is_ise then
+									-- ECMA 367-2 says that the type of the query and of the first formal argument
+									-- of the assigner procedure should have the same deanchored form.
+									-- But EiffelStudio 6.8.8.6542 actually only checks that the type of the
+									-- formal argument of the assigner procedure conforms to the type of the query.
+									-- The conformance in the other direction is checked in the client code,
+									-- which is not what ECMA 367-2 suggests (see rules VFAC-3 and VBAC-1).
+								if not l_other_type.conforms_to_type (l_type, current_class, current_class, system_processor) then
+									set_fatal_error (current_class)
+									error_handler.report_vfac3a_error (current_class, l_query.implementation_class, l_feature_name, l_query, l_procedure)
+								end
+							else
+								if not l_type.same_named_type (l_other_type, current_class, current_class) then
+									set_fatal_error (current_class)
+									error_handler.report_vfac3a_error (current_class, l_query.implementation_class, l_feature_name, l_query, l_procedure)
+								end
+							end
+							l_query_arguments := l_query.arguments
+							if l_query_arguments /= Void then
+								nb_args := l_query_arguments.count
+								from j := 1 until j > nb_args loop
+									l_type := l_query_arguments.formal_argument (j).type
+									l_other_type := l_procedure_arguments.formal_argument (j + l_arg_offset).type
+									if not l_type.same_named_type (l_other_type, current_class, current_class) then
+										set_fatal_error (current_class)
+										error_handler.report_vfac4a_error (current_class, l_query.implementation_class, l_feature_name, l_query, l_procedure, j)
+									end
+									j := j + 1
+								end
+							end
+						end
+					elseif attached current_class.named_query (l_feature_name) then
+						set_fatal_error (current_class)
+						error_handler.report_vfac1b_error (current_class, l_feature_name, l_query)
+					else
+						set_fatal_error (current_class)
+						error_handler.report_vfac1a_error (current_class, l_feature_name, l_query)
+					end
+				end
+				i := i + 1
+			end
+				-- Process queries inherited without redeclaration.
+			nb := l_queries.count
+			from until i > nb loop
+				l_query := l_queries.item (i)
+				if attached l_query.assigner as l_assigner then
+					l_feature_name := l_assigner.feature_name
+					l_seed := l_feature_name.seed
+					if l_seed = 0 then
+							-- Internal error: the seed should have been resolved
+							-- in the ancestor class where this assigner has been
+							-- declared.
+						set_fatal_error (current_class)
+						error_handler.report_giaaa_error
+					else
+						if not attached current_class.seeded_procedure (l_seed) as l_procedure then
+							if not current_class.has_flattening_error then
+									-- Internal error: if the assigner was valid
+									-- in the ancestor class and there was no error
+									-- when flattening the features of current class
+									-- then we should get a procedure here.
+								set_fatal_error (current_class)
+								error_handler.report_giaaa_error
+							end
+						else
+							l_procedure_arguments := l_procedure.arguments
+							if l_procedure_arguments = Void then
+								if not current_class.has_flattening_error then
+										-- Internal error: if the assigner was valid
+										-- in the ancestor class and there was no error
+										-- when flattening the features of current class
+										-- then we should have the expected number of
+										-- arguments here.
+									set_fatal_error (current_class)
+									error_handler.report_giaaa_error
+								end
+							elseif l_procedure_arguments.count /= l_query.arguments_count + 1 then
+								if not current_class.has_flattening_error then
+										-- Internal error: if the assigner was valid
+										-- in the ancestor class and there was no error
+										-- when flattening the features of current class
+										-- then we should have the expected number of
+										-- arguments here.
+									set_fatal_error (current_class)
+									error_handler.report_giaaa_error
+								end
+							else
+								l_type := l_query.type
+								if l_query.implementation_class.is_dotnet then
+										-- Under .NET the value is passed as the last argument of the assigner.
+									l_other_type := l_procedure_arguments.formal_argument (l_procedure_arguments.count).type
+									l_arg_offset := 0
+								else
+									l_other_type := l_procedure_arguments.formal_argument (1).type
+									l_arg_offset := 1
+								end
+								if system_processor.is_ise then
+										-- ECMA 367-2 says that the type of the query and of the first formal argument
+										-- of the assigner procedure should have the same deanchored form.
+										-- But EiffelStudio 6.8.8.6542 actually only checks that the type of the
+										-- formal argument of the assigner procedure conforms to the type of the query.
+										-- The conformance in the other direction is checked in the client code,
+										-- which is not what ECMA 367-2 suggests (see rules VFAC-3 and VBAC-1).
+									if not l_other_type.conforms_to_type (l_type, current_class, current_class, system_processor) then
+										set_fatal_error (current_class)
+										error_handler.report_vfac3a_error (current_class, l_query.implementation_class, l_feature_name, l_query, l_procedure)
+									end
+								else
+									if not l_type.same_named_type (l_other_type, current_class, current_class) then
+										set_fatal_error (current_class)
+										error_handler.report_vfac3a_error (current_class, l_query.implementation_class, l_feature_name, l_query, l_procedure)
+									end
+								end
+								l_query_arguments := l_query.arguments
+								if l_query_arguments /= Void then
+									nb_args := l_query_arguments.count
+									from j := 1 until j > nb_args loop
+										l_type := l_query_arguments.formal_argument (j).type
+										l_other_type := l_procedure_arguments.formal_argument (j + l_arg_offset).type
+										if not l_type.same_named_type (l_other_type, current_class, current_class) then
+											set_fatal_error (current_class)
+											error_handler.report_vfac4a_error (current_class, l_query.implementation_class, l_feature_name, l_query, l_procedure, j)
+										end
+										j := j + 1
+									end
+								end
+							end
+						end
+					end
+				end
+				i := i + 1
+			end
+		end
 
 feature {NONE} -- Constraint renaming validity
 
