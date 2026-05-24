@@ -1,0 +1,4 @@
+[VYCQ-5] class CC (5,6): the base class of '[attached] BB [[attached] INTEGER]' of conversion query `g' has a conversion procedure whose convert type's base class is CC.
+----
+[VYCP-5] class BB (9,6): the base class of '[attached] CC' of conversion procedure `f' has a conversion query whose convert type's base class is BB.
+----

@@ -1,0 +1,15 @@
+-------------------------------------------------------------------------------
+
+Error code: VNCP
+
+Convertibility error: Validity error in convert clause specification or usage.
+What to do: Fix the error....
+
+Class: BB
+Invalid type: use of anchors.
+Line: 5
+  
+->  f: {like c}
+  
+
+-------------------------------------------------------------------------------

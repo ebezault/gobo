@@ -29,7 +29,11 @@ inherit
 
 	ET_ROUTINE
 		undefine
-			reset, type, is_prefixable, is_infixable, is_bracketable
+			reset_after_features_flattened,
+			type,
+			is_prefixable,
+			is_infixable,
+			is_bracketable
 		redefine
 			is_function
 		end

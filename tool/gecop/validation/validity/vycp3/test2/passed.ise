@@ -1,0 +1,19 @@
+-------------------------------------------------------------------------------
+
+Error code: VYCP(3)
+
+Error: source of conversion procedure conforms to the type obtained from
+  the current class by replacing every formal generic parameter by its
+  constraint.
+What to do: make sure the source of conversion procedure does not conform
+  to type obtained from the current class or remove it from the type list.
+
+Class: BB [G -> ANY]
+Feature name: f
+Conversion type: CC [INTEGER_32]
+Line: 9
+  
+->  f ({CC [INTEGER]})
+  
+
+-------------------------------------------------------------------------------

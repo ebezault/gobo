@@ -1,0 +1,15 @@
+-------------------------------------------------------------------------------
+
+Error code: VNCP
+
+Convertibility error: Validity error in convert clause specification or usage.
+What to do: Fix the error....
+
+Class: BB
+Conversion type already specified.
+Line: 9
+  
+->  f ({CC, CC})
+  
+
+-------------------------------------------------------------------------------

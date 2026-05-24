@@ -4,10 +4,10 @@ Running Test Cases
 
 Test Summary for validation
 
-    # Passed:     609 tests
-    # FAILED:     224 tests
+    # Passed:     645 tests
+    # FAILED:     238 tests
     # Aborted:    0 test
-    # Total:      833 tests
+    # Total:      883 tests
 
 Test Results:</br>
 FAIL:  \[[definition/difo1/test\_bar\_2](definition/difo1/test\_bar\_2)\] test\_failed</br>
@@ -233,4 +233,18 @@ FAIL:  \[[validity/vuer/test\_generic\_parameter\_3](validity/vuer/test\_generic
 FAIL:  \[[validity/vuta4g/test\_call\_chain\_5](validity/vuta4g/test\_call\_chain\_5)\] test\_failed</br>
 FAIL:  \[[validity/vuta4g/test\_call\_chain\_6](validity/vuta4g/test\_call\_chain\_6)\] test\_failed</br>
 FAIL:  \[[validity/vuta4g/test\_if\_expression\_4](validity/vuta4g/test\_if\_expression\_4)\] test\_failed</br>
-FAIL:  \[[validity/vuta4g/test\_inspect\_expression\_4](validity/vuta4g/test\_inspect\_expression\_4)\] test\_failed
+FAIL:  \[[validity/vuta4g/test\_inspect\_expression\_4](validity/vuta4g/test\_inspect\_expression\_4)\] test\_failed</br>
+FAIL:  \[[validity/vycp4/test2](validity/vycp4/test2)\] test\_failed</br>
+FAIL:  \[[validity/vycp4/test3](validity/vycp4/test3)\] test\_failed</br>
+FAIL:  \[[validity/vycp4/test5](validity/vycp4/test5)\] test\_failed</br>
+FAIL:  \[[validity/vycp4/test6](validity/vycp4/test6)\] test\_failed</br>
+FAIL:  \[[validity/vycp4/test8](validity/vycp4/test8)\] test\_failed</br>
+FAIL:  \[[validity/vycp8/test3](validity/vycp8/test3)\] test\_failed</br>
+FAIL:  \[[validity/vycq3/test3](validity/vycq3/test3)\] test\_failed</br>
+FAIL:  \[[validity/vycq3/test4](validity/vycq3/test4)\] test\_failed</br>
+FAIL:  \[[validity/vycq4/test2](validity/vycq4/test2)\] test\_failed</br>
+FAIL:  \[[validity/vycq4/test3](validity/vycq4/test3)\] test\_failed</br>
+FAIL:  \[[validity/vycq4/test5](validity/vycq4/test5)\] test\_failed</br>
+FAIL:  \[[validity/vycq4/test6](validity/vycq4/test6)\] test\_failed</br>
+FAIL:  \[[validity/vycq4/test8](validity/vycq4/test8)\] test\_failed</br>
+FAIL:  \[[validity/vycq8/test4](validity/vycq8/test4)\] test\_failed

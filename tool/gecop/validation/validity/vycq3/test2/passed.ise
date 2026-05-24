@@ -1,0 +1,20 @@
+-------------------------------------------------------------------------------
+
+Error code: VYCQ(3)
+
+Error: the type obtained from the current class by replacing every formal
+  generic parameter by its constraint conforms to target of conversion
+  query.
+What to do: make sure the type obtained from the current class does not
+  conform to target of conversion query or remove the target from the type
+  list.
+
+Class: BB [G -> ANY]
+Feature name: f
+Conversion type: CC [INTEGER_32]
+Line: 9
+  
+->  f: {CC [INTEGER]}
+  
+
+-------------------------------------------------------------------------------

@@ -1,0 +1,15 @@
+-------------------------------------------------------------------------------
+
+Error code: VNCP
+
+Convertibility error: Validity error in convert clause specification or usage.
+What to do: Fix the error....
+
+Class: BB
+Routine not found: f
+Line: 5
+  
+->  f: {CC}
+  
+
+-------------------------------------------------------------------------------

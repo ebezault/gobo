@@ -255,9 +255,6 @@ feature -- Initialization
 			if attached creators as l_creators then
 				l_creators.reset
 			end
-			if attached convert_features as l_convert_features then
-				l_convert_features.reset
-			end
 		ensure
 			same_name: name = old name
 			same_id: id = old id
@@ -280,6 +277,9 @@ feature -- Initialization
 			reset_interface_checked
 			queries.reset_after_features_flattened
 			procedures.reset_after_features_flattened
+			if attached convert_features as l_convert_features then
+				l_convert_features.reset
+			end
 			if attached formal_parameters as l_formal_parameters then
 				l_formal_parameters.reset_constraint_renames
 				l_formal_parameters.reset_constraint_creation_procedures
@@ -2474,6 +2474,60 @@ feature -- Conversion
 							-- separateness status of the types involved.
 						if a_feature.types.has_named_type_with_type_marks (other_type, tokens.attached_separate_type_mark, other, tokens.attached_separate_type_mark, a_type) then
 							Result := a_feature
+							i := nb + 1 -- Jump out of the loop.
+						end
+					end
+					i := i + 1
+				end
+			end
+		end
+
+	has_convert_to_with_base_class (a_class: ET_CLASS): BOOLEAN
+			-- Is there a conversion query whose convert type's base class is `a_class`?
+		require
+			a_class_not_void: a_class /= Void
+		local
+			i, nb: INTEGER
+			a_feature: ET_CONVERT_FEATURE
+			other_type: ET_TYPE
+		do
+			if attached convert_features as l_convert_features then
+				other_type := tokens.identity_type
+				nb := l_convert_features.count
+				from i := 1 until i > nb loop
+					a_feature := l_convert_features.convert_feature (i)
+					if a_feature.is_convert_to then
+							-- Do not take into account the attachment and
+							-- separateness status of the types involved.
+						if a_feature.types.has_base_class (a_class, Current) then
+							Result := True
+							i := nb + 1 -- Jump out of the loop.
+						end
+					end
+					i := i + 1
+				end
+			end
+		end
+
+	has_convert_from_with_base_class (a_class: ET_CLASS): BOOLEAN
+			-- Is there a conversion procedure whose convert type's base class is `a_class`?
+		require
+			a_class_not_void: a_class /= Void
+		local
+			i, nb: INTEGER
+			a_feature: ET_CONVERT_FEATURE
+			other_type: ET_TYPE
+		do
+			if attached convert_features as l_convert_features then
+				other_type := tokens.identity_type
+				nb := l_convert_features.count
+				from i := 1 until i > nb loop
+					a_feature := l_convert_features.convert_feature (i)
+					if a_feature.is_convert_from then
+							-- Do not take into account the attachment and
+							-- separateness status of the types involved.
+						if a_feature.types.has_base_class (a_class, Current) then
+							Result := True
 							i := nb + 1 -- Jump out of the loop.
 						end
 					end

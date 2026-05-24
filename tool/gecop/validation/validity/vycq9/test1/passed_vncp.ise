@@ -1,0 +1,15 @@
+-------------------------------------------------------------------------------
+
+Error code: VNCP
+
+Convertibility error: Validity error in convert clause specification or usage.
+What to do: Fix the error....
+
+Class: BB
+Type of conversion should always be attached.
+Line: 5
+  
+->  f: {detachable CC}
+  
+
+-------------------------------------------------------------------------------

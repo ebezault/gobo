@@ -175,6 +175,24 @@ inherit
 			reportable_vwst1_error,
 			reportable_vwst2_error,
 			reportable_vxrt_error,
+			reportable_vycp1_error,
+			reportable_vycp2_error,
+			reportable_vycp3_error,
+			reportable_vycp4_error,
+			reportable_vycp5_error,
+			reportable_vycp6_error,
+			reportable_vycp7_error,
+			reportable_vycp8_error,
+			reportable_vycp9_error,
+			reportable_vycq1_error,
+			reportable_vycq2_error,
+			reportable_vycq3_error,
+			reportable_vycq4_error,
+			reportable_vycq5_error,
+			reportable_vycq6_error,
+			reportable_vycq7_error,
+			reportable_vycq8_error,
+			reportable_vycq9_error,
 			reportable_gvagp_error,
 			reportable_gvhpr5_error,
 			reportable_gvhso1_error,
@@ -1329,6 +1347,132 @@ feature -- Validity error status
 
 	reportable_vxrt_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VXRT error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp1_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-1 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp2_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-2 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp3_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-3 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-4 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp5_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-5 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp6_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-6 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp7_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-7 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp8_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-8 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycp9_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCP-9 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq1_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-1 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq2_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-2 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq3_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-3 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-4 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq5_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-5 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq6_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-6 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq7_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-7 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq8_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-8 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vycq9_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VYCQ-9 error be reported when it
 			-- appears in `a_class'?
 		do
 			Result := False
