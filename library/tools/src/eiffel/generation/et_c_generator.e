@@ -22393,6 +22393,7 @@ feature {NONE} -- Separate calls
 			old_in_operand: BOOLEAN
 			old_call_target_type: like call_target_type
 			old_current_agent: like current_agent
+			l_old_in_separate_creation_call: BOOLEAN
 		do
 			old_indentation := indentation
 			indentation := 0
@@ -23124,7 +23125,10 @@ feature {NONE} -- Separate calls
 						separate_call_instruction.set_target (formal_argument (1))
 						separate_call_instruction.set_name (a_separate_call.name)
 						separate_call_instruction.set_arguments (l_separate_call_arguments)
+						l_old_in_separate_creation_call := in_separate_creation_call
+						in_separate_creation_call := l_is_creation_call
 						print_qualified_call_instruction (separate_call_instruction)
+						in_separate_creation_call := l_old_in_separate_creation_call
 					end
 					max_nested_inlining_count := l_old_max_nested_inlining_count
 					print_indentation
