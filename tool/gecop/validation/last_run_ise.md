@@ -4,10 +4,10 @@ Running Test Cases
 
 Test Summary for validation
 
-    # Passed:     645 tests
-    # FAILED:     238 tests
+    # Passed:     668 tests
+    # FAILED:     247 tests
     # Aborted:    0 test
-    # Total:      883 tests
+    # Total:      915 tests
 
 Test Results:</br>
 FAIL:  \[[definition/difo1/test\_bar\_2](definition/difo1/test\_bar\_2)\] test\_failed</br>
@@ -207,6 +207,15 @@ FAIL:  \[[validity/vgmc/test\_qualified\_anchored\_type\_2](validity/vgmc/test\_
 FAIL:  \[[validity/vgmc/test\_typed\_agent\_1](validity/vgmc/test\_typed\_agent\_1)\] test\_failed</br>
 FAIL:  \[[validity/vgmc/test\_typed\_agent\_2](validity/vgmc/test\_typed\_agent\_2)\] test\_failed</br>
 FAIL:  \[[validity/vgmc/test\_unary\_call\_1](validity/vgmc/test\_unary\_call\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkcc4/test\_1](validity/vkcc4/test\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkcc4/test\_default\_create\_1](validity/vkcc4/test\_default\_create\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkcc4/test\_default\_create\_3](validity/vkcc4/test\_default\_create\_3)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_1](validity/vkcc7g/test\_once\_procedure\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_2](validity/vkcc7g/test\_once\_procedure\_2)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_4](validity/vkcc7g/test\_once\_procedure\_4)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_5](validity/vkcc7g/test\_once\_procedure\_5)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_6](validity/vkcc7g/test\_once\_procedure\_6)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_7](validity/vkcc7g/test\_once\_procedure\_7)\] test\_failed</br>
 FAIL:  \[[validity/vncc4/test1](validity/vncc4/test1)\] test\_failed</br>
 FAIL:  \[[validity/vncc4/test2](validity/vncc4/test2)\] test\_failed</br>
 FAIL:  \[[validity/vsrp1/test\_export\_1](validity/vsrp1/test\_export\_1)\] test\_failed</br>

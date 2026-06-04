@@ -724,8 +724,8 @@ feature {NONE} -- Feature flattening
 						error_handler.report_vcch2a_error (current_class)
 					end
 				end
-				check_creators_validity
 				check_kernel_features_validity
+				check_creators_validity
 				if l_old_error_handler /= Void then
 					system_processor.set_error_handler_only (l_old_error_handler)
 					set_fatal_error (current_class)
@@ -2103,10 +2103,39 @@ feature {NONE} -- Creators validity
 			a_name, other_name: ET_FEATURE_NAME
 			i, j, nb: INTEGER
 			k, h, nb2, nb3: INTEGER
+			l_count: NATURAL_32
 			a_feature: ET_FEATURE
 		do
 			a_creators := current_class.creators
-			if a_creators /= Void and then not a_creators.is_empty then
+			if a_creators = Void or else a_creators.is_empty then
+				if not current_class.is_deferred then
+						-- `default_create`.
+					if attached current_class.seeded_procedure (current_system.default_create_seed) as l_default_create then
+						if current_class.is_once then
+							if not attached {ET_ONCE_PROCEDURE} l_default_create as l_once_procedure then
+								set_fatal_error (current_class)
+								error_handler.report_vkcc4d_error (current_class, l_default_create)
+							elseif l_once_procedure.is_once_per_object then
+								set_fatal_error (current_class)
+								error_handler.report_vkcc4f_error (current_class, l_once_procedure)
+							elseif l_once_procedure.implementation_class = current_class then
+								l_once_procedure.set_once_creation_index (1)
+							end
+							if l_default_create.has_static_mark then
+								set_fatal_error (current_class)
+								error_handler.report_vkcc6gb_error (current_class, l_default_create)
+							end
+							if l_default_create.implementation_class /= current_class then
+								set_fatal_error (current_class)
+								error_handler.report_vkcc7gb_error (current_class, l_default_create)
+							end
+						elseif l_default_create.is_once then
+							set_fatal_error (current_class)
+							error_handler.report_vkcc4b_error (current_class, l_default_create)
+						end
+					end
+				end
+			else
 				if current_class.is_deferred then
 					set_fatal_error (current_class)
 					error_handler.report_vgcp1a_error (current_class, a_creators.first)
@@ -2116,6 +2145,7 @@ feature {NONE} -- Creators validity
 					a_creator := a_creators.item (i)
 					nb2 := a_creator.count
 					from k := 1 until k > nb2 loop
+						l_count := l_count + 1
 						a_name := a_creator.feature_name (k)
 						from h := 1 until h >= k loop
 							other_name := a_creator.feature_name (h)
@@ -2146,19 +2176,35 @@ feature {NONE} -- Creators validity
 						named_features.search (a_name)
 						if named_features.found then
 							a_feature := named_features.found_item.flattened_feature
-							if a_feature.is_procedure then
-								if a_feature.is_once then
-									set_fatal_error (current_class)
-									error_handler.report_vgcc6a_error (current_class, a_name, a_feature)
-								else
-										-- We finally got a valid creation
-										-- procedure. Record its seed.
-									a_name.set_seed (a_feature.first_seed)
-								end
-							else
+							if not a_feature.is_procedure then
 									-- This feature is not a procedure.
 								set_fatal_error (current_class)
 								error_handler.report_vgcp2b_error (current_class, a_name, a_feature)
+							elseif current_class.is_once then
+								if not attached {ET_ONCE_PROCEDURE} a_feature as l_once_procedure then
+									set_fatal_error (current_class)
+									error_handler.report_vkcc4c_error (current_class, a_name, a_feature)
+								elseif l_once_procedure.is_once_per_object then
+									set_fatal_error (current_class)
+									error_handler.report_vkcc4e_error (current_class, a_name, l_once_procedure)
+								elseif l_once_procedure.implementation_class = current_class then
+									l_once_procedure.set_once_creation_index (l_count)
+								end
+								if a_feature.has_static_mark then
+									set_fatal_error (current_class)
+									error_handler.report_vkcc6ga_error (current_class, a_name, a_feature)
+								end
+								if a_feature.implementation_class /= current_class then
+									set_fatal_error (current_class)
+									error_handler.report_vkcc7ga_error (current_class, a_name, a_feature)
+								end
+							elseif a_feature.is_once then
+								set_fatal_error (current_class)
+								error_handler.report_vkcc4a_error (current_class, a_name, a_feature)
+							else
+									-- We finally got a valid creation
+									-- procedure. Record its seed.
+								a_name.set_seed (a_feature.first_seed)
 							end
 						else
 								-- This name is not the final name of

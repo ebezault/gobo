@@ -573,6 +573,18 @@ Class_header: Frozen_opt External_opt E_CLASS Identifier
 			end
 			last_class := $$
 		}
+	| Frozen_opt E_ONCE E_CLASS Identifier
+		{
+			$$ := new_class ($4)
+			if $$ /= Void then
+				if attached $3 as l_class_keyword then
+					$$.set_class_keyword (l_class_keyword)
+				end
+				$$.set_frozen_keyword ($1)
+				$$.set_once_keyword ($2)
+			end
+			last_class := $$
+		}
 	;
 
 Frozen_opt: -- Empty

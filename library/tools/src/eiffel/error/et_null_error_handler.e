@@ -85,6 +85,7 @@ inherit
 			reportable_vgcp1_error,
 			reportable_vgcp2_error,
 			reportable_vgcp3_error,
+			reportable_vgfg3g_error,
 			reportable_vggc1_error,
 			reportable_vggc2_error,
 			reportable_vggc3_error,
@@ -98,6 +99,9 @@ inherit
 			reportable_vjar_error,
 			reportable_vjaw_error,
 			reportable_vjrv_error,
+			reportable_vkcc4_error,
+			reportable_vkcc6g_error,
+			reportable_vkcc7g_error,
 			reportable_vkcn1_error,
 			reportable_vkcn2_error,
 			reportable_vkex4g_error,
@@ -778,6 +782,13 @@ feature -- Validity error status
 			Result := False
 		end
 
+	reportable_vgfg3g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VGFG-3G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
 	reportable_vggc1_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VGGC-1 error be reported when it
 			-- appears in `a_class'?
@@ -864,6 +875,27 @@ feature -- Validity error status
 
 	reportable_vjrv_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VJRV error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vkcc4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKCC-4 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vkcc6g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKCC-6G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vkcc7g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKCC-7G error be reported when it
 			-- appears in `a_class'?
 		do
 			Result := False

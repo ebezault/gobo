@@ -673,7 +673,7 @@ feature -- Features
 					Result := True
 				end
 			when {ET_TOKEN_CODES}.builtin_character_32_ref_class then
-				 if a_builtin_feature_code = {ET_TOKEN_CODES}.builtin_character_n_ref_item then
+				if a_builtin_feature_code = {ET_TOKEN_CODES}.builtin_character_n_ref_item then
 					Result := True
 				end
 			when {ET_TOKEN_CODES}.builtin_integer_8_ref_class then
