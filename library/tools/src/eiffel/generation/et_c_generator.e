@@ -7389,6 +7389,8 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_type_declaration (current_type, current_file)
 				current_file.put_character (' ')
 				print_result_name (current_file)
+				print_assign_to
+				current_file.put_character ('0')
 				print_semicolon_newline
 			end
 				--
