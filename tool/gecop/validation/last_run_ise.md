@@ -5,9 +5,9 @@ Running Test Cases
 Test Summary for validation
 
     # Passed:     668 tests
-    # FAILED:     247 tests
+    # FAILED:     248 tests
     # Aborted:    0 test
-    # Total:      915 tests
+    # Total:      916 tests
 
 Test Results:</br>
 FAIL:  \[[definition/difo1/test\_bar\_2](definition/difo1/test\_bar\_2)\] test\_failed</br>
@@ -216,6 +216,7 @@ FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_4](validity/vkcc7g/test\_once\_
 FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_5](validity/vkcc7g/test\_once\_procedure\_5)\] test\_failed</br>
 FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_6](validity/vkcc7g/test\_once\_procedure\_6)\] test\_failed</br>
 FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_7](validity/vkcc7g/test\_once\_procedure\_7)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_8](validity/vkcc7g/test\_once\_procedure\_8)\] test\_failed</br>
 FAIL:  \[[validity/vncc4/test1](validity/vncc4/test1)\] test\_failed</br>
 FAIL:  \[[validity/vncc4/test2](validity/vncc4/test2)\] test\_failed</br>
 FAIL:  \[[validity/vsrp1/test\_export\_1](validity/vsrp1/test\_export\_1)\] test\_failed</br>
