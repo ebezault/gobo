@@ -3587,8 +3587,6 @@ feature {NONE} -- Instruction validity
 			-- `a_creation_context' represents the creation type of `a_instruction'.
 			-- `a_adapted_base_class' is the base class (or the best possible constraint in case of multiple
 			-- constraint genericity) of the creation type.
-			-- `a_adapted_base_class' is the base class (or the best possible constraint in case of multiple
-			-- constraint genericity) of the creation type.
 			-- `a_has_multiple_constraints' means that creation type is a formal parameter
 			-- with multiple constraints.
 			-- Set `has_fatal_error' if a fatal error occurred.
@@ -3657,46 +3655,56 @@ feature {NONE} -- Instruction validity
 				check_creation_procedure_call_validity (a_instruction, a_procedure, l_class, a_creation_context)
 			end
 			reset_fatal_error (had_error or has_fatal_error)
-			if not has_fatal_error then
-				if current_system.attachment_type_conformance_mode then
-					if attached {ET_RESULT} l_target then
-						if not a_target_context.is_type_detachable then
-							current_initialization_scope.add_result
-						elseif attached current_closure_impl.type as l_result_type and then not l_result_type.is_type_detachable (current_type) then
-							current_initialization_scope.add_result
-						end
-						if not a_target_context.is_type_attached then
-							current_attachment_scope.add_result
-						end
-					elseif attached {ET_IDENTIFIER} l_target as l_identifier then
-						l_name := l_identifier
-						if
-							l_identifier.is_feature_name and then
-							attached current_class.seeded_query (l_identifier.seed) as l_attribute and then
-							attached {ET_IDENTIFIER} l_attribute.name as l_attribute_name
-						then
-							l_name := l_attribute_name
-						end
-						if not a_target_context.is_type_detachable then
-							current_initialization_scope.add_name (l_name)
-						end
-						if not a_target_context.is_type_attached then
-							current_attachment_scope.add_name (l_name)
-						end
+			if not has_fatal_error and l_class.is_once and a_procedure /= Void then
+				if not has_fatal_error and current_system.scoop_mode and then a_procedure.is_once_per_process then
+					if not a_creation_context.is_type_expanded and then not a_creation_context.is_type_separate then
+							-- Error: the creation type of a once-per-process creation procedure
+							-- should be separate.
+						set_fatal_error
+						error_handler.report_vkin6ga_error (current_class, current_class_impl, a_instruction, a_procedure, l_creation_type)
 					end
-						-- When we have:
-						--   local
-						--      v: detachable FOO
-						--   ...
-						--   create v.make
-						--
-						-- even if 'detachable FOO' is detachable, the type of
-						-- the object created is attached.
-					l_creation_named_type := l_creation_named_type.type_with_type_mark (tokens.implicit_attached_type_mark)
 				end
-				if current_system.scoop_mode and not a_creation_context.is_type_non_separate then
-					set_index (a_instruction.separate_target)
+			end
+			if current_system.attachment_type_conformance_mode then
+				if attached {ET_RESULT} l_target then
+					if not a_target_context.is_type_detachable then
+						current_initialization_scope.add_result
+					elseif attached current_closure_impl.type as l_result_type and then not l_result_type.is_type_detachable (current_type) then
+						current_initialization_scope.add_result
+					end
+					if not a_target_context.is_type_attached then
+						current_attachment_scope.add_result
+					end
+				elseif attached {ET_IDENTIFIER} l_target as l_identifier then
+					l_name := l_identifier
+					if
+						l_identifier.is_feature_name and then
+						attached current_class.seeded_query (l_identifier.seed) as l_attribute and then
+						attached {ET_IDENTIFIER} l_attribute.name as l_attribute_name
+					then
+						l_name := l_attribute_name
+					end
+					if not a_target_context.is_type_detachable then
+						current_initialization_scope.add_name (l_name)
+					end
+					if not a_target_context.is_type_attached then
+						current_attachment_scope.add_name (l_name)
+					end
 				end
+					-- When we have:
+					--   local
+					--      v: detachable FOO
+					--   ...
+					--   create v.make
+					--
+					-- even if 'detachable FOO' is detachable, the type of
+					-- the object created is attached.
+				l_creation_named_type := l_creation_named_type.type_with_type_mark (tokens.implicit_attached_type_mark)
+			end
+			if current_system.scoop_mode and not a_creation_context.is_type_non_separate then
+				set_index (a_instruction.separate_target)
+			end
+			if not has_fatal_error then
 				report_creation_instruction (a_instruction, l_creation_named_type, a_procedure)
 			end
 		end
@@ -4055,7 +4063,6 @@ feature {NONE} -- Instruction validity
 			l_choice_context: ET_NESTED_TYPE_CONTEXT
 			l_choice_named_type: ET_NAMED_TYPE
 			j, nb2: INTEGER
-			l_constant: detachable ET_CONSTANT
 			l_old_attachment_scope: like current_attachment_scope
 			l_inspect_attachment_scope: detachable like current_attachment_scope
 			l_old_initialization_scope: like current_initialization_scope
@@ -4088,6 +4095,8 @@ feature {NONE} -- Instruction validity
 				-- Valid with ISE Eiffel. To be checked with other compilers.
 			elseif l_value_context.same_named_type (current_universe_impl.character_32_type, current_class_impl) then
 				-- Valid with ISE Eiffel. To be checked with other compilers.
+			elseif l_value_context.base_class.is_once then
+				-- Valid with ISE Eiffel: instances of once classes.
 			else
 				had_error := True
 				set_fatal_error
@@ -4109,37 +4118,36 @@ feature {NONE} -- Instruction validity
 						check_expression_validity (l_choice_constant, l_choice_context, l_value_context)
 						if has_fatal_error then
 							had_error := True
-						else
-							l_constant := choice_constant (l_choice_constant)
-							if l_constant = Void then
+						elseif not attached choice_constant (l_choice_constant) as l_constant then
+							had_error := True
+							set_fatal_error
+							error_handler.report_vomb2b_error (current_class, current_class_impl, l_choice_constant)
+						elseif had_value_error then
+							-- No check anymore.
+						elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
+							-- OK.
+						elseif l_value_context.base_class.is_once and l_value_context.base_class = l_choice_context.base_class then
+							-- OK.
+						elseif l_constant.is_integer_constant or l_constant.is_character_constant then
+							l_choice_context.wipe_out
+							check_expression_validity (l_constant, l_choice_context, l_value_context)
+							if has_fatal_error then
+								had_error := True
+							elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
+								-- OK.
+							else
 								had_error := True
 								set_fatal_error
-								error_handler.report_vomb2b_error (current_class, current_class_impl, l_choice_constant)
-							elseif not had_value_error then
-								if l_choice_context.same_named_type (l_value_type, l_value_context) then
-									-- OK.
-								elseif l_constant.is_integer_constant or l_constant.is_character_constant then
-									l_choice_context.wipe_out
-									check_expression_validity (l_constant, l_choice_context, l_value_context)
-									if has_fatal_error then
-										had_error := True
-									elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
-										-- OK.
-									else
-										had_error := True
-										set_fatal_error
-										l_value_named_type := l_value_context.named_type
-										l_choice_named_type := l_choice_context.named_type
-										error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
-									end
-								else
-									had_error := True
-									set_fatal_error
-									l_value_named_type := l_value_context.named_type
-									l_choice_named_type := l_choice_context.named_type
-									error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
-								end
+								l_value_named_type := l_value_context.named_type
+								l_choice_named_type := l_choice_context.named_type
+								error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 							end
+						else
+							had_error := True
+							set_fatal_error
+							l_value_named_type := l_value_context.named_type
+							l_choice_named_type := l_choice_context.named_type
+							error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 						end
 						l_choice_context.wipe_out
 						if l_choice.is_range then
@@ -4147,37 +4155,36 @@ feature {NONE} -- Instruction validity
 							check_expression_validity (l_choice_constant, l_choice_context, l_value_context)
 							if has_fatal_error then
 								had_error := True
-							else
-								l_constant := choice_constant (l_choice_constant)
-								if l_constant = Void then
+							elseif not attached choice_constant (l_choice_constant) as l_constant  then
+								had_error := True
+								set_fatal_error
+								error_handler.report_vomb2b_error (current_class, current_class_impl, l_choice_constant)
+							elseif had_value_error then
+								-- No check anymore.
+							elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
+								-- OK.
+							elseif l_value_context.base_class.is_once and l_value_context.base_class = l_choice_context.base_class then
+								-- OK.
+							elseif l_constant.is_integer_constant or l_constant.is_character_constant then
+								l_choice_context.wipe_out
+								check_expression_validity (l_constant, l_choice_context, l_value_context)
+								if has_fatal_error then
+									had_error := True
+								elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
+									-- OK.
+								else
 									had_error := True
 									set_fatal_error
-									error_handler.report_vomb2b_error (current_class, current_class_impl, l_choice_constant)
-								elseif not had_value_error then
-									if l_choice_context.same_named_type (l_value_type, l_value_context) then
-										-- OK.
-									elseif l_constant.is_integer_constant or l_constant.is_character_constant then
-										l_choice_context.wipe_out
-										check_expression_validity (l_constant, l_choice_context, l_value_context)
-										if has_fatal_error then
-											had_error := True
-										elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
-											-- OK.
-										else
-											had_error := True
-											set_fatal_error
-											l_value_named_type := l_value_context.named_type
-											l_choice_named_type := l_choice_context.named_type
-											error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
-										end
-									else
-										had_error := True
-										set_fatal_error
-										l_value_named_type := l_value_context.named_type
-										l_choice_named_type := l_choice_context.named_type
-										error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
-									end
+									l_value_named_type := l_value_context.named_type
+									l_choice_named_type := l_choice_context.named_type
+									error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 								end
+							else
+								had_error := True
+								set_fatal_error
+								l_value_named_type := l_value_context.named_type
+								l_choice_named_type := l_choice_context.named_type
+								error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 							end
 							l_choice_context.wipe_out
 						end
@@ -4292,6 +4299,8 @@ feature {NONE} -- Instruction validity
 							-- This is not a constant.
 					elseif l_identifier.is_iteration_item then
 							-- This is not a constant.
+					elseif l_identifier.is_inline_separate_argument then
+							-- This is not a constant.
 					else
 						l_seed := l_identifier.seed
 						l_query := current_class.seeded_query (l_seed)
@@ -4304,8 +4313,14 @@ feature {NONE} -- Instruction validity
 					l_static_context := new_context (current_type)
 					l_static_context.force_last (l_static_type)
 					l_static_class := l_static_context.base_class
-					l_query := l_static_class.seeded_query (l_static_call.name.seed)
 					free_context (l_static_context)
+					if l_static_class.is_once then
+						if attached l_static_class.seeded_procedure (l_static_call.name.seed) as l_procedure then
+							Result := integer_choice_constant
+						end
+					else
+						l_query := l_static_class.seeded_query (l_static_call.name.seed)
+					end
 				end
 				if l_query /= Void then
 					if attached {ET_CONSTANT_ATTRIBUTE} l_query as l_constant_attribute then
@@ -6301,23 +6316,33 @@ feature {NONE} -- Expression validity
 				check_creation_procedure_call_validity (a_expression, a_procedure, l_class, a_context)
 			end
 			reset_fatal_error (had_error or has_fatal_error)
-			if not has_fatal_error then
-				if current_system.attachment_type_conformance_mode then
-						-- When we have:
-						--
-						--   create {detachable FOO}.make
-						--
-						-- even if 'detachable FOO' is detachable, the type of
-						-- the creation expression is attached.
-					if not a_context.is_type_attached then
-						a_context.force_last (tokens.attached_like_current)
-						l_creation_named_type := l_creation_named_type.type_with_type_mark (tokens.implicit_attached_type_mark)
+			if not has_fatal_error and l_class.is_once and a_procedure /= Void then
+				if not has_fatal_error and current_system.scoop_mode and then a_procedure.is_once_per_process then
+					if not a_context.is_type_expanded and then not a_context.is_type_separate then
+							-- Error: the creation type of a once-per-process creation procedure
+							-- should be separate.
+						set_fatal_error
+						error_handler.report_vkex5ga_error (current_class, current_class_impl, a_expression, a_procedure, l_creation_type)
 					end
 				end
-				set_index (a_expression)
-				if current_system.scoop_mode and not a_context.is_type_non_separate then
-					set_index (a_expression.separate_target)
+			end
+			if current_system.attachment_type_conformance_mode then
+					-- When we have:
+					--
+					--   create {detachable FOO}.make
+					--
+					-- even if 'detachable FOO' is detachable, the type of
+					-- the creation expression is attached.
+				if not a_context.is_type_attached then
+					a_context.force_last (tokens.attached_like_current)
+					l_creation_named_type := l_creation_named_type.type_with_type_mark (tokens.implicit_attached_type_mark)
 				end
+			end
+			set_index (a_expression)
+			if current_system.scoop_mode and not a_context.is_type_non_separate then
+				set_index (a_expression.separate_target)
+			end
+			if not has_fatal_error then
 				report_creation_expression (a_expression, l_creation_named_type, a_procedure)
 			end
 		end
@@ -7980,7 +8005,6 @@ feature {NONE} -- Expression validity
 			l_choice_context: ET_NESTED_TYPE_CONTEXT
 			l_choice_named_type: ET_NAMED_TYPE
 			j, nb2: INTEGER
-			l_constant: detachable ET_CONSTANT
 			l_expression_context: ET_NESTED_TYPE_CONTEXT
 			l_result_context_list: DS_ARRAYED_LIST [ET_NESTED_TYPE_CONTEXT]
 			l_old_result_context_list_count: INTEGER
@@ -8014,6 +8038,8 @@ feature {NONE} -- Expression validity
 				-- Valid with ISE Eiffel. To be checked with other compilers.
 			elseif l_value_context.same_named_type (current_universe_impl.character_32_type, current_class_impl) then
 				-- Valid with ISE Eiffel. To be checked with other compilers.
+			elseif l_value_context.base_class.is_once then
+				-- Valid with ISE Eiffel: instances of once classes.
 			else
 				had_error := True
 				set_fatal_error
@@ -8037,37 +8063,36 @@ feature {NONE} -- Expression validity
 						check_expression_validity (l_choice_constant, l_choice_context, l_value_context)
 						if has_fatal_error then
 							had_error := True
-						else
-							l_constant := choice_constant (l_choice_constant)
-							if l_constant = Void then
+						elseif not attached choice_constant (l_choice_constant) as l_constant then
+							had_error := True
+							set_fatal_error
+							error_handler.report_vomb2b_error (current_class, current_class_impl, l_choice_constant)
+						elseif had_value_error then
+							-- No check anymore.
+						elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
+							-- OK.
+						elseif l_value_context.base_class.is_once and l_value_context.base_class = l_choice_context.base_class then
+							-- OK.
+						elseif l_constant.is_integer_constant or l_constant.is_character_constant then
+							l_choice_context.wipe_out
+							check_expression_validity (l_constant, l_choice_context, l_value_context)
+							if has_fatal_error then
+								had_error := True
+							elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
+								-- OK.
+							else
 								had_error := True
 								set_fatal_error
-								error_handler.report_vomb2b_error (current_class, current_class_impl, l_choice_constant)
-							elseif not had_value_error then
-								if l_choice_context.same_named_type (l_value_type, l_value_context) then
-									-- OK.
-								elseif l_constant.is_integer_constant or l_constant.is_character_constant then
-									l_choice_context.wipe_out
-									check_expression_validity (l_constant, l_choice_context, l_value_context)
-									if has_fatal_error then
-										had_error := True
-									elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
-										-- OK.
-									else
-										had_error := True
-										set_fatal_error
-										l_value_named_type := l_value_context.named_type
-										l_choice_named_type := l_choice_context.named_type
-										error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
-									end
-								else
-									had_error := True
-									set_fatal_error
-									l_value_named_type := l_value_context.named_type
-									l_choice_named_type := l_choice_context.named_type
-									error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
-								end
+								l_value_named_type := l_value_context.named_type
+								l_choice_named_type := l_choice_context.named_type
+								error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 							end
+						else
+							had_error := True
+							set_fatal_error
+							l_value_named_type := l_value_context.named_type
+							l_choice_named_type := l_choice_context.named_type
+							error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 						end
 						l_choice_context.wipe_out
 						if l_choice.is_range then
@@ -8075,37 +8100,36 @@ feature {NONE} -- Expression validity
 							check_expression_validity (l_choice_constant, l_choice_context, l_value_context)
 							if has_fatal_error then
 								had_error := True
-							else
-								l_constant := choice_constant (l_choice_constant)
-								if l_constant = Void then
+							elseif not attached choice_constant (l_choice_constant) as l_constant then
+								had_error := True
+								set_fatal_error
+								error_handler.report_vomb2b_error (current_class, current_class_impl, l_choice_constant)
+							elseif had_value_error then
+								-- No check anymore.
+							elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
+								-- OK.
+							elseif l_value_context.base_class.is_once and l_value_context.base_class = l_choice_context.base_class then
+								-- OK.
+							elseif l_constant.is_integer_constant or l_constant.is_character_constant then
+								l_choice_context.wipe_out
+								check_expression_validity (l_constant, l_choice_context, l_value_context)
+								if has_fatal_error then
+									had_error := True
+								elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
+									-- OK.
+								else
 									had_error := True
 									set_fatal_error
-									error_handler.report_vomb2b_error (current_class, current_class_impl, l_choice_constant)
-								elseif not had_value_error then
-									if l_choice_context.same_named_type (l_value_type, l_value_context) then
-										-- OK.
-									elseif l_constant.is_integer_constant or l_constant.is_character_constant then
-										l_choice_context.wipe_out
-										check_expression_validity (l_constant, l_choice_context, l_value_context)
-										if has_fatal_error then
-											had_error := True
-										elseif l_choice_context.same_named_type (l_value_type, l_value_context) then
-											-- OK.
-										else
-											had_error := True
-											set_fatal_error
-											l_value_named_type := l_value_context.named_type
-											l_choice_named_type := l_choice_context.named_type
-											error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
-										end
-									else
-										had_error := True
-										set_fatal_error
-										l_value_named_type := l_value_context.named_type
-										l_choice_named_type := l_choice_context.named_type
-										error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
-									end
+									l_value_named_type := l_value_context.named_type
+									l_choice_named_type := l_choice_context.named_type
+									error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 								end
+							else
+								had_error := True
+								set_fatal_error
+								l_value_named_type := l_value_context.named_type
+								l_choice_named_type := l_choice_context.named_type
+								error_handler.report_vomb2a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 							end
 							l_choice_context.wipe_out
 						end
@@ -11041,10 +11065,18 @@ feature {NONE} -- Expression validity
 						check_static_query_call_expression_validity (an_expression, l_query, l_class, a_context)
 					end
 				elseif attached l_adapted_base_class.named_procedure (l_name) as l_procedure then
-						-- In a call expression, the feature has to be a query.
-					set_fatal_error
-					error_handler.report_vkcn2a_error (current_class, l_name, l_procedure, l_class)
-					check_orphan_actual_arguments_validity (an_expression)
+					if l_class.is_once and l_procedure.once_creation_index > 0 then
+							-- Instance of a once class.
+						an_expression.set_is_once_creation_call (True)
+							-- Restore context.
+						a_context.keep_first (l_context_count - 1)
+						check_creation_expression_validity (an_expression, a_context)
+					else
+							-- In a call expression, the feature has to be a query.
+						set_fatal_error
+						error_handler.report_vkcn2a_error (current_class, l_name, l_procedure, l_class)
+						check_orphan_actual_arguments_validity (an_expression)
+					end
 				else
 					set_fatal_error
 						-- ISE Eiffel 5.4 reports this error as a VEEN,
@@ -17249,7 +17281,9 @@ feature {ET_AST_NODE} -- Processing
 	process_static_call_expression (an_expression: ET_STATIC_CALL_EXPRESSION)
 			-- Process `an_expression'.
 		do
-			if attached an_expression.parenthesis_call as l_parenthesis_call then
+			if an_expression.is_once_creation_call then
+				check_creation_expression_validity (an_expression, current_context)
+			elseif attached an_expression.parenthesis_call as l_parenthesis_call then
 				check_qualified_call_expression_validity (l_parenthesis_call, current_context, Void)
 				set_index_to (an_expression, l_parenthesis_call.index)
 			else

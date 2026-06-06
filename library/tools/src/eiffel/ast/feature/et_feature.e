@@ -210,6 +210,13 @@ feature -- Access
 	synonym: detachable ET_FEATURE
 			-- Next synonym if any
 
+	once_creation_index: NATURAL_32
+			-- Index in the list of creation procedures in once class.
+			-- Zero if not a once creation procedure of a once class.
+		do
+--			Result := 0
+		end
+
 	hash_code: INTEGER
 			-- Hash code value
 

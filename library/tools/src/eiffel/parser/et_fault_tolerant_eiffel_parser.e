@@ -520,6 +520,7 @@ feature {NONE} -- Parsing
 			l_expanded_keyword: detachable ET_KEYWORD
 			l_separate_keyword: detachable ET_KEYWORD
 			l_external_keyword: detachable ET_KEYWORD
+			l_once_keyword: detachable ET_KEYWORD
 			l_class_keyword: detachable ET_KEYWORD
 			l_identifier: detachable ET_IDENTIFIER
 		do
@@ -542,6 +543,10 @@ feature {NONE} -- Parsing
 				l_separate_keyword := last_detachable_et_keyword_value
 				read_token
 				synchronize_token (external_expected_tokens, class_keyword_expected, True)
+			elseif last_token = E_ONCE then
+				l_once_keyword := last_detachable_et_keyword_value
+				read_token
+				synchronize_token (class_expected_tokens, class_keyword_expected, True)
 			end
 			if last_token = E_EXTERNAL then
 				l_external_keyword := last_detachable_et_keyword_value
@@ -563,6 +568,8 @@ feature {NONE} -- Parsing
 							l_last_class.set_class_mark (l_expanded_keyword)
 						elseif l_separate_keyword /= Void then
 							l_last_class.set_class_mark (l_separate_keyword)
+						elseif l_once_keyword /= Void then
+							l_last_class.set_once_keyword (l_once_keyword)
 						end
 						l_last_class.set_external_keyword (l_external_keyword)
 						if l_class_keyword /= Void then
@@ -8509,12 +8516,13 @@ feature {NONE} -- Constants
 			-- Synchronization tokens when an
 			-- 'frozen' class mark is expected
 		once
-			create Result.make (6)
+			create Result.make (7)
 			Result.put (E_FROZEN)
 			Result.put (E_DEFERRED)
 			Result.put (E_EXPANDED)
 			Result.put (E_SEPARATE)
 			Result.put (E_EXTERNAL)
+			Result.put (E_ONCE)
 			Result.put (E_CLASS)
 		ensure
 			expected_tokens_not_void: Result /= Void
@@ -8522,14 +8530,15 @@ feature {NONE} -- Constants
 
 	deferred_expected_tokens: DS_HASH_SET [INTEGER]
 			-- Synchronization tokens when an
-			-- 'deferred', 'expanded' or 'separate'
-			-- class mark is expected
+			-- 'deferred', 'expanded', 'separate'
+			-- or 'once' class mark is expected
 		once
-			create Result.make (5)
+			create Result.make (6)
 			Result.put (E_DEFERRED)
 			Result.put (E_EXPANDED)
 			Result.put (E_SEPARATE)
 			Result.put (E_EXTERNAL)
+			Result.put (E_ONCE)
 			Result.put (E_CLASS)
 		ensure
 			expected_tokens_not_void: Result /= Void

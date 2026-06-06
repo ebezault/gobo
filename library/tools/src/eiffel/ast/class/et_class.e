@@ -1386,9 +1386,17 @@ feature -- Class header
 	is_frozen: BOOLEAN
 			-- Is current class frozen?
 		do
-			Result := has_frozen_mark
+			Result := has_frozen_mark or has_once_mark
 		ensure
-			definition: Result = has_frozen_mark
+			definition: Result = (has_frozen_mark or has_once_mark)
+		end
+
+	is_once: BOOLEAN
+			-- Is current class once?
+		do
+			Result := has_once_mark
+		ensure
+			definition: Result = has_once_mark
 		end
 
 	is_external: BOOLEAN
@@ -1468,6 +1476,14 @@ feature -- Class header
 			definition: Result = (frozen_keyword /= Void)
 		end
 
+	has_once_mark: BOOLEAN
+			-- Has class been declared as once?
+		do
+			Result := once_keyword /= Void
+		ensure
+			definition: Result = (once_keyword /= Void)
+		end
+
 	has_external_mark: BOOLEAN
 			-- Has class been declared as external?
 		do
@@ -1497,6 +1513,17 @@ feature -- Class header
 			frozen_keyword := a_frozen
 		ensure
 			frozen_keyword_set: frozen_keyword = a_frozen
+		end
+
+	once_keyword: detachable ET_KEYWORD
+			-- 'once' keyword
+
+	set_once_keyword (a_once: like once_keyword)
+			-- Set `once_keyword' to `a_once'.
+		do
+			once_keyword := a_once
+		ensure
+			once_keyword_set: once_keyword = a_once
 		end
 
 	external_keyword: detachable ET_KEYWORD

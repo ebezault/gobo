@@ -4,10 +4,10 @@ Running Test Cases
 
 Test Summary for validation
 
-    # Passed:     645 tests
-    # FAILED:     238 tests
+    # Passed:     677 tests
+    # FAILED:     256 tests
     # Aborted:    0 test
-    # Total:      883 tests
+    # Total:      933 tests
 
 Test Results:</br>
 FAIL:  \[[definition/difo1/test\_bar\_2](definition/difo1/test\_bar\_2)\] test\_failed</br>
@@ -52,6 +52,12 @@ FAIL:  \[[semantics/mbre3/test\_twin\_special\_1](semantics/mbre3/test\_twin\_sp
 FAIL:  \[[semantics/mbre3/test\_twin\_special\_2](semantics/mbre3/test\_twin\_special\_2)\] test\_failed</br>
 FAIL:  \[[semantics/mbre3/test\_twin\_tuple\_1](semantics/mbre3/test\_twin\_tuple\_1)\] test\_failed</br>
 FAIL:  \[[semantics/mbre3/test\_twin\_tuple\_2](semantics/mbre3/test\_twin\_tuple\_2)\] test\_failed</br>
+FAIL:  \[[semantics/mkin/test\_once\_class\_1](semantics/mkin/test\_once\_class\_1)\] test\_failed</br>
+FAIL:  \[[semantics/mkin/test\_once\_class\_scoop\_1](semantics/mkin/test\_once\_class\_scoop\_1)\] test\_failed</br>
+FAIL:  \[[semantics/mkin/test\_once\_class\_twin\_1](semantics/mkin/test\_once\_class\_twin\_1)\] test\_failed</br>
+FAIL:  \[[semantics/mkin/test\_once\_class\_twin\_2](semantics/mkin/test\_once\_class\_twin\_2)\] test\_failed</br>
+FAIL:  \[[semantics/mkin/test\_once\_class\_twin\_3](semantics/mkin/test\_once\_class\_twin\_3)\] test\_failed</br>
+FAIL:  \[[semantics/mkin/test\_once\_class\_twin\_4](semantics/mkin/test\_once\_class\_twin\_4)\] test\_failed</br>
 FAIL:  \[[semantics/mugc2/test\_agent\_closed\_target\_1](semantics/mugc2/test\_agent\_closed\_target\_1)\] test\_failed</br>
 FAIL:  \[[semantics/mugc2/test\_agent\_closed\_target\_2](semantics/mugc2/test\_agent\_closed\_target\_2)\] test\_failed</br>
 FAIL:  \[[semantics/mugc2/test\_agent\_open\_target\_1](semantics/mugc2/test\_agent\_open\_target\_1)\] test\_failed</br>
@@ -207,6 +213,18 @@ FAIL:  \[[validity/vgmc/test\_qualified\_anchored\_type\_2](validity/vgmc/test\_
 FAIL:  \[[validity/vgmc/test\_typed\_agent\_1](validity/vgmc/test\_typed\_agent\_1)\] test\_failed</br>
 FAIL:  \[[validity/vgmc/test\_typed\_agent\_2](validity/vgmc/test\_typed\_agent\_2)\] test\_failed</br>
 FAIL:  \[[validity/vgmc/test\_unary\_call\_1](validity/vgmc/test\_unary\_call\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkcc4/test\_1](validity/vkcc4/test\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkcc4/test\_default\_create\_1](validity/vkcc4/test\_default\_create\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkcc4/test\_default\_create\_3](validity/vkcc4/test\_default\_create\_3)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_1](validity/vkcc7g/test\_once\_procedure\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_2](validity/vkcc7g/test\_once\_procedure\_2)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_4](validity/vkcc7g/test\_once\_procedure\_4)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_5](validity/vkcc7g/test\_once\_procedure\_5)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_6](validity/vkcc7g/test\_once\_procedure\_6)\] test\_failed</br>
+FAIL:  \[[validity/vkcc7g/test\_once\_procedure\_7](validity/vkcc7g/test\_once\_procedure\_7)\] test\_failed</br>
+FAIL:  \[[validity/vkex5g/test\_once\_per\_process\_1](validity/vkex5g/test\_once\_per\_process\_1)\] test\_failed</br>
+FAIL:  \[[validity/vkex5g/test\_once\_per\_process\_2](validity/vkex5g/test\_once\_per\_process\_2)\] test\_failed</br>
+FAIL:  \[[validity/vkin6g/test\_once\_per\_process\_1](validity/vkin6g/test\_once\_per\_process\_1)\] test\_failed</br>
 FAIL:  \[[validity/vncc4/test1](validity/vncc4/test1)\] test\_failed</br>
 FAIL:  \[[validity/vncc4/test2](validity/vncc4/test2)\] test\_failed</br>
 FAIL:  \[[validity/vsrp1/test\_export\_1](validity/vsrp1/test\_export\_1)\] test\_failed</br>

@@ -1933,7 +1933,11 @@ feature -- Helper
 				if not l_string.is_empty then
 					l_string.append_string (", ")
 				end
-				l_string.append_string ("frozen")
+				if a_class.is_once then
+					l_string.append_string ("once")
+				else
+					l_string.append_string ("frozen")
+				end
 			end
 			if a_class.is_expanded then
 				if l_string = Void then

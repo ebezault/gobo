@@ -6,10 +6,19 @@
 
 * Added validation tests for `VYCP` (Conversion Procedure rule) and
   `VYCQ` (Conversion Query rule).
+* Added validation tests for `VHPR-2` (Parent rule).
+* Added validation tests for `VGFG-3G` (Formal Generic rule).
+* Added validation tests for `VKCC-4` and `VKCC-6G`
+  (Creation Clause rule).
+* Added validation tests for `VKIN-6G` (Creation Instruction rule).
+* Added validation tests for `VKEX-5G` (Creation Expression rule).
+* Added semantics tests for `MKIN` (Creation Instruction semantics).
 
 ### Gobo Eiffel Tools Library
 
 * Check validity of convert clauses. Validity errors `VYCP` and `VYCQ`.
+* Added support for [once classes](https://www.eiffel.org/blog/Alexander%20Kogtenkov/2020/12/once-classes)
+  (not in the ECMA standard, but supported by ISE Eiffel).
 
 ## Version 26.05.14 - 14 May 2026
 

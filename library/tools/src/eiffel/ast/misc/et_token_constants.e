@@ -1811,6 +1811,15 @@ feature -- Feature names
 			in_assertion_feature_name_not_void: Result /= Void
 		end
 
+	index_pseudo_feature_name: ET_FEATURE_NAME
+			-- '_index' feature name
+		once
+			create {ET_IDENTIFIER} Result.make (index_pseudo_name)
+		ensure
+			instance_free: class
+			index_pseudo_feature_name_not_void: Result /= Void
+		end
+
 	init_exception_manager_feature_name: ET_FEATURE_NAME
 			-- 'init_exception_manager' feature name
 		once
@@ -5495,6 +5504,9 @@ feature -- Keyword and symbol names
 
 	in_assertion_name: STRING = "in_assertion"
 			-- Name of Eiffel feature 'in_assertion'
+
+	index_pseudo_name: STRING = "_index"
+			-- Name of Eiffel pseudo feature '_index'
 
 	init_exception_manager_name: STRING = "init_exception_manager"
 			-- Name of Eiffel feature 'init_exception_manager'

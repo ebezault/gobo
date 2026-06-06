@@ -4177,29 +4177,6 @@ feature -- Validity errors
 			end
 		end
 
-	report_vgcc6a_error (a_class: ET_CLASS; cp: ET_FEATURE_NAME; f: ET_FEATURE)
-			-- Report VGCC-6 error: creation procedure name
-			-- `cp' is the final name of a once-procedure in `a_class'.
-			--
-			-- ETL2: p.286
-			-- ETL3 (4.82-00-00): p.432 (VGCC-4)
-		require
-			a_class_not_void: a_class /= Void
-			a_class_preparsed: a_class.is_preparsed
-			cp_not_void: cp /= Void
-			f_not_void: f /= Void
-			f_name: f.name.same_feature_name (cp)
-			f_procedure: f.is_procedure
-			f_once: f.is_once
-		local
-			an_error: ET_VALIDITY_ERROR
-		do
-			if reportable_vgcc6_error (a_class) then
-				create an_error.make_vgcc6a (a_class, cp, f)
-				report_validity_error (an_error)
-			end
-		end
-
 	report_vgcc6b_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS)
 			-- Report VGCC-6 error: the feature name `a_name', appearing
 			-- in a creation expression in `a_class', is not a procedure.
@@ -4400,6 +4377,24 @@ feature -- Validity errors
 			if reportable_vgcp3_error (a_class) then
 				create an_error.make_vgcp3c (a_class, f1, f2)
 				report_validity_error (an_error)
+			end
+		end
+
+	report_vgfg3ga_error (a_class: ET_CLASS; a_formal_parameters: ET_FORMAL_PARAMETER_LIST)
+			-- Report VGFG-3G error: `a_class` is a once class, but it is generic.
+			--
+			-- Not in ECMA-367-2.
+			-- Once classes.
+		require
+			a_class_not_void: a_class /= Void
+			a_formal_parameters_not_void: a_formal_parameters /= Void
+			a_formal_parameters_definition: a_class.formal_parameters = a_formal_parameters
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vgfg3g_error (a_class) then
+				create l_error.make_vgfg3ga (a_class, a_formal_parameters)
+				report_validity_error (l_error)
 			end
 		end
 
@@ -5153,6 +5148,230 @@ feature -- Validity errors
 			end
 		end
 
+	report_vkcc4a_error (a_class: ET_CLASS; cp: ET_FEATURE_NAME; f: ET_FEATURE)
+			-- Report VKCC-4 error: creation procedure name
+			-- `cp' is the final name of a once-procedure in `a_class'.
+			--
+			-- ETL2: p.286
+			-- ECMA 367-2: 8.20.6 p.109 (VGCC-4)
+			-- ECMA 367-3 (working version 115), 8.23.6 page 219.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			cp_not_void: cp /= Void
+			f_not_void: f /= Void
+			f_name: f.name.same_feature_name (cp)
+			f_procedure: f.is_procedure
+			f_once: f.is_once
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc4_error (a_class) then
+				create l_error.make_vkcc4a (a_class, cp, f)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc4b_error (a_class: ET_CLASS; a_default_create: ET_FEATURE)
+			-- Report VKCC-4 error: creation procedure `a_default_create`
+			-- is a once-procedure in `a_class'.
+			--
+			-- ETL2: p.286
+			-- ECMA 367-2: 8.20.6 p.109 (VGCC-4)
+			-- ECMA 367-3 (working version 115), 8.23.6 page 219.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_default_create_not_void: a_default_create /= Void
+			a_default_create_procedure: a_default_create.is_procedure
+			a_default_create_once: a_default_create.is_once
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc4_error (a_class) then
+				create l_error.make_vkcc4b (a_class, a_default_create)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc4c_error (a_class: ET_CLASS; cp: ET_FEATURE_NAME; f: ET_FEATURE)
+			-- Report VKCC-4 error: creation procedure name
+			-- `cp' is not the final name of a once-procedure in
+			-- once class `a_class'.
+			--
+			-- ETL2: p.286
+			-- ECMA 367-2: 8.20.6 p.109 (VGCC-4)
+			-- ECMA 367-3 (working version 115), 8.23.6 page 219.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			cp_not_void: cp /= Void
+			f_not_void: f /= Void
+			f_name: f.name.same_feature_name (cp)
+			f_procedure: f.is_procedure
+			f_not_once: not f.is_once
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc4_error (a_class) then
+				create l_error.make_vkcc4c (a_class, cp, f)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc4d_error (a_class: ET_CLASS; a_default_create: ET_FEATURE)
+			-- Report VKCC-4 error: creation procedure `a_default_create`
+			-- is not a once-procedure in once class `a_class'.
+			--
+			-- ETL2: p.286
+			-- ECMA 367-2: 8.20.6 p.109 (VGCC-4)
+			-- ECMA 367-3 (working version 115), 8.23.6 page 219.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_default_create_not_void: a_default_create /= Void
+			a_default_create_procedure: a_default_create.is_procedure
+			a_default_create_not_once: not a_default_create.is_once
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc4_error (a_class) then
+				create l_error.make_vkcc4d (a_class, a_default_create)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc4e_error (a_class: ET_CLASS; cp: ET_FEATURE_NAME; f: ET_FEATURE)
+			-- Report VKCC-4 error: creation procedure name
+			-- `cp' is the final name of a once-per-object procedure
+			-- in once class `a_class'.
+			--
+			-- ETL2: p.286
+			-- ECMA 367-2: 8.20.6 p.109 (VGCC-4)
+			-- ECMA 367-3 (working version 115), 8.23.6 page 219.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			cp_not_void: cp /= Void
+			f_not_void: f /= Void
+			f_name: f.name.same_feature_name (cp)
+			f_procedure: f.is_procedure
+			f_once_per_object: f.is_once_per_object
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc4_error (a_class) then
+				create l_error.make_vkcc4e (a_class, cp, f)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc4f_error (a_class: ET_CLASS; a_default_create: ET_FEATURE)
+			-- Report VKCC-4 error: creation procedure `a_default_create`
+			-- is a once-per_object procedure in once class `a_class'.
+			--
+			-- ETL2: p.286
+			-- ECMA 367-2: 8.20.6 p.109 (VGCC-4)
+			-- ECMA 367-3 (working version 115), 8.23.6 page 219.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_default_create_not_void: a_default_create /= Void
+			a_default_create_procedure: a_default_create.is_procedure
+			a_default_create_once_per_object: a_default_create.is_once_per_object
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc4_error (a_class) then
+				create l_error.make_vkcc4f (a_class, a_default_create)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc6ga_error (a_class: ET_CLASS; cp: ET_FEATURE_NAME; f: ET_FEATURE)
+			-- CReport VKCC-6G error: creation procedure name
+			-- `cp' is the final name of a class procedure
+			-- in once class `a_class'.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			cp_not_void: cp /= Void
+			f_not_void: f /= Void
+			f_name: f.name.same_feature_name (cp)
+			f_procedure: f.is_procedure
+			f_class_procedure: f.has_static_mark
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc6g_error (a_class) then
+				create l_error.make_vkcc6ga (a_class, cp, f)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc6gb_error (a_class: ET_CLASS; a_default_create: ET_FEATURE)
+			-- Report VKCC-6G error: creation procedure `a_default_create`
+			-- is a class procedure in once class `a_class'.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_default_create_not_void: a_default_create /= Void
+			a_default_create_procedure: a_default_create.is_procedure
+			a_default_create_class_procedure: a_default_create.has_static_mark
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc6g_error (a_class) then
+				create l_error.make_vkcc6gb (a_class, a_default_create)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc7ga_error (a_class: ET_CLASS; cp: ET_FEATURE_NAME; f: ET_FEATURE)
+			-- Report VKCC-7G error: creation procedure name
+			-- `cp' is not the final name of a procedure
+			-- declared or redeclared in once class `a_class'.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			cp_not_void: cp /= Void
+			f_not_void: f /= Void
+			f_name: f.name.same_feature_name (cp)
+			f_procedure: f.is_procedure
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc7g_error (a_class) then
+				create l_error.make_vkcc7ga (a_class, cp, f)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkcc7gb_error (a_class: ET_CLASS; a_default_create: ET_FEATURE)
+			-- Report VKCC-7G error: creation procedure `a_default_create`
+			-- is a procedure declared or redeclared in once class `a_class'.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_default_create_not_void: a_default_create /= Void
+			a_default_create_procedure: a_default_create.is_procedure
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkcc7g_error (a_class) then
+				create l_error.make_vkcc7gb (a_class, a_default_create)
+				report_validity_error (l_error)
+			end
+		end
+
 	report_vkcn1a_error (a_class: ET_CLASS; a_name: ET_CALL_NAME; a_feature: ET_FEATURE; a_target: ET_CLASS)
 			-- Report VKCN-1 error: `a_feature' of class `a_target', appearing
 			-- in the qualified instruction call `a_name' in `a_class', is not
@@ -5272,6 +5491,33 @@ feature -- Validity errors
 			end
 		end
 
+	report_vkex5ga_error (a_class, a_class_impl: ET_CLASS; a_creation_expression: ET_CREATION_EXPRESSION;
+		a_once_procedure: ET_PROCEDURE; a_creation_type: ET_TYPE)
+			-- Report VKEX-5G error: the creation type `a_creation_type` of the
+			-- creation expression `a_creation_expression` declared in `a_class_impl'
+			-- and viewed from one of its descendants `a_class' (possibly itself),
+			-- with the once-per-process creation procedure `a_once_procedure`,
+			-- is a reference type but is not separate.
+			--
+			-- Not in ECMA-367-2.
+			-- SCOOP and once classes.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_creation_expression_not_void: a_creation_expression /= Void
+			a_once_procedure_not_void: a_once_procedure /= Void
+			once_per_process: a_once_procedure.is_once_per_process
+			a_creation_type_not_void: a_creation_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkex5g_error (a_class) then
+				create l_error.make_vkex5ga (a_class, a_class_impl, a_creation_expression, a_once_procedure, a_creation_type)
+				report_validity_error (l_error)
+			end
+		end
+
 	report_vkin5ga_error (a_class, a_class_imp: ET_CLASS; a_region: ET_CREATION_REGION)
 			-- Report VKIN-5G error: creation region `a_region' appearing in
 			-- a creation instruction in `a_class' is not '<NONE>'.
@@ -5285,6 +5531,33 @@ feature -- Validity errors
 		do
 			if reportable_vkin5g_error (a_class) then
 				create l_error.make_vkin5ga (a_class, a_class_imp, a_region)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkin6ga_error (a_class, a_class_impl: ET_CLASS; a_creation_instruction: ET_CREATION_INSTRUCTION;
+		a_once_procedure: ET_PROCEDURE; a_creation_type: ET_TYPE)
+			-- Report VKIN-6G error: the creation type `a_creation_type` of the
+			-- creation instruction `a_creation_instruction` declared in `a_class_impl'
+			-- and viewed from one of its descendants `a_class' (possibly itself),
+			-- with the once-per-process creation procedure `a_once_procedure`,
+			-- is a reference type but is not separate.
+			--
+			-- Not in ECMA-367-2.
+			-- SCOOP and once classes.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_creation_instruction_not_void: a_creation_instruction /= Void
+			a_once_procedure_not_void: a_once_procedure /= Void
+			once_per_process: a_once_procedure.is_once_per_process
+			a_creation_type_not_void: a_creation_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkin6g_error (a_class) then
+				create l_error.make_vkin6ga (a_class, a_class_impl, a_creation_instruction, a_once_procedure, a_creation_type)
 				report_validity_error (l_error)
 			end
 		end
@@ -10260,6 +10533,16 @@ feature -- Validity error status
 			Result := True
 		end
 
+	reportable_vgfg3g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VGFG-3G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
 	reportable_vggc1_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VGGC-1 error be reported when it
 			-- appears in `a_class'?
@@ -10390,6 +10673,36 @@ feature -- Validity error status
 			Result := True
 		end
 
+	reportable_vkcc4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKCC-4 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vkcc6g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKCC-6G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vkcc7g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKCC-7G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
 	reportable_vkcn1_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VKCN-1 error be reported when it
 			-- appears in `a_class'?
@@ -10420,8 +10733,28 @@ feature -- Validity error status
 			Result := True
 		end
 
+	reportable_vkex5g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKEX-5G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
 	reportable_vkin5g_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VKIN-5G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vkin6g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKIN-6G error be reported when it
 			-- appears in `a_class'?
 		require
 			a_class_not_void: a_class /= Void
