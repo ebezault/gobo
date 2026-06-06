@@ -3587,8 +3587,6 @@ feature {NONE} -- Instruction validity
 			-- `a_creation_context' represents the creation type of `a_instruction'.
 			-- `a_adapted_base_class' is the base class (or the best possible constraint in case of multiple
 			-- constraint genericity) of the creation type.
-			-- `a_adapted_base_class' is the base class (or the best possible constraint in case of multiple
-			-- constraint genericity) of the creation type.
 			-- `a_has_multiple_constraints' means that creation type is a formal parameter
 			-- with multiple constraints.
 			-- Set `has_fatal_error' if a fatal error occurred.
@@ -3657,46 +3655,56 @@ feature {NONE} -- Instruction validity
 				check_creation_procedure_call_validity (a_instruction, a_procedure, l_class, a_creation_context)
 			end
 			reset_fatal_error (had_error or has_fatal_error)
-			if not has_fatal_error then
-				if current_system.attachment_type_conformance_mode then
-					if attached {ET_RESULT} l_target then
-						if not a_target_context.is_type_detachable then
-							current_initialization_scope.add_result
-						elseif attached current_closure_impl.type as l_result_type and then not l_result_type.is_type_detachable (current_type) then
-							current_initialization_scope.add_result
-						end
-						if not a_target_context.is_type_attached then
-							current_attachment_scope.add_result
-						end
-					elseif attached {ET_IDENTIFIER} l_target as l_identifier then
-						l_name := l_identifier
-						if
-							l_identifier.is_feature_name and then
-							attached current_class.seeded_query (l_identifier.seed) as l_attribute and then
-							attached {ET_IDENTIFIER} l_attribute.name as l_attribute_name
-						then
-							l_name := l_attribute_name
-						end
-						if not a_target_context.is_type_detachable then
-							current_initialization_scope.add_name (l_name)
-						end
-						if not a_target_context.is_type_attached then
-							current_attachment_scope.add_name (l_name)
-						end
+			if not has_fatal_error and l_class.is_once and a_procedure /= Void then
+				if not has_fatal_error and current_system.scoop_mode and then a_procedure.is_once_per_process then
+					if not a_creation_context.is_type_expanded and then not a_creation_context.is_type_separate then
+							-- Error: the creation type of a once-per-process creation procedure
+							-- should be separate.
+						set_fatal_error
+						error_handler.report_vkin6ga_error (current_class, current_class_impl, a_instruction, a_procedure, l_creation_type)
 					end
-						-- When we have:
-						--   local
-						--      v: detachable FOO
-						--   ...
-						--   create v.make
-						--
-						-- even if 'detachable FOO' is detachable, the type of
-						-- the object created is attached.
-					l_creation_named_type := l_creation_named_type.type_with_type_mark (tokens.implicit_attached_type_mark)
 				end
-				if current_system.scoop_mode and not a_creation_context.is_type_non_separate then
-					set_index (a_instruction.separate_target)
+			end
+			if current_system.attachment_type_conformance_mode then
+				if attached {ET_RESULT} l_target then
+					if not a_target_context.is_type_detachable then
+						current_initialization_scope.add_result
+					elseif attached current_closure_impl.type as l_result_type and then not l_result_type.is_type_detachable (current_type) then
+						current_initialization_scope.add_result
+					end
+					if not a_target_context.is_type_attached then
+						current_attachment_scope.add_result
+					end
+				elseif attached {ET_IDENTIFIER} l_target as l_identifier then
+					l_name := l_identifier
+					if
+						l_identifier.is_feature_name and then
+						attached current_class.seeded_query (l_identifier.seed) as l_attribute and then
+						attached {ET_IDENTIFIER} l_attribute.name as l_attribute_name
+					then
+						l_name := l_attribute_name
+					end
+					if not a_target_context.is_type_detachable then
+						current_initialization_scope.add_name (l_name)
+					end
+					if not a_target_context.is_type_attached then
+						current_attachment_scope.add_name (l_name)
+					end
 				end
+					-- When we have:
+					--   local
+					--      v: detachable FOO
+					--   ...
+					--   create v.make
+					--
+					-- even if 'detachable FOO' is detachable, the type of
+					-- the object created is attached.
+				l_creation_named_type := l_creation_named_type.type_with_type_mark (tokens.implicit_attached_type_mark)
+			end
+			if current_system.scoop_mode and not a_creation_context.is_type_non_separate then
+				set_index (a_instruction.separate_target)
+			end
+			if not has_fatal_error then
 				report_creation_instruction (a_instruction, l_creation_named_type, a_procedure)
 			end
 		end
@@ -6308,23 +6316,33 @@ feature {NONE} -- Expression validity
 				check_creation_procedure_call_validity (a_expression, a_procedure, l_class, a_context)
 			end
 			reset_fatal_error (had_error or has_fatal_error)
-			if not has_fatal_error then
-				if current_system.attachment_type_conformance_mode then
-						-- When we have:
-						--
-						--   create {detachable FOO}.make
-						--
-						-- even if 'detachable FOO' is detachable, the type of
-						-- the creation expression is attached.
-					if not a_context.is_type_attached then
-						a_context.force_last (tokens.attached_like_current)
-						l_creation_named_type := l_creation_named_type.type_with_type_mark (tokens.implicit_attached_type_mark)
+			if not has_fatal_error and l_class.is_once and a_procedure /= Void then
+				if not has_fatal_error and current_system.scoop_mode and then a_procedure.is_once_per_process then
+					if not a_context.is_type_expanded and then not a_context.is_type_separate then
+							-- Error: the creation type of a once-per-process creation procedure
+							-- should be separate.
+						set_fatal_error
+						error_handler.report_vkex5ga_error (current_class, current_class_impl, a_expression, a_procedure, l_creation_type)
 					end
 				end
-				set_index (a_expression)
-				if current_system.scoop_mode and not a_context.is_type_non_separate then
-					set_index (a_expression.separate_target)
+			end
+			if current_system.attachment_type_conformance_mode then
+					-- When we have:
+					--
+					--   create {detachable FOO}.make
+					--
+					-- even if 'detachable FOO' is detachable, the type of
+					-- the creation expression is attached.
+				if not a_context.is_type_attached then
+					a_context.force_last (tokens.attached_like_current)
+					l_creation_named_type := l_creation_named_type.type_with_type_mark (tokens.implicit_attached_type_mark)
 				end
+			end
+			set_index (a_expression)
+			if current_system.scoop_mode and not a_context.is_type_non_separate then
+				set_index (a_expression.separate_target)
+			end
+			if not has_fatal_error then
 				report_creation_expression (a_expression, l_creation_named_type, a_procedure)
 			end
 		end

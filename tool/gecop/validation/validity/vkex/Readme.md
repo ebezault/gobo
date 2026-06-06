@@ -10,7 +10,7 @@ Click on the `[tests]` label following the condition numbers below to see tests 
 A *Creation_expression* of creation type `CT`, appearing in a class `C`, is valid if and only if
 it satisfies the following conditions:
 
-1. The feature of the *Creation_call* of the expression’s unfolded form is available for creation
+1. The feature of the *Creation_call* of the expression's unfolded form is available for creation
    to `C`.
 2. That *Creation_call* is argument-valid.
 3. `CT` is generic-creation-ready.
@@ -40,3 +40,13 @@ Same as above.
   makes it easier to compile the same Eiffel code in SCOOP and non-SCOOP modes.
 
   SCOOP is not described in the ECMA Eiffel standard, therefore this condition is not part of the standard.
+
+* Another condition is needed in the context of once classes and SCOOP, the Eiffel concurrency mechanism:
+
+  5. `G.` [\[tests\]](../vkex5g) If the feature of the *Creation_call* of the expression's unfolded
+     form is a once per process creation procedure, `CT` is either separate or expanded.
+  
+  ISE Eiffel (as of 25.12.9.8922 and after) fails to report this validity rule violation.
+
+  Once classes and SCOOP are not described in the ECMA Eiffel standard, therefore
+  this condition extension is not part of the standard.

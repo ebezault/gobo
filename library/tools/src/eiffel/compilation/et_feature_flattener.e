@@ -2176,6 +2176,7 @@ feature {NONE} -- Creators validity
 						named_features.search (a_name)
 						if named_features.found then
 							a_feature := named_features.found_item.flattened_feature
+							a_name.set_seed (a_feature.first_seed)
 							if not a_feature.is_procedure then
 									-- This feature is not a procedure.
 								set_fatal_error (current_class)
@@ -2201,10 +2202,6 @@ feature {NONE} -- Creators validity
 							elseif a_feature.is_once then
 								set_fatal_error (current_class)
 								error_handler.report_vkcc4a_error (current_class, a_name, a_feature)
-							else
-									-- We finally got a valid creation
-									-- procedure. Record its seed.
-								a_name.set_seed (a_feature.first_seed)
 							end
 						else
 								-- This name is not the final name of

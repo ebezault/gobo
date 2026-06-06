@@ -8,8 +8,11 @@
   `VYCQ` (Conversion Query rule).
 * Added validation tests for `VHPR-2` (Parent rule).
 * Added validation tests for `VGFG-3G` (Formal Generic rule).
-* Added validation tests for `VKCC-4`, `VKCC-6G` and `VKCC-7G`
+* Added validation tests for `VKCC-4` and `VKCC-6G`
   (Creation Clause rule).
+* Added validation tests for `VKIN-6G` (Creation Instruction rule).
+* Added validation tests for `VKEX-5G` (Creation Expression rule).
+* Added semantics tests for `MKIN` (Creation Instruction semantics).
 
 ### Gobo Eiffel Tools Library
 

@@ -105,7 +105,9 @@ inherit
 			reportable_vkcn1_error,
 			reportable_vkcn2_error,
 			reportable_vkex4g_error,
+			reportable_vkex5g_error,
 			reportable_vkin5g_error,
+			reportable_vkin6g_error,
 			reportable_vlel1_error,
 			reportable_vlel2_error,
 			reportable_vlel3_error,
@@ -922,8 +924,22 @@ feature -- Validity error status
 			Result := False
 		end
 
+	reportable_vkex5g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKEX-5G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
 	reportable_vkin5g_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VKIN-5G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vkin6g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKIN-6G error be reported when it
 			-- appears in `a_class'?
 		do
 			Result := False

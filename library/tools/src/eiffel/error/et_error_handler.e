@@ -5491,6 +5491,33 @@ feature -- Validity errors
 			end
 		end
 
+	report_vkex5ga_error (a_class, a_class_impl: ET_CLASS; a_creation_expression: ET_CREATION_EXPRESSION;
+		a_once_procedure: ET_PROCEDURE; a_creation_type: ET_TYPE)
+			-- Report VKEX-5G error: the creation type `a_creation_type` of the
+			-- creation expression `a_creation_expression` declared in `a_class_impl'
+			-- and viewed from one of its descendants `a_class' (possibly itself),
+			-- with the once-per-process creation procedure `a_once_procedure`,
+			-- is a reference type but is not separate.
+			--
+			-- Not in ECMA-367-2.
+			-- SCOOP and once classes.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_creation_expression_not_void: a_creation_expression /= Void
+			a_once_procedure_not_void: a_once_procedure /= Void
+			once_per_process: a_once_procedure.is_once_per_process
+			a_creation_type_not_void: a_creation_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkex5g_error (a_class) then
+				create l_error.make_vkex5ga (a_class, a_class_impl, a_creation_expression, a_once_procedure, a_creation_type)
+				report_validity_error (l_error)
+			end
+		end
+
 	report_vkin5ga_error (a_class, a_class_imp: ET_CLASS; a_region: ET_CREATION_REGION)
 			-- Report VKIN-5G error: creation region `a_region' appearing in
 			-- a creation instruction in `a_class' is not '<NONE>'.
@@ -5504,6 +5531,33 @@ feature -- Validity errors
 		do
 			if reportable_vkin5g_error (a_class) then
 				create l_error.make_vkin5ga (a_class, a_class_imp, a_region)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vkin6ga_error (a_class, a_class_impl: ET_CLASS; a_creation_instruction: ET_CREATION_INSTRUCTION;
+		a_once_procedure: ET_PROCEDURE; a_creation_type: ET_TYPE)
+			-- Report VKIN-6G error: the creation type `a_creation_type` of the
+			-- creation instruction `a_creation_instruction` declared in `a_class_impl'
+			-- and viewed from one of its descendants `a_class' (possibly itself),
+			-- with the once-per-process creation procedure `a_once_procedure`,
+			-- is a reference type but is not separate.
+			--
+			-- Not in ECMA-367-2.
+			-- SCOOP and once classes.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_creation_instruction_not_void: a_creation_instruction /= Void
+			a_once_procedure_not_void: a_once_procedure /= Void
+			once_per_process: a_once_procedure.is_once_per_process
+			a_creation_type_not_void: a_creation_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vkin6g_error (a_class) then
+				create l_error.make_vkin6ga (a_class, a_class_impl, a_creation_instruction, a_once_procedure, a_creation_type)
 				report_validity_error (l_error)
 			end
 		end
@@ -10679,8 +10733,28 @@ feature -- Validity error status
 			Result := True
 		end
 
+	reportable_vkex5g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKEX-5G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
 	reportable_vkin5g_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VKIN-5G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vkin6g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VKIN-6G error be reported when it
 			-- appears in `a_class'?
 		require
 			a_class_not_void: a_class /= Void

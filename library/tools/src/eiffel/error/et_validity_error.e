@@ -235,7 +235,9 @@ create
 	make_vkcn2a,
 	make_vkcn2c,
 	make_vkex4ga,
+	make_vkex5ga,
 	make_vkin5ga,
+	make_vkin6ga,
 	make_vlel1a,
 	make_vlel2a,
 	make_vlel3a,
@@ -10641,6 +10643,58 @@ feature {NONE} -- Initialization
 			-- dollar7: $7 = creation region name
 		end
 
+	make_vkex5ga (a_class, a_class_impl: ET_CLASS; a_creation_expression: ET_CREATION_EXPRESSION;
+		a_once_procedure: ET_PROCEDURE; a_creation_type: ET_TYPE)
+			-- Create a new VKEX-5G error: the creation type `a_creation_type` of the
+			-- creation expression `a_creation_expression` declared in `a_class_impl'
+			-- and viewed from one of its descendants `a_class' (possibly itself),
+			-- with the once-per-process creation procedure `a_once_procedure`,
+			-- is a reference type but is not separate.
+			--
+			-- Not in ECMA-367-2.
+			-- SCOOP and once classes.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_creation_expression_not_void: a_creation_expression /= Void
+			a_once_procedure_not_void: a_once_procedure /= Void
+			once_per_process: a_once_procedure.is_once_per_process
+			a_creation_type_not_void: a_creation_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_creation_expression.type.position
+			ast_node := a_creation_expression.type
+			code := template_code (vkex5ga_template_code)
+			etl_code := vkex5g_etl_code
+			default_template := default_message_template (vkex5ga_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_once_procedure.lower_name, 7)
+			parameters.put (a_creation_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = name of once creation procedure
+			-- dollar8: $8 = creation type
+		end
+
 	make_vkin5ga (a_class, a_class_imp: ET_CLASS; a_region: ET_CREATION_REGION)
 			-- Create a new VKIN-5G error: creation region `a_region' appearing in
 			-- a creation instruction in `a_class' is not '<NONE>'.
@@ -10679,6 +10733,63 @@ feature {NONE} -- Initialization
 			-- dollar5: $5 = class name
 			-- dollar6: $6 = implementation class name
 			-- dollar7: $7 = creation region name
+		end
+
+	make_vkin6ga (a_class, a_class_impl: ET_CLASS; a_creation_instruction: ET_CREATION_INSTRUCTION;
+		a_once_procedure: ET_PROCEDURE; a_creation_type: ET_TYPE)
+			-- Create a new VKIN-6G error: the creation type `a_creation_type` of the
+			-- creation instruction `a_creation_instruction` declared in `a_class_impl'
+			-- and viewed from one of its descendants `a_class' (possibly itself),
+			-- with the once-per-process creation procedure `a_once_procedure`,
+			-- is a reference type but is not separate.
+			--
+			-- Not in ECMA-367-2.
+			-- SCOOP and once classes.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_creation_instruction_not_void: a_creation_instruction /= Void
+			a_once_procedure_not_void: a_once_procedure /= Void
+			once_per_process: a_once_procedure.is_once_per_process
+			a_creation_type_not_void: a_creation_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			if attached a_creation_instruction.type as l_type then
+				position := l_type.position
+				ast_node := l_type
+			else
+				position := a_creation_instruction.target.position
+				ast_node := a_creation_instruction.target
+			end
+			code := template_code (vkin6ga_template_code)
+			etl_code := vkin6g_etl_code
+			default_template := default_message_template (vkin6ga_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_once_procedure.lower_name, 7)
+			parameters.put (a_creation_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = name of once creation procedure
+			-- dollar8: $8 = creation type
 		end
 
 	make_vlel1a (a_class: ET_CLASS; a_parent: ET_PARENT; all1, all2: ET_ALL_EXPORT)
@@ -20899,7 +21010,9 @@ feature {NONE} -- Implementation
 	vkcn2a_default_template: STRING = "procedure `$8' of class $9 appears in a call expression."
 	vkcn2c_default_template: STRING = "procedure `$8' appears in a call expression."
 	vkex4ga_default_template: STRING = "the creation region '<$7>' does not have the expected name '<NONE>'."
+	vkex5ga_default_template: STRING = "the creation type '$8' of the creation expression with the once-per-process creation procedure `$7' is a reference type, but it is not separate."
 	vkin5ga_default_template: STRING = "the creation region '<$7>' does not have the expected name '<NONE>'."
+	vkin6ga_default_template: STRING = "the creation type '$8' of the creation instruction with the once-per-process creation procedure `$7' is a reference type, but it is not separate."
 	vlel1a_default_template: STRING = "'all' keyword appears twice in the Export subclause of parent $7."
 	vlel2a_default_template: STRING = "`$7' is not the final name of a feature inherited from $8."
 	vlel3a_default_template: STRING = "feature name `$7' appears twice in the Export subclause of parent $8."
@@ -21196,7 +21309,9 @@ feature {NONE} -- Implementation
 	vkcn1_etl_code: STRING = "VKCN-1"
 	vkcn2_etl_code: STRING = "VKCN-2"
 	vkex4g_etl_code: STRING = "VKEX-4G"
+	vkex5g_etl_code: STRING = "VKEX-5G"
 	vkin5g_etl_code: STRING = "VKIN-5G"
+	vkin6g_etl_code: STRING = "VKIN-6G"
 	vlel1_etl_code: STRING = "VLEL-1"
 	vlel2_etl_code: STRING = "VLEL-2"
 	vlel3_etl_code: STRING = "VLEL-3"
@@ -21475,7 +21590,6 @@ feature {NONE} -- Implementation
 	vfav5a_template_code: STRING = "vfav5a"
 	vffd4a_template_code: STRING = "vffd4a"
 	vffd5a_template_code: STRING = "vffd5a"
-	vffd6a_template_code: STRING = "vffd6a"
 	vffd7a_template_code: STRING = "vffd7a"
 	vffd7b_template_code: STRING = "vffd7b"
 	vffd11ga_template_code: STRING = "vffd11ga"
@@ -21544,7 +21658,9 @@ feature {NONE} -- Implementation
 	vkcn2a_template_code: STRING = "vkcn2a"
 	vkcn2c_template_code: STRING = "vkcn2c"
 	vkex4ga_template_code: STRING = "vkex4ga"
+	vkex5ga_template_code: STRING = "vkex5ga"
 	vkin5ga_template_code: STRING = "vkin5ga"
+	vkin6ga_template_code: STRING = "vkin6ga"
 	vlel1a_template_code: STRING = "vlel1a"
 	vlel2a_template_code: STRING = "vlel2a"
 	vlel3a_template_code: STRING = "vlel3a"
