@@ -4120,6 +4120,16 @@ feature {NONE} -- Instruction validity
 					error_handler.report_vomb6ga_error (current_class, current_class_impl, l_expression, l_value_named_type)
 				end
 			end
+				-- Check that the inpect expression is controlled.
+			if current_system.scoop_mode then
+				if not l_value_context.is_type_non_separate and then not l_value_context.is_controlled then
+						-- Error: the inpect expression is not controlled.
+					had_error := True
+					set_fatal_error
+					l_value_named_type := l_value_context.named_type
+					error_handler.report_vomb8ga_error (current_class, current_class_impl, l_expression, l_value_named_type)
+				end
+			end
 			had_value_error := had_error
 			if attached an_instruction.when_parts as l_when_parts then
 				l_old_choice_count := choice_bounds_list.count
@@ -8159,6 +8169,16 @@ feature {NONE} -- Expression validity
 					set_fatal_error
 					l_value_named_type := l_value_context.named_type
 					error_handler.report_vomb6ga_error (current_class, current_class_impl, l_expression, l_value_named_type)
+				end
+			end
+				-- Check that the inpect expression is controlled.
+			if current_system.scoop_mode then
+				if not l_value_context.is_type_non_separate and then not l_value_context.is_controlled then
+						-- Error: the inpect expression is not controlled.
+					had_error := True
+					set_fatal_error
+					l_value_named_type := l_value_context.named_type
+					error_handler.report_vomb8ga_error (current_class, current_class_impl, l_expression, l_value_named_type)
 				end
 			end
 			had_value_error := had_error

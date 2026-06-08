@@ -267,6 +267,7 @@ create
 	make_vomb3b,
 	make_vomb6ga,
 	make_vomb7ga,
+	make_vomb8ga,
 	make_vpca1a,
 	make_vpca1b,
 	make_vpca2a,
@@ -12147,6 +12148,51 @@ feature {NONE} -- Initialization
 			-- dollar8: $8 = base type of inspect expression
 		end
 
+	make_vomb8ga (a_class, a_class_impl: ET_CLASS; a_expression: ET_EXPRESSION; a_type: ET_NAMED_TYPE)
+			-- Create a new VOMB-8G error: the inspect expression `a_expression'
+			-- in `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is of type `a_type' which is separate but
+			-- not controlled.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_expression_not_void: a_expression /= Void
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_expression.position
+			ast_node := a_expression
+			code := template_code (vomb8ga_template_code)
+			etl_code := vomb8g_etl_code
+			default_template := default_message_template (vomb8ga_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_type.to_text, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = base type of inspect expression
+		end
+
 	make_vpca1a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
 			-- Create a new VPCA-1 error: `a_name', appearing in an unqualified
 			-- call agent in `a_class', is not the final name of a feature
@@ -21265,6 +21311,7 @@ feature {NONE} -- Implementation
 	vomb3b_default_template: STRING = "inspect interval contains a value which appears twice in inspect choices."
 	vomb6ga_default_template: STRING = "type '$7' of inspect expression is not attached."
 	vomb7ga_default_template: STRING = "inspect constant of type '$7' different from type '$8' of inspect expression."
+	vomb8ga_default_template: STRING = "inspect expression (of type '$7') is separate but not controlled."
 	vpca1a_default_template: STRING = "`$7' is not the final name of a feature in class $5."
 	vpca1b_default_template: STRING = "`$7' is not the final name of a feature in class $8."
 	vpca2a_default_template: STRING = "feature `$8' of class $9 is not exported to class $5."
@@ -21556,8 +21603,9 @@ feature {NONE} -- Implementation
 	vomb1_etl_code: STRING = "VOMB-1"
 	vomb2_etl_code: STRING = "VOMB-2"
 	vomb3_etl_code: STRING = "VOMB-3"
-	vomb6G_etl_code: STRING = "VOMB-6G"
-	vomb7G_etl_code: STRING = "VOMB-7G"
+	vomb6g_etl_code: STRING = "VOMB-6G"
+	vomb7g_etl_code: STRING = "VOMB-7G"
+	vomb8g_etl_code: STRING = "VOMB-8G"
 	vpca1_etl_code: STRING = "VPCA-1"
 	vpca2_etl_code: STRING = "VPCA-2"
 	vpca3_etl_code: STRING = "VPCA-3"
@@ -21922,6 +21970,7 @@ feature {NONE} -- Implementation
 	vomb3b_template_code: STRING = "vomb3b"
 	vomb6ga_template_code: STRING = "vomb6ga"
 	vomb7ga_template_code: STRING = "vomb7ga"
+	vomb8ga_template_code: STRING = "vomb8ga"
 	vpca1a_template_code: STRING = "vpca1a"
 	vpca1b_template_code: STRING = "vpca1b"
 	vpca2a_template_code: STRING = "vpca2a"

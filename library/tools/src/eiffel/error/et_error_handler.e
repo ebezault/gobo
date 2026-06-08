@@ -6164,6 +6164,28 @@ feature -- Validity errors
 			end
 		end
 
+	report_vomb8ga_error (a_class, a_class_impl: ET_CLASS; a_expression: ET_EXPRESSION; a_type: ET_NAMED_TYPE)
+			-- Report VOMB-8G error: the inspect expression `a_expression'
+			-- in `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is of type `a_type' which is separate but
+			-- not controlled.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_expression_not_void: a_expression /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb8g_error (a_class) then
+				create l_error.make_vomb8ga (a_class, a_class_impl, a_expression, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
 	report_vpca1a_error (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
 			-- Report VPCA-1 error: `a_name', appearing in an unqualified
 			-- call agent in `a_class', is not the final name of a feature
@@ -11042,6 +11064,16 @@ feature -- Validity error status
 
 	reportable_vomb7g_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VOMB-7G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vomb8g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-8G error be reported when it
 			-- appears in `a_class'?
 		require
 			a_class_not_void: a_class /= Void

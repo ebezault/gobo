@@ -43,3 +43,12 @@ Same as above.
 
   Once classes are not described in the ECMA Eiffel standard, therefore
   this condition extension is not part of the standard.
+
+* Another condition is needed in the context of SCOOP, the Eiffel concurrency mechanism:
+
+  8. `G.` [\[tests\]](../vomb8g) If the inspect expression is a separate expression, it is controlled.
+  
+  ISE Eiffel (as of 25.12.9.8922 and after) fails to report this validity condition
+  and the execution hangs forever.
+
+  SCOOP is not described in the ECMA Eiffel standard, therefore this condition is not part of the standard.
