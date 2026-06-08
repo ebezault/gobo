@@ -13,12 +13,17 @@
 * Added validation tests for `VKIN-6G` (Creation Instruction rule).
 * Added validation tests for `VKEX-5G` (Creation Expression rule).
 * Added semantics tests for `MKIN` (Creation Instruction semantics).
+* Added semantics tests for `VOMB` (Multi-branch rule).
+* Added semantics tests for `VOIN` (Interval rule).
 
 ### Gobo Eiffel Tools Library
 
-* Check validity of convert clauses. Validity errors `VYCP` and `VYCQ`.
+* Added validity checks for convert clauses. Validity rules `VYCP`
+  and `VYCQ`.
 * Added support for [once classes](https://www.eiffel.org/blog/Alexander%20Kogtenkov/2020/12/once-classes)
   (not in the ECMA standard, but supported by ISE Eiffel).
+* Added validity checks for inspect instructions/expressions.
+  Validity rules `VOMB` and `VOIN`.
 
 ## Version 26.05.14 - 14 May 2026
 

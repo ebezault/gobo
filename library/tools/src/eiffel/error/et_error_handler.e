@@ -5835,6 +5835,26 @@ feature -- Validity errors
 			end
 		end
 
+	report_voin0a_error (a_class, a_class_impl: ET_CLASS; a_range: ET_CHOICE)
+			-- Report VOIN error: the inspect range `a_range' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is_empty.
+			--
+			-- ECMA 367-2: p.98
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_range_not_void: a_range /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_voin_error (a_class) then
+				create l_error.make_voin0a (a_class, a_class_impl, a_range)
+				report_validity_error (l_error)
+			end
+		end
+
 	report_voit1a_error (a_class, a_class_impl: ET_CLASS; an_expression: ET_EXPRESSION; a_type: ET_NAMED_TYPE)
 			-- Report VOIT-1 error: the type `a_type' of the iterable expression
 			-- `an_expression' appearing in `a_class_impl' and viewed from one of its
@@ -6054,6 +6074,93 @@ feature -- Validity errors
 			if reportable_vomb2_error (a_class) then
 				create an_error.make_vomb2b (a_class, a_class_impl, a_constant)
 				report_validity_error (an_error)
+			end
+		end
+
+	report_vomb3a_error (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT)
+			-- Report VOMB-3 error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) appears twice in inspect choices.
+			--
+			-- ECMA 367-2: p.98
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb3_error (a_class) then
+				create l_error.make_vomb3a (a_class, a_class_impl, a_constant)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vomb3b_error (a_class, a_class_impl: ET_CLASS; a_range: ET_CHOICE_RANGE)
+			-- Report VOMB-3 error: the inspect range `a_range' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) contains a value which appears twice in
+			-- inspect choices.
+			--
+			-- ECMA 367-2: p.98
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_range_not_void: a_range /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb3_error (a_class) then
+				create l_error.make_vomb3b (a_class, a_class_impl, a_range)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vomb6ga_error (a_class, a_class_impl: ET_CLASS; a_expression: ET_EXPRESSION; a_type: ET_NAMED_TYPE)
+			-- Report VOMB-6G error: the inspect expression `a_expression'
+			-- in `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is of type `a_type' which is not attached.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_expression_not_void: a_expression /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb6g_error (a_class) then
+				create l_error.make_vomb6ga (a_class, a_class_impl, a_expression, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vomb7ga_error (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT; a_constant_type, a_value_type: ET_NAMED_TYPE)
+			-- Report VOMB-7G error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is of type `a_constant_type' whise base class
+			-- is not the same as the base class (a once class) of the type
+			-- `a_value_type' of the inspect expression.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+			a_constant_type_not_void: a_constant_type /= Void
+			a_value_type_not_void: a_value_type /= Void
+			a_value_type_once_base_class: a_value_type.base_class (a_class).is_once
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb7g_error (a_class) then
+				create l_error.make_vomb7ga (a_class, a_class_impl, a_constant, a_constant_type, a_value_type)
+				report_validity_error (l_error)
 			end
 		end
 
@@ -10853,6 +10960,16 @@ feature -- Validity error status
 			Result := True
 		end
 
+	reportable_voin_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOIN error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
 	reportable_voit1_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VOIT-1 error be reported when it
 			-- appears in `a_class'?
@@ -10895,6 +11012,36 @@ feature -- Validity error status
 
 	reportable_vomb2_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VOMB-2 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vomb3_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-3 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vomb6g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-6G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vomb7g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-7G error be reported when it
 			-- appears in `a_class'?
 		require
 			a_class_not_void: a_class /= Void
