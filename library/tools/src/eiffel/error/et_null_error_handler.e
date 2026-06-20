@@ -127,6 +127,7 @@ inherit
 			reportable_vomb6g_error,
 			reportable_vomb7g_error,
 			reportable_vomb8g_error,
+			reportable_vomb9g_error,
 			reportable_vpca1_error,
 			reportable_vpca2_error,
 			reportable_vpca3_error,
@@ -1083,6 +1084,13 @@ feature -- Validity error status
 			Result := False
 		end
 
+	reportable_vomb9g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-9G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+		
 	reportable_vpca1_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VPCA-1 error be reported when it
 			-- appears in `a_class'?

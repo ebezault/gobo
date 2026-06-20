@@ -108,10 +108,10 @@ feature -- Status report
 				if is_upper_negative then
 					Result := lower_value < upper_value
 				else
-					Result := lower_value /= 0 and upper_value /= 0
+					Result := False
 				end
 			elseif is_upper_negative then
-				Result := lower_value /= 0 and upper_value /= 0
+				Result := lower_value /= 0 or upper_value /= 0
 			else
 				Result := upper_value < lower_value
 			end

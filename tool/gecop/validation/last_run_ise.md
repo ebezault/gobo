@@ -4,10 +4,10 @@ Running Test Cases
 
 Test Summary for validation
 
-    # Passed:     694 tests
-    # FAILED:     261 tests
+    # Passed:     730 tests
+    # FAILED:     271 tests
     # Aborted:    0 test
-    # Total:      955 tests
+    # Total:      1001 tests
 
 Test Results:</br>
 FAIL:  \[[definition/difo1/test\_bar\_2](definition/difo1/test\_bar\_2)\] test\_failed</br>
@@ -227,11 +227,21 @@ FAIL:  \[[validity/vkex5g/test\_once\_per\_process\_2](validity/vkex5g/test\_onc
 FAIL:  \[[validity/vkin6g/test\_once\_per\_process\_1](validity/vkin6g/test\_once\_per\_process\_1)\] test\_failed</br>
 FAIL:  \[[validity/vncc4/test1](validity/vncc4/test1)\] test\_failed</br>
 FAIL:  \[[validity/vncc4/test2](validity/vncc4/test2)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_character\_1](validity/voin/test\_character\_1)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_integer\_1](validity/voin/test\_integer\_1)\] test\_failed</br>
 FAIL:  \[[validity/voin/test\_once\_class\_1](validity/voin/test\_once\_class\_1)\] test\_failed</br>
 FAIL:  \[[validity/voin/test\_once\_class\_2](validity/voin/test\_once\_class\_2)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_unique\_1](validity/voin/test\_unique\_1)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_unique\_2](validity/voin/test\_unique\_2)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_unique\_3](validity/voin/test\_unique\_3)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_unique\_4](validity/voin/test\_unique\_4)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_unique\_5](validity/voin/test\_unique\_5)\] test\_failed</br>
+FAIL:  \[[validity/vomb1/test\_character\_1](validity/vomb1/test\_character\_1)\] test\_failed</br>
 FAIL:  \[[validity/vomb1/test\_once\_class\_1](validity/vomb1/test\_once\_class\_1)\] test\_failed</br>
 FAIL:  \[[validity/vomb1/test\_once\_class\_3](validity/vomb1/test\_once\_class\_3)\] test\_failed</br>
 FAIL:  \[[validity/vomb1/test\_once\_class\_5](validity/vomb1/test\_once\_class\_5)\] test\_failed</br>
+FAIL:  \[[validity/vomb5/test\_character\_2](validity/vomb5/test\_character\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb8g/test\_once\_class\_1](validity/vomb8g/test\_once\_class\_1)\] test\_failed</br>
 FAIL:  \[[validity/vsrp1/test\_export\_1](validity/vsrp1/test\_export\_1)\] test\_failed</br>
 FAIL:  \[[validity/vsrp1/test\_export\_2](validity/vsrp1/test\_export\_2)\] test\_failed</br>
 FAIL:  \[[validity/vsrp3/test\_precondition\_free\_3](validity/vsrp3/test\_precondition\_free\_3)\] test\_failed</br>

@@ -5838,7 +5838,7 @@ feature -- Validity errors
 	report_voin0a_error (a_class, a_class_impl: ET_CLASS; a_range: ET_CHOICE)
 			-- Report VOIN error: the inspect range `a_range' in
 			-- `a_class_impl' and viewed from one of its descendants `a_class'
-			-- (possibly itself) is_empty.
+			-- (possibly itself) is empty.
 			--
 			-- ECMA 367-2: p.98
 		require
@@ -5851,6 +5851,27 @@ feature -- Validity errors
 		do
 			if reportable_voin_error (a_class) then
 				create l_error.make_voin0a (a_class, a_class_impl, a_range)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_voin0b_error (a_class, a_class_impl: ET_CLASS; a_range: ET_CHOICE)
+			-- Report VOIN error: one of the bounds of the inspect
+			-- range `a_range' in `a_class_impl' and viewed from one of
+			-- its descendants `a_class' (possibly itself) is a Unique
+			-- attribute but not the other.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_range_not_void: a_range /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_voin_error (a_class) then
+				create l_error.make_voin0b (a_class, a_class_impl, a_range)
 				report_validity_error (l_error)
 			end
 		end
@@ -6182,6 +6203,70 @@ feature -- Validity errors
 		do
 			if reportable_vomb8g_error (a_class) then
 				create l_error.make_vomb8ga (a_class, a_class_impl, a_expression, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vomb9ga_error (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT)
+			-- Report VOMB-9G error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is a positive integer constant, but other inspect
+			-- constants are Unique attributes.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb9g_error (a_class) then
+				create l_error.make_vomb9ga (a_class, a_class_impl, a_constant)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vomb9gb_error (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT)
+			-- Report VOMB-9G error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is a Unique attribute, but other inspect constants
+			-- are positive integer constants.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb9g_error (a_class) then
+				create l_error.make_vomb9gb (a_class, a_class_impl, a_constant)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vomb9gc_error (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT)
+			-- Report VOMB-9G error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is a Unique attribute which is not declared
+			-- (or redeclared) in the same class as the other Unique attributes
+			-- appearing in the same inspect choices.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb9g_error (a_class) then
+				create l_error.make_vomb9gc (a_class, a_class_impl, a_constant)
 				report_validity_error (l_error)
 			end
 		end
@@ -11074,6 +11159,16 @@ feature -- Validity error status
 
 	reportable_vomb8g_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VOMB-8G error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vomb9g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-9G error be reported when it
 			-- appears in `a_class'?
 		require
 			a_class_not_void: a_class /= Void

@@ -9931,13 +9931,12 @@ feature {NONE} -- Instruction generation
 			l_upper_integer: detachable ET_INTEGER_CONSTANT
 			l_lower_character: detachable ET_CHARACTER_CONSTANT
 			l_upper_character: detachable ET_CHARACTER_CONSTANT
-			k, nb3: INTEGER
+			k, nb3: NATURAL_64
 			l_i_nat32, l_nb_nat32: NATURAL_32
 			l_value_type_set: ET_DYNAMIC_TYPE_SET
 			l_value_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_stop: BOOLEAN
 		do
--- TODO.
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
 			end
@@ -9977,7 +9976,6 @@ feature {NONE} -- Instruction generation
 						from j := 1 until j > nb2 loop
 							l_choice := l_choices.choice (j)
 							if l_choice.is_range then
--- TODO
 								l_lower := choice_constant (l_choice.lower)
 								l_upper := choice_constant (l_choice.upper)
 								if attached {ET_INTEGER_CONSTANT} l_lower as l_integer_constant then
@@ -10001,21 +9999,53 @@ feature {NONE} -- Instruction generation
 									l_upper_character := Void
 								end
 								if l_lower_integer /= Void and l_upper_integer /= Void then
-									from
--- TODO: check type of inspect value.
-										k := l_lower_integer.to_integer_32
-										nb3 := l_upper_integer.to_integer_32
-									until
-										k > nb3
-									loop
-										l_has_case := True
-										print_indentation
-										current_file.put_string (c_case)
-										current_file.put_character (' ')
-										print_integer_value (k.abs.to_natural_64, k < 0, l_value_type, True)
-										current_file.put_character (':')
-										current_file.put_new_line
-										k := k + 1
+									if l_lower_integer.is_negative and l_lower_integer.value /= 0 then
+										k := l_lower_integer.value
+										if l_upper_integer.is_negative and l_upper_integer.value /= 0 then
+											nb3 := l_upper_integer.value
+										else
+											nb3 := 1
+										end
+										from
+										until
+											k < nb3
+										loop
+											l_has_case := True
+											print_indentation
+											current_file.put_string (c_case)
+											current_file.put_character (' ')
+											print_integer_value (k, True, l_value_type, True)
+											current_file.put_character (':')
+											current_file.put_new_line
+											k := k - 1
+										end
+									end
+									if not l_upper_integer.is_negative then
+										nb3 := l_upper_integer.value
+										if not l_lower_integer.is_negative then
+											k := l_lower_integer.value
+										else
+											k := 0
+										end
+										from
+											l_stop := k > nb3
+										until
+											l_stop
+										loop
+											l_has_case := True
+											print_indentation
+											current_file.put_string (c_case)
+											current_file.put_character (' ')
+											print_integer_value (k, False, l_value_type, True)
+											current_file.put_character (':')
+											current_file.put_new_line
+												-- Avoid overflow:
+											if k = nb3 then
+												l_stop := True
+											else
+												k := k + 1
+											end
+										end
 									end
 								elseif l_lower_character /= Void and l_upper_character /= Void then
 									from
@@ -10042,6 +10072,7 @@ feature {NONE} -- Instruction generation
 										end
 										current_file.put_character (':')
 										current_file.put_new_line
+											-- Avoid overflow:
 										if l_i_nat32 = l_nb_nat32 then
 											l_stop := True
 										else
@@ -10049,8 +10080,8 @@ feature {NONE} -- Instruction generation
 										end
 									end
 								else
--- TODO
-error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_instruction - range")
+									set_fatal_error
+									error_handler.report_giaac_error (generator, "print_inspect_instruction", 1, "invalid range type.")
 								end
 							else
 								l_has_case := True
@@ -10090,8 +10121,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_instruction 
 							end
 							print_indentation
 							current_file.put_string (c_break)
-							current_file.put_character (';')
-							current_file.put_new_line
+							print_semicolon_newline
 							dedent
 						end
 					end
@@ -10107,8 +10137,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_instruction 
 				print_compound (l_else_compound)
 				print_indentation
 				current_file.put_string (c_break)
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				dedent
 			else
 				indent
@@ -10117,12 +10146,10 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_instruction 
 				current_file.put_character ('(')
 				current_file.put_string (c_ge_ex_when)
 				current_file.put_character (')')
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				print_indentation
 				current_file.put_string (c_break)
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				dedent
 			end
 			print_indentation
@@ -13956,13 +13983,12 @@ feature {NONE} -- Expression generation
 			l_upper_integer: detachable ET_INTEGER_CONSTANT
 			l_lower_character: detachable ET_CHARACTER_CONSTANT
 			l_upper_character: detachable ET_CHARACTER_CONSTANT
-			k, nb3: INTEGER
+			k, nb3: NATURAL_64
 			l_i_nat32, l_nb_nat32: NATURAL_32
 			l_value_type_set: ET_DYNAMIC_TYPE_SET
 			l_value_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_stop: BOOLEAN
 		do
--- TODO
 			assignment_target := Void
 				-- Declaration of temporary result.
 			l_dynamic_type_set := dynamic_type_set (a_expression)
@@ -14006,7 +14032,6 @@ feature {NONE} -- Expression generation
 						from j := 1 until j > nb2 loop
 							l_choice := l_choices.choice (j)
 							if l_choice.is_range then
--- TODO
 								l_lower := choice_constant (l_choice.lower)
 								l_upper := choice_constant (l_choice.upper)
 								if attached {ET_INTEGER_CONSTANT} l_lower as l_integer_constant then
@@ -14030,21 +14055,53 @@ feature {NONE} -- Expression generation
 									l_upper_character := Void
 								end
 								if l_lower_integer /= Void and l_upper_integer /= Void then
-									from
--- TODO: check type of inspect value.
-										k := l_lower_integer.to_integer_32
-										nb3 := l_upper_integer.to_integer_32
-									until
-										k > nb3
-									loop
-										l_has_case := True
-										print_indentation
-										current_file.put_string (c_case)
-										current_file.put_character (' ')
-										print_integer_value (k.abs.to_natural_64, k < 0, l_value_type, True)
-										current_file.put_character (':')
-										current_file.put_new_line
-										k := k + 1
+									if l_lower_integer.is_negative and l_lower_integer.value /= 0 then
+										k := l_lower_integer.value
+										if l_upper_integer.is_negative and l_upper_integer.value /= 0 then
+											nb3 := l_upper_integer.value
+										else
+											nb3 := 1
+										end
+										from
+										until
+											k < nb3
+										loop
+											l_has_case := True
+											print_indentation
+											current_file.put_string (c_case)
+											current_file.put_character (' ')
+											print_integer_value (k, True, l_value_type, True)
+											current_file.put_character (':')
+											current_file.put_new_line
+											k := k - 1
+										end
+									end
+									if not l_upper_integer.is_negative then
+										nb3 := l_upper_integer.value
+										if not l_lower_integer.is_negative then
+											k := l_lower_integer.value
+										else
+											k := 0
+										end
+										from
+											l_stop := k > nb3
+										until
+											l_stop
+										loop
+											l_has_case := True
+											print_indentation
+											current_file.put_string (c_case)
+											current_file.put_character (' ')
+											print_integer_value (k, False, l_value_type, True)
+											current_file.put_character (':')
+											current_file.put_new_line
+												-- Avoid overflow:
+											if k = nb3 then
+												l_stop := True
+											else
+												k := k + 1
+											end
+										end
 									end
 								elseif l_lower_character /= Void and l_upper_character /= Void then
 									from
@@ -14071,6 +14128,7 @@ feature {NONE} -- Expression generation
 										end
 										current_file.put_character (':')
 										current_file.put_new_line
+											-- Avoid overflow:
 										if l_i_nat32 = l_nb_nat32 then
 											l_stop := True
 										else
@@ -14078,8 +14136,8 @@ feature {NONE} -- Expression generation
 										end
 									end
 								else
--- TODO
-error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_expression - range")
+									set_fatal_error
+									error_handler.report_giaac_error (generator, "print_inspect_expression", 1, "invalid range type.")
 								end
 							else
 								l_has_case := True
@@ -14121,18 +14179,14 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_expression -
 							if call_operands.first /= l_temp then
 								print_indentation
 								print_temp_name (l_temp, current_file)
-								current_file.put_character (' ')
-								current_file.put_character ('=')
-								current_file.put_character (' ')
+								print_assign_to
 								print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, l_dynamic_type)
-								current_file.put_character (';')
-								current_file.put_new_line
+								print_semicolon_newline
 							end
 							call_operands.wipe_out
 							print_indentation
 							current_file.put_string (c_break)
-							current_file.put_character (';')
-							current_file.put_new_line
+							print_semicolon_newline
 							dedent
 						end
 					end
@@ -14152,18 +14206,14 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_expression -
 				if call_operands.first /= l_temp then
 					print_indentation
 					print_temp_name (l_temp, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, l_dynamic_type)
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 				end
 				call_operands.wipe_out
 				print_indentation
 				current_file.put_string (c_break)
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				dedent
 			else
 				indent
@@ -14172,12 +14222,10 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_expression -
 				current_file.put_character ('(')
 				current_file.put_string (c_ge_ex_when)
 				current_file.put_character (')')
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				print_indentation
 				current_file.put_string (c_break)
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				dedent
 			end
 			print_indentation

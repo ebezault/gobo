@@ -252,6 +252,7 @@ create
 	make_vmss2a,
 	make_vmss3a,
 	make_voin0a,
+	make_voin0b,
 	make_voit1a,
 	make_voit2a,
 	make_voit2b,
@@ -268,6 +269,9 @@ create
 	make_vomb6ga,
 	make_vomb7ga,
 	make_vomb8ga,
+	make_vomb9ga,
+	make_vomb9gb,
+	make_vomb9gc,
 	make_vpca1a,
 	make_vpca1b,
 	make_vpca2a,
@@ -11463,7 +11467,7 @@ feature {NONE} -- Initialization
 	make_voin0a (a_class, a_class_impl: ET_CLASS; a_range: ET_CHOICE)
 			-- Create a new VOIN error: the inspect range `a_range' in
 			-- `a_class_impl' and viewed from one of its descendants `a_class'
-			-- (possibly itself) is_empty.
+			-- (possibly itself) is empty.
 			--
 			-- ECMA 367-2: p.98
 		require
@@ -11479,6 +11483,48 @@ feature {NONE} -- Initialization
 			code := template_code (voin0a_template_code)
 			etl_code := voin_etl_code
 			default_template := default_message_template (voin0a_default_template)
+			create parameters.make_filled (empty_string, 1, 6)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+		end
+
+	make_voin0b (a_class, a_class_impl: ET_CLASS; a_range: ET_CHOICE)
+			-- Create a new VOIN error: one of the bounds of the inspect
+			-- range `a_range' in `a_class_impl' and viewed from one of
+			-- its descendants `a_class' (possibly itself) is a Unique
+			-- attribute but not the other.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_range_not_void: a_range /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_range.position
+			ast_node := a_range
+			code := template_code (voin0b_template_code)
+			etl_code := voin_etl_code
+			default_template := default_message_template (voin0b_default_template)
 			create parameters.make_filled (empty_string, 1, 6)
 			parameters.put (etl_code, 1)
 			parameters.put (filename, 2)
@@ -12191,6 +12237,133 @@ feature {NONE} -- Initialization
 			-- dollar5: $5 = class name
 			-- dollar6: $6 = implementation class name
 			-- dollar7: $7 = base type of inspect expression
+		end
+
+	make_vomb9ga (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT)
+			-- Create a new VOMB-9G error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is a positive integer constant, but other inspect
+			-- constants are Unique attributes.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_constant.position
+			ast_node := a_constant
+			code := template_code (vomb9ga_template_code)
+			etl_code := vomb9g_etl_code
+			default_template := default_message_template (vomb9ga_default_template)
+			create parameters.make_filled (empty_string, 1, 6)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+		end
+
+	make_vomb9gb (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT)
+			-- Create a new VOMB-9G error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is a Unique attribute, but other inspect constants
+			-- are positive integer constants.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_constant.position
+			ast_node := a_constant
+			code := template_code (vomb9gb_template_code)
+			etl_code := vomb9g_etl_code
+			default_template := default_message_template (vomb9gb_default_template)
+			create parameters.make_filled (empty_string, 1, 6)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+		end
+
+	make_vomb9gc (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT)
+			-- Create a new VOMB-9G error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is a Unique attribute which is not declared
+			-- (or redeclared) in the same class as the other Unique attributes
+			-- appearing in the same inspect choices.
+			--
+			-- Not in ECMA.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_constant.position
+			ast_node := a_constant
+			code := template_code (vomb9gc_template_code)
+			etl_code := vomb9g_etl_code
+			default_template := default_message_template (vomb9gc_default_template)
+			create parameters.make_filled (empty_string, 1, 6)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
 		end
 
 	make_vpca1a (a_class: ET_CLASS; a_name: ET_FEATURE_NAME)
@@ -21296,6 +21469,7 @@ feature {NONE} -- Implementation
 	vmss2a_default_template: STRING = "feature name `$7' appears twice in the Select subclause of parent $8."
 	vmss3a_default_template: STRING = "feature name `$7' appears in the Select subclause of parent $8 but is not replicated."
 	voin0a_default_template: STRING = "inspect interval is empty."
+	voin0b_default_template: STRING = "the bounds of inspect interval are not both Unique attributes."
 	voit1a_default_template: STRING = "the type '$7' of the iterable expression does not conform to any generic derivation of ITERABLE."
 	voit2a_default_template: STRING = "iteration item name '$6' is also the final name of a feature."
 	voit2b_default_template: STRING = "iteration item name '$6' is also the name of a formal argument of an enclosing feature or inline agent."
@@ -21312,6 +21486,9 @@ feature {NONE} -- Implementation
 	vomb6ga_default_template: STRING = "type '$7' of inspect expression is not attached."
 	vomb7ga_default_template: STRING = "inspect constant of type '$7' different from type '$8' of inspect expression."
 	vomb8ga_default_template: STRING = "inspect expression (of type '$7') is separate but not controlled."
+	vomb9ga_default_template: STRING = "inspect value is a positive integer constant but some other inspect values are Unique attributes."
+	vomb9gb_default_template: STRING = "inspect value is a Unique attribute but some other inspect values are positive integer constants."
+	vomb9gc_default_template: STRING = "all inspect values of the Unique attribute form are not declared or redeclared in the same class."
 	vpca1a_default_template: STRING = "`$7' is not the final name of a feature in class $5."
 	vpca1b_default_template: STRING = "`$7' is not the final name of a feature in class $8."
 	vpca2a_default_template: STRING = "feature `$8' of class $9 is not exported to class $5."
@@ -21606,6 +21783,7 @@ feature {NONE} -- Implementation
 	vomb6g_etl_code: STRING = "VOMB-6G"
 	vomb7g_etl_code: STRING = "VOMB-7G"
 	vomb8g_etl_code: STRING = "VOMB-8G"
+	vomb9g_etl_code: STRING = "VOMB-9G"
 	vpca1_etl_code: STRING = "VPCA-1"
 	vpca2_etl_code: STRING = "VPCA-2"
 	vpca3_etl_code: STRING = "VPCA-3"
@@ -21955,6 +22133,7 @@ feature {NONE} -- Implementation
 	vmss2a_template_code: STRING = "vmss2a"
 	vmss3a_template_code: STRING = "vmss3a"
 	voin0a_template_code: STRING = "voin0a"
+	voin0b_template_code: STRING = "voin0b"
 	voit1a_template_code: STRING = "voit1a"
 	voit2a_template_code: STRING = "voit2a"
 	voit2b_template_code: STRING = "voit2b"
@@ -21971,6 +22150,9 @@ feature {NONE} -- Implementation
 	vomb6ga_template_code: STRING = "vomb6ga"
 	vomb7ga_template_code: STRING = "vomb7ga"
 	vomb8ga_template_code: STRING = "vomb8ga"
+	vomb9ga_template_code: STRING = "vomb9ga"
+	vomb9gb_template_code: STRING = "vomb9gb"
+	vomb9gc_template_code: STRING = "vomb9gc"
 	vpca1a_template_code: STRING = "vpca1a"
 	vpca1b_template_code: STRING = "vpca1b"
 	vpca2a_template_code: STRING = "vpca2a"

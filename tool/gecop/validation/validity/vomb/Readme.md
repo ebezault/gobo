@@ -11,10 +11,10 @@ A *Multi_branch* instruction is valid if and only if its unfolded form satisfies
 
 1. [\[tests\]](../vomb1) Inspect values are all valid.
 2. [\[tests\]](../vomb2) Inspect values are all constants.
-3. The manifest values of any two inspect values are different.
+3. [\[tests\]](../vomb3) The manifest values of any two inspect values are different.
 4. If the inspect expression is of type `TYPE [T]` for some type `T`, all inspect values are types.
-5. If case `4` does not apply, the inspect expression is one of the sized variants of
-   `INTEGER`, `CHARACTER` or `STRING`.
+5. [\[tests\]](../vomb5) If case `4` does not apply, the inspect expression is one of the sized
+   variants of `INTEGER`, `CHARACTER` or `STRING`.
 
 ### ECMA 367-3 (working version 115), 8.22.13 page 214
 
@@ -52,3 +52,12 @@ Same as above.
   and the execution hangs forever.
 
   SCOOP is not described in the ECMA Eiffel standard, therefore this condition is not part of the standard.
+
+* Another condition is needed when using Unique attributes:
+
+  9. `G.` [\[tests\]](../vomb9g) If some of the inspect values are Unique attributes
+     then all inspect values are either Unique attributes are declared (or redeclared)
+     in the same class, or non-positive integer constants.
+  
+  Unique attributes were described in ETL2, but have not been kept
+  in the ECMA Eiffel standard.
