@@ -9919,7 +9919,7 @@ feature {NONE} -- Instruction generation
 			an_instruction_not_void: an_instruction /= Void
 		local
 			l_expression: ET_EXPRESSION
-			l_when_part: ET_WHEN_PART
+			l_when_part: ET_WHEN_COMPOUND
 			l_choices: ET_CHOICE_LIST
 			l_choice: ET_CHOICE
 			i, nb: INTEGER

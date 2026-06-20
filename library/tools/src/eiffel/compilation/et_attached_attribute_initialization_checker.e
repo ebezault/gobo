@@ -1262,7 +1262,7 @@ feature {ET_AST_NODE} -- Processing
 	process_inspect_instruction (a_instruction: ET_INSPECT_INSTRUCTION)
 			-- Process `a_instruction'.
 		local
-			l_when_part: ET_WHEN_PART
+			l_when_part: ET_WHEN_COMPOUND
 			i, nb: INTEGER
 			l_old_initialization_scope: like current_initialization_scope
 			l_inspect_initialization_scope: detachable like current_initialization_scope

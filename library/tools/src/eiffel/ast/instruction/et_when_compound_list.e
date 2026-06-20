@@ -2,19 +2,19 @@
 
 	description:
 
-		"Eiffel lists of inspect when parts"
+		"Eiffel lists of inspect when compounds"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2002-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2002-2026, Eric Bezault and others"
 	license: "MIT License"
 
-class ET_WHEN_PART_LIST
+class ET_WHEN_COMPOUND_LIST
 
 inherit
 
-	ET_AST_NODE
+	ET_WHEN_COMPONENT_LIST
 
-	ET_HEAD_LIST [ET_WHEN_PART]
+	ET_HEAD_LIST [ET_WHEN_COMPOUND]
 
 create
 
@@ -174,12 +174,12 @@ feature -- Processing
 	process (a_processor: ET_AST_PROCESSOR)
 			-- Process current node.
 		do
-			a_processor.process_when_part_list (Current)
+			a_processor.process_when_compound_list (Current)
 		end
 
 feature {NONE} -- Implementation
 
-	fixed_array: KL_SPECIAL_ROUTINES [ET_WHEN_PART]
+	fixed_array: KL_SPECIAL_ROUTINES [ET_WHEN_COMPOUND]
 			-- Fixed array routines
 		once
 			create Result

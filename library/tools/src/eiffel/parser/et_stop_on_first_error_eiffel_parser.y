@@ -245,8 +245,8 @@ create
 %type <detachable ET_VARIANT> Variant_clause Variant_clause_opt
 %type <detachable ET_WHEN_EXPRESSION> When_expression
 %type <detachable ET_WHEN_EXPRESSION_LIST> When_expression_list When_expression_list_opt
-%type <detachable ET_WHEN_PART> When_part
-%type <detachable ET_WHEN_PART_LIST> When_list When_list_opt
+%type <detachable ET_WHEN_COMPOUND> When_part
+%type <detachable ET_WHEN_COMPOUND_LIST> When_list When_list_opt
 %type <detachable ET_WRITABLE> Writable
 
 %expect 124
@@ -3333,7 +3333,7 @@ When_list_opt: -- Empty
 
 When_list: When_part
 		{
-			$$ := ast_factory.new_when_part_list (counter_value)
+			$$ := ast_factory.new_when_compound_list (counter_value)
 			if $$ /= Void and attached $1 as l_when_part then
 				$$.put_first (l_when_part)
 			end
@@ -3349,7 +3349,7 @@ When_list: When_part
 
 When_part: Choices Then_compound
 		{
-			$$ := ast_factory.new_when_part ($1, $2)
+			$$ := ast_factory.new_when_compound ($1, $2)
 			if $$ /= Void then
 				increment_counter
 			end

@@ -5,7 +5,7 @@
 		"Eiffel inspect expressions"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2020-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2020-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_INSPECT_EXPRESSION
@@ -23,6 +23,8 @@ inherit
 			add_old_expressions,
 			add_separate_arguments
 		end
+
+	ET_INSPECT_COMPONENT
 
 create
 
@@ -60,44 +62,11 @@ feature -- Initialization
 
 feature -- Access
 
-	conditional: ET_CONDITIONAL
-			-- Condition
-
-	expression: ET_EXPRESSION
-			-- Inspected expression
-		do
-			Result := conditional.expression
-		ensure
-			expression_not_void: Result /= Void
-		end
-
 	when_parts: detachable ET_WHEN_EXPRESSION_LIST
 			-- When parts
 
 	else_part: detachable ET_CONDITIONAL
 			-- Else part
-
-	end_keyword: ET_KEYWORD
-			-- 'end' keyword
-
-	position: ET_POSITION
-			-- Position of first character of
-			-- current node in source code
-		do
-			Result := conditional.position
-		end
-
-	first_leaf: ET_AST_LEAF
-			-- First leaf node in current node
-		do
-			Result := conditional.first_leaf
-		end
-
-	last_leaf: ET_AST_LEAF
-			-- Last leaf node in current node
-		do
-			Result := end_keyword
-		end
 
 feature -- Status report
 
@@ -159,16 +128,6 @@ feature -- Setting
 			else_part_set: else_part = a_else_part
 		end
 
-	set_end_keyword (an_end: like end_keyword)
-			-- Set `end_keyword' to `an_end'.
-		require
-			an_end_not_void: an_end /= Void
-		do
-			end_keyword := an_end
-		ensure
-			end_keyword_set: end_keyword = an_end
-		end
-
 feature -- Assertions
 
 	add_old_expressions (a_list: DS_ARRAYED_LIST [ET_OLD_EXPRESSION])
@@ -217,10 +176,5 @@ feature -- Processing
 		do
 			a_processor.process_inspect_expression (Current)
 		end
-
-invariant
-
-	conditional_not_void: conditional /= Void
-	end_keyword_not_void: end_keyword /= Void
 
 end

@@ -22080,7 +22080,7 @@ end
 	yy_do_action_660
 			--|#line 3325 "et_stop_on_first_error_eiffel_parser.y"
 		local
-			yyval138: detachable ET_WHEN_PART_LIST
+			yyval138: detachable ET_WHEN_COMPOUND_LIST
 		do
 --|#line 3325 "et_stop_on_first_error_eiffel_parser.y"
 debug ("GEYACC")
@@ -22105,7 +22105,7 @@ end
 	yy_do_action_661
 			--|#line 3327 "et_stop_on_first_error_eiffel_parser.y"
 		local
-			yyval138: detachable ET_WHEN_PART_LIST
+			yyval138: detachable ET_WHEN_COMPOUND_LIST
 		do
 --|#line 3327 "et_stop_on_first_error_eiffel_parser.y"
 debug ("GEYACC")
@@ -22125,14 +22125,14 @@ end
 	yy_do_action_662
 			--|#line 3334 "et_stop_on_first_error_eiffel_parser.y"
 		local
-			yyval138: detachable ET_WHEN_PART_LIST
+			yyval138: detachable ET_WHEN_COMPOUND_LIST
 		do
 --|#line 3334 "et_stop_on_first_error_eiffel_parser.y"
 debug ("GEYACC")
 	std.error.put_line ("Executing parser user-code from file 'et_stop_on_first_error_eiffel_parser.y' at line 3334")
 end
 
-			yyval138 := ast_factory.new_when_part_list (counter_value)
+			yyval138 := ast_factory.new_when_compound_list (counter_value)
 			if yyval138 /= Void and attached yyvs137.item (yyvsp137) as l_when_part then
 				yyval138.put_first (l_when_part)
 			end
@@ -22155,7 +22155,7 @@ end
 	yy_do_action_663
 			--|#line 3341 "et_stop_on_first_error_eiffel_parser.y"
 		local
-			yyval138: detachable ET_WHEN_PART_LIST
+			yyval138: detachable ET_WHEN_COMPOUND_LIST
 		do
 --|#line 3341 "et_stop_on_first_error_eiffel_parser.y"
 debug ("GEYACC")
@@ -22177,14 +22177,14 @@ end
 	yy_do_action_664
 			--|#line 3350 "et_stop_on_first_error_eiffel_parser.y"
 		local
-			yyval137: detachable ET_WHEN_PART
+			yyval137: detachable ET_WHEN_COMPOUND
 		do
 --|#line 3350 "et_stop_on_first_error_eiffel_parser.y"
 debug ("GEYACC")
 	std.error.put_line ("Executing parser user-code from file 'et_stop_on_first_error_eiffel_parser.y' at line 3350")
 end
 
-			yyval137 := ast_factory.new_when_part (yyvs44.item (yyvsp44), yyvs48.item (yyvsp48))
+			yyval137 := ast_factory.new_when_compound (yyvs44.item (yyvsp44), yyvs48.item (yyvsp48))
 			if yyval137 /= Void then
 				increment_counter
 			end
@@ -34870,8 +34870,8 @@ feature {NONE} -- Semantic value stacks
 	yyspecial_routines136: KL_SPECIAL_ROUTINES [detachable ET_WHEN_EXPRESSION_LIST]
 			-- Routines that ought to be in SPECIAL [detachable ET_WHEN_EXPRESSION_LIST]
 
-	yyvs137: SPECIAL [detachable ET_WHEN_PART]
-			-- Stack for semantic values of type detachable ET_WHEN_PART
+	yyvs137: SPECIAL [detachable ET_WHEN_COMPOUND]
+			-- Stack for semantic values of type detachable ET_WHEN_COMPOUND
 
 	yyvsc137: INTEGER
 			-- Capacity of semantic value stack `yyvs137'
@@ -34879,11 +34879,11 @@ feature {NONE} -- Semantic value stacks
 	yyvsp137: INTEGER
 			-- Top of semantic value stack `yyvs137'
 
-	yyspecial_routines137: KL_SPECIAL_ROUTINES [detachable ET_WHEN_PART]
-			-- Routines that ought to be in SPECIAL [detachable ET_WHEN_PART]
+	yyspecial_routines137: KL_SPECIAL_ROUTINES [detachable ET_WHEN_COMPOUND]
+			-- Routines that ought to be in SPECIAL [detachable ET_WHEN_COMPOUND]
 
-	yyvs138: SPECIAL [detachable ET_WHEN_PART_LIST]
-			-- Stack for semantic values of type detachable ET_WHEN_PART_LIST
+	yyvs138: SPECIAL [detachable ET_WHEN_COMPOUND_LIST]
+			-- Stack for semantic values of type detachable ET_WHEN_COMPOUND_LIST
 
 	yyvsc138: INTEGER
 			-- Capacity of semantic value stack `yyvs138'
@@ -34891,8 +34891,8 @@ feature {NONE} -- Semantic value stacks
 	yyvsp138: INTEGER
 			-- Top of semantic value stack `yyvs138'
 
-	yyspecial_routines138: KL_SPECIAL_ROUTINES [detachable ET_WHEN_PART_LIST]
-			-- Routines that ought to be in SPECIAL [detachable ET_WHEN_PART_LIST]
+	yyspecial_routines138: KL_SPECIAL_ROUTINES [detachable ET_WHEN_COMPOUND_LIST]
+			-- Routines that ought to be in SPECIAL [detachable ET_WHEN_COMPOUND_LIST]
 
 	yyvs139: SPECIAL [detachable ET_WRITABLE]
 			-- Stack for semantic values of type detachable ET_WRITABLE
