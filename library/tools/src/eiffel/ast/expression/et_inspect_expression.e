@@ -25,6 +25,9 @@ inherit
 		end
 
 	ET_INSPECT_COMPONENT
+		rename
+			else_part as else_expression
+		end
 
 create
 
@@ -67,6 +70,14 @@ feature -- Access
 
 	else_part: detachable ET_CONDITIONAL
 			-- Else part
+
+	else_expression: detachable ET_EXPRESSION
+			-- Else expression
+		do
+			if attached else_part as l_else_part then
+				Result := l_else_part.expression
+			end
+		end
 
 feature -- Status report
 

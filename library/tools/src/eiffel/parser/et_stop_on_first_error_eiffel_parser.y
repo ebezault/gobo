@@ -3418,6 +3418,10 @@ Choice_constant: Integer_constant
 		{ $$ := $1 }
 	| Character_constant
 		{ $$ := $1 }
+	| Manifest_string
+		{ $$ := $1 }
+	| '{' Type '}'
+		{ $$ := ast_factory.new_manifest_type ($1, $2, $3) }
 	| Identifier
 		{ $$ := new_choice_attribute_constant ($1) }
 	| Static_call_expression

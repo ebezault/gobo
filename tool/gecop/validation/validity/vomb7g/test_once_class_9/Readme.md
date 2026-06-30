@@ -4,7 +4,7 @@ This [test](.) is exercising the condition [7G](../Readme.md) of the validity ru
 
 ### Description
 
-In this test, the choice `1` and `2` in the multi-branch instruction are not of
+In this test, the choices `1` and `2` in the multi-branch instruction are not of
 the same type as the inspect expression. This violates `VOMB-7G`.
 
 ### Notes

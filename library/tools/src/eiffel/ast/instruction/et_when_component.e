@@ -27,6 +27,11 @@ feature -- Access
 	choices: ET_CHOICE_LIST
 			-- Choices
 
+	then_part: detachable ET_AST_NODE
+			-- Then part
+		deferred
+		end
+
 	position: ET_POSITION
 			-- Position of first character of
 			-- current node in source code

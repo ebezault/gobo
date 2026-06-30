@@ -13,6 +13,8 @@ class ET_WHEN_EXPRESSION
 inherit
 
 	ET_WHEN_COMPONENT
+		rename
+			then_part as then_expression
 		redefine
 			reset
 		end

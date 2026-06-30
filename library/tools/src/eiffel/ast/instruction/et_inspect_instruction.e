@@ -24,6 +24,9 @@ inherit
 		end
 
 	ET_INSPECT_COMPONENT
+		rename
+			else_part as else_compound
+		end
 
 create
 

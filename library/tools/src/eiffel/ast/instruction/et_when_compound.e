@@ -13,6 +13,8 @@ class ET_WHEN_COMPOUND
 inherit
 
 	ET_WHEN_COMPONENT
+		rename
+			then_part as then_compound
 		redefine
 			reset
 		end

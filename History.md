@@ -15,6 +15,7 @@
 * Added semantics tests for `MKIN` (Creation Instruction semantics).
 * Added semantics tests for `VOMB` (Multi-branch rule).
 * Added semantics tests for `VOIN` (Interval rule).
+* Added semantics tests for `MOMB` (Multi-Branch semantics).
 
 ### Gobo Eiffel Tools Library
 
@@ -24,6 +25,8 @@
   (not in the ECMA standard, but supported by ISE Eiffel).
 * Added validity checks for inspect instructions/expressions.
   Validity rules `VOMB` and `VOIN`.
+* Added support for inspect instructions/expressions on `STRING`
+  and `TYPE` expressions.
 
 ## Version 26.05.14 - 14 May 2026
 

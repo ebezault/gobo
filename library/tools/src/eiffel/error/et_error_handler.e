@@ -6139,6 +6139,54 @@ feature -- Validity errors
 			end
 		end
 
+	report_vomb4a_error (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT; a_constant_type, a_value_type: ET_NAMED_TYPE)
+			-- Report VOMB-4 error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is of type `a_constant_type' which is not a
+			-- 'TYPE' type.
+			--
+			-- ECMA-367-3-115, 8.22.13 page 214.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+			a_constant_type_not_void: a_constant_type /= Void
+			a_value_type_not_void: a_value_type /= Void
+			a_value_type_once_base_class: a_value_type.base_class (a_class).is_type_class
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb4_error (a_class) then
+				create l_error.make_vomb4a (a_class, a_class_impl, a_constant, a_constant_type, a_value_type)
+				report_validity_error (l_error)
+			end
+		end
+
+	report_vomb4b_error (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT; a_constant_type: ET_TYPE; a_value_type: ET_NAMED_TYPE)
+			-- Report VOMB-4 error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is of type 'TYPE [`a_constant_type']' which
+			-- where `a_constant_type' is not a standalone type.
+			--
+			-- ECMA-367-3-115, 8.22.13 page 214.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+			a_constant_type_not_void: a_constant_type /= Void
+			a_value_type_not_void: a_value_type /= Void
+			a_value_type_once_base_class: a_value_type.base_class (a_class).is_type_class
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vomb4_error (a_class) then
+				create l_error.make_vomb4b (a_class, a_class_impl, a_constant, a_constant_type, a_value_type)
+				report_validity_error (l_error)
+			end
+		end
+
 	report_vomb6ga_error (a_class, a_class_impl: ET_CLASS; a_expression: ET_EXPRESSION; a_type: ET_NAMED_TYPE)
 			-- Report VOMB-6G error: the inspect expression `a_expression'
 			-- in `a_class_impl' and viewed from one of its descendants `a_class'
@@ -6163,7 +6211,7 @@ feature -- Validity errors
 	report_vomb7ga_error (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT; a_constant_type, a_value_type: ET_NAMED_TYPE)
 			-- Report VOMB-7G error: the inspect constant `a_constant' in
 			-- `a_class_impl' and viewed from one of its descendants `a_class'
-			-- (possibly itself) is of type `a_constant_type' whise base class
+			-- (possibly itself) is of type `a_constant_type' whose base class
 			-- is not the same as the base class (a once class) of the type
 			-- `a_value_type' of the inspect expression.
 			--
@@ -11129,6 +11177,16 @@ feature -- Validity error status
 
 	reportable_vomb3_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VOMB-3 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end
+
+	reportable_vomb4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-4 error be reported when it
 			-- appears in `a_class'?
 		require
 			a_class_not_void: a_class /= Void

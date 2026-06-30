@@ -32,6 +32,11 @@ feature -- Access
 		deferred
 		end
 
+	else_part: detachable ET_AST_NODE
+			-- Else part
+		deferred
+		end
+
 	end_keyword: ET_KEYWORD
 			-- 'end' keyword
 

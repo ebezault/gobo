@@ -12,7 +12,8 @@ A *Multi_branch* instruction is valid if and only if its unfolded form satisfies
 1. [\[tests\]](../vomb1) Inspect values are all valid.
 2. [\[tests\]](../vomb2) Inspect values are all constants.
 3. [\[tests\]](../vomb3) The manifest values of any two inspect values are different.
-4. If the inspect expression is of type `TYPE [T]` for some type `T`, all inspect values are types.
+4. [\[tests\]](../vomb4) If the inspect expression is of type `TYPE [T]` for some type `T`,
+   all inspect values are types.
 5. [\[tests\]](../vomb5) If case `4` does not apply, the inspect expression is one of the sized
    variants of `INTEGER`, `CHARACTER` or `STRING`.
 
@@ -21,6 +22,16 @@ A *Multi_branch* instruction is valid if and only if its unfolded form satisfies
 Same as above.
 
 ### Notes
+
+* ISE Eiffel (as of 25.12.9.8922 and after) does not support inspect expressions
+  whose type if a sized variant of `STRING`.
+
+* ISE Eiffel (as of 25.12.9.8922 and after) does not support inspect expressions
+  of type `TYPE [T]` for some type `T`.
+
+* When the inspect expression is of type `TYPE [T]` for some type `T`,
+  the types of inspect values should be standalone types. This is
+  probably implied from condition `2`, but this is not clear.
 
 * There is a missing condition:
 
@@ -39,7 +50,7 @@ Same as above.
 * In the context of once classes, another condition is needed (between `4` and `5`):
 
   7. G. [\[tests\]](../vomb7g) If the base class of the inspect expression is a once class,
-     all inspect values as instances of a type with the same base class.
+     all inspect values are instances of a type with the same base class.
 
   Once classes are not described in the ECMA Eiffel standard, therefore
   this condition extension is not part of the standard.

@@ -4317,6 +4317,8 @@ feature {NONE} -- Parsing
 		local
 			l_sign_symbol: detachable ET_SYMBOL_OPERATOR
 			l_left_brace_symbol: detachable ET_SYMBOL
+			l_right_brace_symbol: detachable ET_SYMBOL
+			l_type: detachable ET_TYPE
 			l_target_type: detachable ET_TARGET_TYPE
 			l_dot_symbol: detachable ET_SYMBOL
 			l_identifier: detachable ET_IDENTIFIER
@@ -4354,22 +4356,26 @@ feature {NONE} -- Parsing
 				l_left_brace_symbol := last_detachable_et_symbol_value
 				read_token
 				parse_type
+				l_type := last_type
 				if last_token = Right_brace_code then
-					l_target_type := ast_factory.new_target_type (l_left_brace_symbol, last_type, last_detachable_et_symbol_value)
+					l_right_brace_symbol := last_detachable_et_symbol_value
 					read_token
 					if last_token = E_INTEGER then
+						l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
 						if attached last_detachable_et_integer_constant_value as l_integer_constant then
 							l_integer_constant.set_cast_type (l_target_type)
 							l_last_choice_constant := l_integer_constant
 						end
 						read_token
 					elseif last_token = E_CHARACTER then
+						l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
 						if attached last_detachable_et_character_constant_value as l_character_constant then
 							l_character_constant.set_cast_type (l_target_type)
 							l_last_choice_constant := l_character_constant
 						end
 						read_token
 					elseif last_token = Plus_code or last_token = Minus_code then
+						l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
 						l_sign_symbol := last_detachable_et_symbol_operator_value
 						read_token
 						if last_token = E_INTEGER then
@@ -4385,18 +4391,37 @@ feature {NONE} -- Parsing
 					elseif last_token = Dot_code then
 						l_dot_symbol := last_detachable_et_symbol_value
 						read_token
-						parse_feature_name_identifier
-						l_identifier := last_feature_name_identifier
-						parse_optional_actual_arguments
-						l_last_choice_constant := ast_factory.new_static_call_expression (Void, l_target_type, new_dot_feature_name (l_dot_symbol, l_identifier), last_actual_arguments)
+						if is_identifier_token (last_token) then
+							l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
+							parse_feature_name_identifier
+							l_identifier := last_feature_name_identifier
+							parse_optional_actual_arguments
+							l_last_choice_constant := ast_factory.new_static_call_expression (Void, l_target_type, new_dot_feature_name (l_dot_symbol, l_identifier), last_actual_arguments)
+						else
+							unread_token
+							set_last_symbol_token (Dot_code, l_dot_symbol)
+							l_last_choice_constant := ast_factory.new_manifest_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
+						end
+					elseif is_string_token (last_token) then
+						l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
+						if attached last_detachable_et_manifest_string_value as l_manifest_string then
+							l_manifest_string.set_cast_type (l_target_type)
+							l_last_choice_constant := l_manifest_string
+						end
+						read_token
 					else
-						report_syntax_error (last_position, last_value, integer_or_character_constant_expected)
+						l_last_choice_constant := ast_factory.new_manifest_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
 					end
 				else
 					report_syntax_error (last_position, last_value, right_brace_symbol_expected)
 				end
 			else
-				report_syntax_error (last_position, last_value, integer_or_character_constant_expected)
+				if is_string_token (last_token) then
+					l_last_choice_constant := last_detachable_et_manifest_string_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, integer_or_character_constant_expected)
+				end
 			end
 			last_choice_constant := l_last_choice_constant
 		end

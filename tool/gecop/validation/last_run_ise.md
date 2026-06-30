@@ -4,10 +4,10 @@ Running Test Cases
 
 Test Summary for validation
 
-    # Passed:     730 tests
-    # FAILED:     271 tests
+    # Passed:     731 tests
+    # FAILED:     319 tests
     # Aborted:    0 test
-    # Total:      1001 tests
+    # Total:      1050 tests
 
 Test Results:</br>
 FAIL:  \[[definition/difo1/test\_bar\_2](definition/difo1/test\_bar\_2)\] test\_failed</br>
@@ -58,6 +58,16 @@ FAIL:  \[[semantics/mkin/test\_once\_class\_twin\_1](semantics/mkin/test\_once\_
 FAIL:  \[[semantics/mkin/test\_once\_class\_twin\_2](semantics/mkin/test\_once\_class\_twin\_2)\] test\_failed</br>
 FAIL:  \[[semantics/mkin/test\_once\_class\_twin\_3](semantics/mkin/test\_once\_class\_twin\_3)\] test\_failed</br>
 FAIL:  \[[semantics/mkin/test\_once\_class\_twin\_4](semantics/mkin/test\_once\_class\_twin\_4)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_large\_integer\_interval\_1](semantics/momb/test\_large\_integer\_interval\_1)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_string\_32\_1](semantics/momb/test\_string\_32\_1)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_string\_32\_2](semantics/momb/test\_string\_32\_2)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_string\_32\_3](semantics/momb/test\_string\_32\_3)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_string\_8\_1](semantics/momb/test\_string\_8\_1)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_string\_8\_2](semantics/momb/test\_string\_8\_2)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_string\_8\_3](semantics/momb/test\_string\_8\_3)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_type\_1](semantics/momb/test\_type\_1)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_type\_2](semantics/momb/test\_type\_2)\] test\_failed</br>
+FAIL:  \[[semantics/momb/test\_type\_3](semantics/momb/test\_type\_3)\] test\_failed</br>
 FAIL:  \[[semantics/mugc2/test\_agent\_closed\_target\_1](semantics/mugc2/test\_agent\_closed\_target\_1)\] test\_failed</br>
 FAIL:  \[[semantics/mugc2/test\_agent\_closed\_target\_2](semantics/mugc2/test\_agent\_closed\_target\_2)\] test\_failed</br>
 FAIL:  \[[semantics/mugc2/test\_agent\_open\_target\_1](semantics/mugc2/test\_agent\_open\_target\_1)\] test\_failed</br>
@@ -231,6 +241,9 @@ FAIL:  \[[validity/voin/test\_character\_1](validity/voin/test\_character\_1)\] 
 FAIL:  \[[validity/voin/test\_integer\_1](validity/voin/test\_integer\_1)\] test\_failed</br>
 FAIL:  \[[validity/voin/test\_once\_class\_1](validity/voin/test\_once\_class\_1)\] test\_failed</br>
 FAIL:  \[[validity/voin/test\_once\_class\_2](validity/voin/test\_once\_class\_2)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_string\_1](validity/voin/test\_string\_1)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_string\_2](validity/voin/test\_string\_2)\] test\_failed</br>
+FAIL:  \[[validity/voin/test\_type\_1](validity/voin/test\_type\_1)\] test\_failed</br>
 FAIL:  \[[validity/voin/test\_unique\_1](validity/voin/test\_unique\_1)\] test\_failed</br>
 FAIL:  \[[validity/voin/test\_unique\_2](validity/voin/test\_unique\_2)\] test\_failed</br>
 FAIL:  \[[validity/voin/test\_unique\_3](validity/voin/test\_unique\_3)\] test\_failed</br>
@@ -240,8 +253,43 @@ FAIL:  \[[validity/vomb1/test\_character\_1](validity/vomb1/test\_character\_1)\
 FAIL:  \[[validity/vomb1/test\_once\_class\_1](validity/vomb1/test\_once\_class\_1)\] test\_failed</br>
 FAIL:  \[[validity/vomb1/test\_once\_class\_3](validity/vomb1/test\_once\_class\_3)\] test\_failed</br>
 FAIL:  \[[validity/vomb1/test\_once\_class\_5](validity/vomb1/test\_once\_class\_5)\] test\_failed</br>
+FAIL:  \[[validity/vomb1/test\_string\_1](validity/vomb1/test\_string\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb2/test\_string\_1](validity/vomb2/test\_string\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb2/test\_string\_2](validity/vomb2/test\_string\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb2/test\_type\_1](validity/vomb2/test\_type\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_32\_1](validity/vomb3/test\_string\_32\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_32\_2](validity/vomb3/test\_string\_32\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_32\_3](validity/vomb3/test\_string\_32\_3)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_32\_4](validity/vomb3/test\_string\_32\_4)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_32\_5](validity/vomb3/test\_string\_32\_5)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_8\_1](validity/vomb3/test\_string\_8\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_8\_2](validity/vomb3/test\_string\_8\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_8\_3](validity/vomb3/test\_string\_8\_3)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_string\_8\_4](validity/vomb3/test\_string\_8\_4)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_type\_1](validity/vomb3/test\_type\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_type\_2](validity/vomb3/test\_type\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_type\_3](validity/vomb3/test\_type\_3)\] test\_failed</br>
+FAIL:  \[[validity/vomb3/test\_type\_4](validity/vomb3/test\_type\_4)\] test\_failed</br>
+FAIL:  \[[validity/vomb4/test\_type\_1](validity/vomb4/test\_type\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb4/test\_type\_2](validity/vomb4/test\_type\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb4/test\_type\_3](validity/vomb4/test\_type\_3)\] test\_failed</br>
+FAIL:  \[[validity/vomb4/test\_type\_4](validity/vomb4/test\_type\_4)\] test\_failed</br>
 FAIL:  \[[validity/vomb5/test\_character\_2](validity/vomb5/test\_character\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb5/test\_string\_32\_1](validity/vomb5/test\_string\_32\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb5/test\_string\_32\_2](validity/vomb5/test\_string\_32\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb5/test\_string\_8\_1](validity/vomb5/test\_string\_8\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb5/test\_string\_8\_2](validity/vomb5/test\_string\_8\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb5/test\_string\_8\_3](validity/vomb5/test\_string\_8\_3)\] test\_failed</br>
+FAIL:  \[[validity/vomb6g/test\_string\_32\_1](validity/vomb6g/test\_string\_32\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb6g/test\_string\_8\_1](validity/vomb6g/test\_string\_8\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb6g/test\_type\_1](validity/vomb6g/test\_type\_1)\] test\_failed</br>
 FAIL:  \[[validity/vomb8g/test\_once\_class\_1](validity/vomb8g/test\_once\_class\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb8g/test\_string\_32\_1](validity/vomb8g/test\_string\_32\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb8g/test\_string\_32\_2](validity/vomb8g/test\_string\_32\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb8g/test\_string\_8\_1](validity/vomb8g/test\_string\_8\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb8g/test\_string\_8\_2](validity/vomb8g/test\_string\_8\_2)\] test\_failed</br>
+FAIL:  \[[validity/vomb8g/test\_type\_1](validity/vomb8g/test\_type\_1)\] test\_failed</br>
+FAIL:  \[[validity/vomb8g/test\_type\_2](validity/vomb8g/test\_type\_2)\] test\_failed</br>
 FAIL:  \[[validity/vsrp1/test\_export\_1](validity/vsrp1/test\_export\_1)\] test\_failed</br>
 FAIL:  \[[validity/vsrp1/test\_export\_2](validity/vsrp1/test\_export\_2)\] test\_failed</br>
 FAIL:  \[[validity/vsrp3/test\_precondition\_free\_3](validity/vsrp3/test\_precondition\_free\_3)\] test\_failed</br>

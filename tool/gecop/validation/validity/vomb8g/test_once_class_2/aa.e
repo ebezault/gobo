@@ -14,10 +14,10 @@ feature
 			separate b as sb do
 				inspect sb
 				when {BB}.f then
+					print ("Passed")
 				else
 				end
 			end
-			print ("Passed")
 		end
 	
 end

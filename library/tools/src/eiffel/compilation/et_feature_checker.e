@@ -196,8 +196,14 @@ feature {NONE} -- Initialization
 			create unused_adapted_base_classes.make (100)
 			create adapted_base_class_checker.make (a_system_processor)
 				-- Inspect choices.
+			create character_choice_constant.make ({CHARACTER_32} 'a')
+			create integer_choice_constant.make ("1", 1, False)
+			create unique_choice_constant.make (tokens.unknown_class)
+			create string_choice_constant.make ("", "", "", "", "", False)
 			create choice_bounds_list.make (500)
-			create unused_choice_bounds.make (500)
+			create unused_choice_integer_bounds.make (500)
+			create unused_choice_string_bounds.make (500)
+			create unused_choice_type_bounds.make (500)
 		end
 
 feature -- Status report
@@ -4158,6 +4164,9 @@ feature {NONE} -- Instruction validity
 			k, l_choice_count: INTEGER
 			l_choice_bounds: detachable ET_CHOICE_BOUNDS
 			l_other_choice_bounds: ET_CHOICE_BOUNDS
+			l_choice_integer_bounds: ET_CHOICE_INTEGER_BOUNDS
+			l_choice_string_bounds: ET_CHOICE_STRING_BOUNDS
+			l_choice_type_bounds: ET_CHOICE_TYPE_BOUNDS
 			j, nb2: INTEGER
 			l_unique_class: detachable ET_CLASS
 			l_is_valid: BOOLEAN
@@ -4191,7 +4200,17 @@ feature {NONE} -- Instruction validity
 				-- OK
 			elseif l_value_context.same_named_type (current_universe_impl.character_32_type, current_class_impl) then
 				-- OK
+			elseif l_value_context.same_named_type_with_type_marks (current_universe_impl.string_8_type, tokens.implicit_detachable_separate_type_mark, current_class_impl, tokens.implicit_detachable_separate_type_mark) then
+				-- OK
+			elseif l_value_context.same_named_type_with_type_marks (current_universe_impl.immutable_string_8_type, tokens.implicit_detachable_separate_type_mark, current_class_impl, tokens.implicit_detachable_separate_type_mark) then
+				-- OK
+			elseif l_value_context.same_named_type_with_type_marks (current_universe_impl.string_32_type, tokens.implicit_detachable_separate_type_mark, current_class_impl, tokens.implicit_detachable_separate_type_mark) then
+				-- OK
+			elseif l_value_context.same_named_type_with_type_marks (current_universe_impl.immutable_string_32_type, tokens.implicit_detachable_separate_type_mark, current_class_impl, tokens.implicit_detachable_separate_type_mark) then
+				-- OK
 			elseif l_value_context.base_class.is_once then
+				-- OK
+			elseif l_value_context.base_class.is_type_class then
 				-- OK
 			else
 				had_error := True
@@ -4245,9 +4264,15 @@ feature {NONE} -- Instruction validity
 						elseif l_value_context.base_class.is_once then
 							if l_value_context.base_class = l_choice_context.base_class then
 								if attached {ET_INTEGER_CONSTANT} l_constant as l_integer_constant then
-									l_choice_bounds := new_choice_bounds (l_choice)
-									l_choice_bounds.set_lower_integer_constant (l_integer_constant)
-									l_choice_bounds.set_upper_integer_constant (l_integer_constant)
+									l_choice_integer_bounds := new_choice_integer_bounds
+									l_choice_integer_bounds.set_lower_integer_constant (l_integer_constant)
+									l_choice_integer_bounds.set_upper_integer_constant (l_integer_constant)
+									l_choice_bounds := l_choice_integer_bounds
+								else
+										-- Internal error: once creation procedure index expected.
+									had_error := True
+									set_fatal_error
+									error_handler.report_giaac_error (generator, "check_inspect_component_validity", 1, "once creation procedure index expected.")
 								end
 							else
 								had_error := True
@@ -4256,15 +4281,33 @@ feature {NONE} -- Instruction validity
 								l_choice_named_type := l_choice_context.named_type
 								error_handler.report_vomb7ga_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 							end
+						elseif l_value_context.base_class.is_type_class then
+							if not attached {ET_MANIFEST_TYPE} l_constant as l_type_constant then
+								had_error := True
+								set_fatal_error
+								l_value_named_type := l_value_context.named_type
+								l_choice_named_type := l_choice_context.named_type
+								error_handler.report_vomb4a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
+							elseif not l_type_constant.type.is_base_type then
+								had_error := True
+								set_fatal_error
+								l_value_named_type := l_value_context.named_type
+								error_handler.report_vomb4b_error (current_class, current_class_impl, l_choice_constant, l_type_constant.type, l_value_named_type)
+							else
+								l_choice_type_bounds := new_choice_type_bounds
+								l_choice_type_bounds.set_lower_value (l_type_constant.type)
+								l_choice_type_bounds.set_upper_value (l_choice_type_bounds.lower_value)
+								l_choice_bounds := l_choice_type_bounds
+							end
 						else
 							l_is_valid := True
-							if not l_choice_context.same_named_type (l_value_type, l_value_context) then
+							if not l_choice_context.same_named_type_with_type_marks (l_value_type, tokens.implicit_detachable_separate_type_mark, l_value_context, tokens.implicit_detachable_separate_type_mark) then
 								l_choice_context.wipe_out
 								check_expression_validity (l_constant, l_choice_context, l_value_context)
 								if has_fatal_error then
 									l_is_valid := False
 									had_error := True
-								elseif not l_choice_context.same_named_type (l_value_type, l_value_context) then
+								elseif not l_choice_context.same_named_type_with_type_marks (l_value_type, tokens.implicit_detachable_separate_type_mark, l_value_context, tokens.implicit_detachable_separate_type_mark) then
 									l_is_valid := False
 									had_error := True
 									set_fatal_error
@@ -4276,9 +4319,10 @@ feature {NONE} -- Instruction validity
 							if not l_is_valid then
 								-- Done.
 							elseif attached {ET_INTEGER_CONSTANT} l_constant as l_integer_constant then
-								l_choice_bounds := new_choice_bounds (l_choice)
-								l_choice_bounds.set_lower_integer_constant (l_integer_constant)
-								l_choice_bounds.set_upper_integer_constant (l_integer_constant)
+								l_choice_integer_bounds := new_choice_integer_bounds
+								l_choice_integer_bounds.set_lower_integer_constant (l_integer_constant)
+								l_choice_integer_bounds.set_upper_integer_constant (l_integer_constant)
+								l_choice_bounds := l_choice_integer_bounds
 								if attached {ET_UNIQUE_CONSTANT} l_integer_constant as l_unique_constant then
 									l_lower_is_unique := True
 									if l_unique_class /= Void then
@@ -4313,9 +4357,20 @@ feature {NONE} -- Instruction validity
 									end
 								end
 							elseif attached {ET_CHARACTER_CONSTANT} l_constant as l_character_constant then
-								l_choice_bounds := new_choice_bounds (l_choice)
-								l_choice_bounds.set_lower_character_constant (l_character_constant)
-								l_choice_bounds.set_upper_character_constant (l_character_constant)
+								l_choice_integer_bounds := new_choice_integer_bounds
+								l_choice_integer_bounds.set_lower_character_constant (l_character_constant)
+								l_choice_integer_bounds.set_upper_character_constant (l_character_constant)
+								l_choice_bounds := l_choice_integer_bounds
+							elseif attached {ET_MANIFEST_STRING} l_constant as l_string_constant then
+								l_choice_string_bounds := new_choice_string_bounds
+								l_choice_string_bounds.set_lower_value (l_string_constant.value)
+								l_choice_string_bounds.set_upper_value (l_choice_string_bounds.lower_value)
+								l_choice_bounds := l_choice_string_bounds
+							else
+									-- Internal error: integer, character or string constant expected.
+								had_error := True
+								set_fatal_error
+								error_handler.report_giaac_error (generator, "check_inspect_component_validity", 2, "integer, character or string constant expected.")
 							end
 						end
 						l_choice_context.wipe_out
@@ -4344,8 +4399,15 @@ feature {NONE} -- Instruction validity
 								end
 							elseif l_value_context.base_class.is_once then
 								if l_value_context.base_class = l_choice_context.base_class then
-									if l_choice_bounds /= Void and attached {ET_INTEGER_CONSTANT} l_constant as l_integer_constant then
-										l_choice_bounds.set_upper_integer_constant (l_integer_constant)
+									if attached {ET_INTEGER_CONSTANT} l_constant as l_integer_constant then
+										if attached {ET_CHOICE_INTEGER_BOUNDS} l_choice_bounds as l_integer_bounds then
+											l_integer_bounds.set_upper_integer_constant (l_integer_constant)
+										end
+									else
+											-- Internal error: once creation procedure index expected.
+										had_error := True
+										set_fatal_error
+										error_handler.report_giaac_error (generator, "check_inspect_component_validity", 3, "once creation procedure index expected.")
 									end
 								else
 									if l_choice_bounds /= Void then
@@ -4358,9 +4420,24 @@ feature {NONE} -- Instruction validity
 									l_choice_named_type := l_choice_context.named_type
 									error_handler.report_vomb7ga_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
 								end
+							elseif l_value_context.base_class.is_type_class then
+								if not attached {ET_MANIFEST_TYPE} l_constant as l_type_constant then
+									had_error := True
+									set_fatal_error
+									l_value_named_type := l_value_context.named_type
+									l_choice_named_type := l_choice_context.named_type
+									error_handler.report_vomb4a_error (current_class, current_class_impl, l_choice_constant, l_choice_named_type, l_value_named_type)
+								elseif not l_type_constant.type.is_base_type then
+									had_error := True
+									set_fatal_error
+									l_value_named_type := l_value_context.named_type
+									error_handler.report_vomb4b_error (current_class, current_class_impl, l_choice_constant, l_type_constant.type, l_value_named_type)
+								elseif attached {ET_CHOICE_TYPE_BOUNDS} l_choice_type_bounds as l_type_bounds then
+									l_choice_type_bounds.set_upper_value (l_type_constant.type)
+								end
 							else
 								l_is_valid := True
-								if not l_choice_context.same_named_type (l_value_type, l_value_context) then
+								if not l_choice_context.same_named_type_with_type_marks (l_value_type, tokens.implicit_detachable_separate_type_mark, l_value_context, tokens.implicit_detachable_separate_type_mark) then
 									l_choice_context.wipe_out
 									check_expression_validity (l_constant, l_choice_context, l_value_context)
 									if has_fatal_error then
@@ -4370,7 +4447,7 @@ feature {NONE} -- Instruction validity
 										end
 										l_is_valid := False
 										had_error := True
-									elseif not l_choice_context.same_named_type (l_value_type, l_value_context) then
+									elseif not l_choice_context.same_named_type_with_type_marks (l_value_type, tokens.implicit_detachable_separate_type_mark, l_value_context, tokens.implicit_detachable_separate_type_mark) then
 										if l_choice_bounds /= Void then
 											free_choice_bounds (l_choice_bounds)
 											l_choice_bounds := Void
@@ -4386,8 +4463,8 @@ feature {NONE} -- Instruction validity
 								if not l_is_valid then
 									-- Done.
 								elseif attached {ET_INTEGER_CONSTANT} l_constant as l_integer_constant then
-									if l_choice_bounds /= Void then
-										l_choice_bounds.set_upper_integer_constant (l_integer_constant)
+									if attached {ET_CHOICE_INTEGER_BOUNDS} l_choice_bounds as l_integer_bounds then
+										l_integer_bounds.set_upper_integer_constant (l_integer_constant)
 									end
 									if attached {ET_UNIQUE_CONSTANT} l_integer_constant as l_unique_constant then
 										if not l_lower_is_unique then
@@ -4427,7 +4504,7 @@ feature {NONE} -- Instruction validity
 									elseif l_integer_constant.value /= 0 and not l_integer_constant.is_negative then
 										if l_unique_class = Void then
 											l_has_positive_value := True
-										elseif not (l_choice_bounds /= Void and then (l_choice_bounds.lower_value /= 0 and not l_choice_bounds.is_lower_negative)) then
+										elseif not (attached {ET_CHOICE_INTEGER_BOUNDS} l_choice_bounds as l_integer_bounds and then (l_integer_bounds.lower_value /= 0 and not l_integer_bounds.is_lower_negative)) then
 												-- Error: there are some Unique inspect constants and the upper bound
 												-- is positive, even though the lower bound is not.
 											if l_choice_bounds /= Void then
@@ -4440,41 +4517,47 @@ feature {NONE} -- Instruction validity
 										end
 									end
 								elseif attached {ET_CHARACTER_CONSTANT} l_constant as l_character_constant then
-									if l_choice_bounds /= Void then
-										l_choice_bounds.set_upper_character_constant (l_character_constant)
+									if attached {ET_CHOICE_INTEGER_BOUNDS} l_choice_bounds as l_integer_bounds then
+										l_integer_bounds.set_upper_character_constant (l_character_constant)
 									end
+								elseif attached {ET_MANIFEST_STRING} l_constant as l_string_constant then
+									if attached {ET_CHOICE_STRING_BOUNDS} l_choice_bounds as l_string_bounds then
+										l_string_bounds.set_upper_value (l_string_constant.value)
+									end
+								else
+										-- Internal error: integer, character or string constant expected.
+									had_error := True
+									set_fatal_error
+									error_handler.report_giaac_error (generator, "check_inspect_component_validity", 4, "integer, character or string constant expected.")
 								end
 							end
 							l_choice_context.wipe_out
-						end
-						if l_choice_bounds /= Void then
-							if l_choice_bounds.is_empty then
-								if l_choice_bounds /= Void then
-									free_choice_bounds (l_choice_bounds)
-									l_choice_bounds := Void
-								end
+							if l_choice_bounds /= Void and then l_choice_bounds.is_empty then
+								free_choice_bounds (l_choice_bounds)
+								l_choice_bounds := Void
 								had_error := True
 								set_fatal_error
 								error_handler.report_voin0a_error (current_class, current_class_impl, l_choice)
-							else
-								l_choice_count := choice_bounds_list.count
-								from k := l_old_choice_count + 1 until k > l_choice_count loop
-									l_other_choice_bounds := choice_bounds_list.item (k)
-									if l_choice_bounds.overlaps (l_other_choice_bounds) then
-										had_error := True
-										set_fatal_error
-										if attached {ET_CHOICE_RANGE} l_choice as l_choice_range then
-											error_handler.report_vomb3b_error (current_class, current_class_impl, l_choice_range)
-										else
-											error_handler.report_vomb3a_error (current_class, current_class_impl, l_choice.lower)
-										end
-											-- Jump out of the loop.
-										k := l_choice_count + 1
-									end
-									k := k + 1
-								end
-								choice_bounds_list.force_last (l_choice_bounds)
 							end
+						end
+						if l_choice_bounds /= Void then
+							l_choice_count := choice_bounds_list.count
+							from k := l_old_choice_count + 1 until k > l_choice_count loop
+								l_other_choice_bounds := choice_bounds_list.item (k)
+								if l_choice_bounds.overlaps (l_other_choice_bounds) then
+									had_error := True
+									set_fatal_error
+									if attached {ET_CHOICE_RANGE} l_choice as l_choice_range then
+										error_handler.report_vomb3b_error (current_class, current_class_impl, l_choice_range)
+									else
+										error_handler.report_vomb3a_error (current_class, current_class_impl, l_choice.lower)
+									end
+										-- Jump out of the loop.
+									k := l_choice_count + 1
+								end
+								k := k + 1
+							end
+							choice_bounds_list.force_last (l_choice_bounds)
 							l_choice_bounds := Void
 						end
 						j := j + 1
@@ -4488,87 +4571,6 @@ feature {NONE} -- Instruction validity
 			if had_error then
 				set_fatal_error
 			end
-		end
-
-	choice_constant (a_choice_constant: ET_CHOICE_CONSTANT): detachable ET_CONSTANT
-			-- Constant value of the inspect choice `a_choice_constant',
-			-- or Void if it appears not to be a constant after all
-			--
-			-- Note that validity `a_choice_constant' as an expression
-			-- is assumed to have already been checked.
-			-- Therefore, this routine will not change the value of `has_fatal_error'.
-			-- It will just return Void if something unexpected is encountered.
-		require
-			a_choice_constant_not_void: a_choice_constant /= Void
-		local
-			l_query: detachable ET_QUERY
-			l_static_type: ET_TYPE
-			l_static_class: ET_CLASS
-			l_static_context: ET_NESTED_TYPE_CONTEXT
-			l_old_has_fatal_error: BOOLEAN
-			l_seed: INTEGER
-		do
-			l_old_has_fatal_error := has_fatal_error
-			if attached {ET_CONSTANT} a_choice_constant as l_constant then
-				Result := l_constant
-			else
-				if attached {ET_IDENTIFIER} a_choice_constant as l_identifier then
-					if l_identifier.is_argument then
-							-- This is not a constant.
-					elseif l_identifier.is_local then
-							-- This is not a constant.
-					elseif l_identifier.is_object_test_local then
-							-- This is not a constant.
-					elseif l_identifier.is_iteration_item then
-							-- This is not a constant.
-					elseif l_identifier.is_inline_separate_argument then
-							-- This is not a constant.
-					else
-						l_seed := l_identifier.seed
-						l_query := current_class.seeded_query (l_seed)
-					end
-				elseif attached {ET_UNQUALIFIED_FEATURE_CALL} a_choice_constant as l_unqualified_call and then l_unqualified_call.arguments_count = 0 then
-					l_seed := l_unqualified_call.name.seed
-					l_query := current_class.seeded_query (l_seed)
-				elseif attached {ET_STATIC_CALL_EXPRESSION} a_choice_constant as l_static_call then
-					l_static_type := l_static_call.type
-					l_static_context := new_context (current_type)
-					l_static_context.force_last (l_static_type)
-					l_static_class := l_static_context.base_class
-					free_context (l_static_context)
-					if l_static_class.is_once then
-						if attached l_static_class.seeded_procedure (l_static_call.name.seed) as l_procedure then
-							integer_choice_constant.set_value (l_procedure.once_creation_index)
-							integer_choice_constant.set_sign (Void)
-							Result := integer_choice_constant
-						end
-					else
-						l_query := l_static_class.seeded_query (l_static_call.name.seed)
-					end
-				end
-				if l_query /= Void then
-					if attached {ET_CONSTANT_QUERY} l_query as l_constant_query then
-						Result := l_constant_query.constant
-					end
-				end
-			end
-			if attached {ET_UNIQUE_CONSTANT} Result as l_unique_constant then
-				unique_choice_constant.set_value (l_unique_constant.value)
-				unique_choice_constant.set_sign (l_unique_constant.sign)
-				unique_choice_constant.set_implementation_class (l_unique_constant.implementation_class)
-				unique_choice_constant.set_index (a_choice_constant.index)
-				Result := unique_choice_constant
-			elseif attached {ET_INTEGER_CONSTANT} Result as l_integer_constant then
-				integer_choice_constant.set_value (l_integer_constant.value)
-				integer_choice_constant.set_sign (l_integer_constant.sign)
-				integer_choice_constant.set_index (a_choice_constant.index)
-				Result := integer_choice_constant
-			elseif attached {ET_CHARACTER_CONSTANT} Result as l_character_constant then
-				character_choice_constant.set_value (l_character_constant.value)
-				character_choice_constant.set_index (a_choice_constant.index)
-				Result := character_choice_constant
-			end
-			has_fatal_error := l_old_has_fatal_error
 		end
 
 	check_iteration_instruction_validity (an_instruction: ET_ITERATION_INSTRUCTION)
@@ -9292,7 +9294,7 @@ feature {NONE} -- Expression validity
 					set_string_8_index (a_string)
 					l_type := current_universe_impl.string_8_type
 					report_string_8_constant (a_string, l_type)
-				else
+				elseif l_explicit_type /= Void then
 					set_fatal_error
 					error_handler.report_gvwmc2c_error (current_class, current_class_impl, a_string, current_universe_impl.string_8_type)
 				end
@@ -9301,7 +9303,7 @@ feature {NONE} -- Expression validity
 					set_immutable_string_8_index (a_string)
 					l_type := current_universe_impl.immutable_string_8_type
 					report_immutable_string_8_constant (a_string, l_type)
-				else
+				elseif l_explicit_type /= Void then
 					set_fatal_error
 					error_handler.report_gvwmc2c_error (current_class, current_class_impl, a_string, current_universe_impl.immutable_string_8_type)
 				end
@@ -9310,7 +9312,7 @@ feature {NONE} -- Expression validity
 					set_string_32_index (a_string)
 					l_type := current_universe_impl.string_32_type
 					report_string_32_constant (a_string, l_type)
-				else
+				elseif l_explicit_type /= Void then
 					set_fatal_error
 					error_handler.report_gvwmc2c_error (current_class, current_class_impl, a_string, current_universe_impl.string_32_type)
 				end
@@ -9319,7 +9321,7 @@ feature {NONE} -- Expression validity
 					set_immutable_string_32_index (a_string)
 					l_type := current_universe_impl.string_32_type
 					report_immutable_string_32_constant (a_string, l_type)
-				else
+				elseif l_explicit_type /= Void then
 					set_fatal_error
 					error_handler.report_gvwmc2c_error (current_class, current_class_impl, a_string, current_universe_impl.immutable_string_32_type)
 				end
@@ -17814,44 +17816,143 @@ feature -- Precursors
 
 feature {NONE} -- Choice constants
 
+	choice_constant (a_choice_constant: ET_CHOICE_CONSTANT): detachable ET_CONSTANT
+			-- Constant value of the inspect choice `a_choice_constant',
+			-- or Void if it appears not to be a constant after all
+			--
+			-- Note that validity `a_choice_constant' as an expression
+			-- is assumed to have already been checked.
+			-- Therefore, this routine will not change the value of `has_fatal_error'.
+			-- It will just return Void if something unexpected is encountered.
+		require
+			a_choice_constant_not_void: a_choice_constant /= Void
+		local
+			l_query: detachable ET_QUERY
+			l_static_type: ET_TYPE
+			l_static_class: ET_CLASS
+			l_static_context: ET_NESTED_TYPE_CONTEXT
+			l_old_has_fatal_error: BOOLEAN
+			l_seed: INTEGER
+		do
+			l_old_has_fatal_error := has_fatal_error
+			if attached {ET_CONSTANT} a_choice_constant as l_constant then
+				Result := l_constant
+			else
+				if attached {ET_IDENTIFIER} a_choice_constant as l_identifier then
+					if l_identifier.is_argument then
+							-- This is not a constant.
+					elseif l_identifier.is_local then
+							-- This is not a constant.
+					elseif l_identifier.is_object_test_local then
+							-- This is not a constant.
+					elseif l_identifier.is_iteration_item then
+							-- This is not a constant.
+					elseif l_identifier.is_inline_separate_argument then
+							-- This is not a constant.
+					else
+						l_seed := l_identifier.seed
+						l_query := current_class.seeded_query (l_seed)
+					end
+				elseif attached {ET_UNQUALIFIED_FEATURE_CALL} a_choice_constant as l_unqualified_call and then l_unqualified_call.arguments_count = 0 then
+					l_seed := l_unqualified_call.name.seed
+					l_query := current_class.seeded_query (l_seed)
+				elseif attached {ET_STATIC_CALL_EXPRESSION} a_choice_constant as l_static_call then
+					l_static_type := l_static_call.type
+					l_static_context := new_context (current_type)
+					l_static_context.force_last (l_static_type)
+					l_static_class := l_static_context.base_class
+					free_context (l_static_context)
+					if l_static_class.is_once then
+						if attached l_static_class.seeded_procedure (l_static_call.name.seed) as l_procedure then
+							integer_choice_constant.set_value (l_procedure.once_creation_index)
+							integer_choice_constant.set_sign (Void)
+							Result := integer_choice_constant
+						end
+					else
+						l_query := l_static_class.seeded_query (l_static_call.name.seed)
+					end
+				end
+				if l_query /= Void then
+					if attached {ET_CONSTANT_QUERY} l_query as l_constant_query then
+						Result := l_constant_query.constant
+					end
+				end
+			end
+			if attached {ET_UNIQUE_CONSTANT} Result as l_unique_constant then
+				unique_choice_constant.set_value (l_unique_constant.value)
+				unique_choice_constant.set_sign (l_unique_constant.sign)
+				unique_choice_constant.set_implementation_class (l_unique_constant.implementation_class)
+				unique_choice_constant.set_index (a_choice_constant.index)
+				Result := unique_choice_constant
+			elseif attached {ET_INTEGER_CONSTANT} Result as l_integer_constant then
+				integer_choice_constant.set_value (l_integer_constant.value)
+				integer_choice_constant.set_sign (l_integer_constant.sign)
+				integer_choice_constant.set_index (a_choice_constant.index)
+				Result := integer_choice_constant
+			elseif attached {ET_CHARACTER_CONSTANT} Result as l_character_constant then
+				character_choice_constant.set_value (l_character_constant.value)
+				character_choice_constant.set_index (a_choice_constant.index)
+				Result := character_choice_constant
+			elseif attached {ET_MANIFEST_STRING} Result as l_string_constant then
+				string_choice_constant.set_value (l_string_constant.value)
+				string_choice_constant.set_index (a_choice_constant.index)
+				Result := string_choice_constant
+			end
+			has_fatal_error := l_old_has_fatal_error
+		end
+
 	character_choice_constant: ET_C1_CHARACTER_CONSTANT
 			-- Character constant
-		once
-			create Result.make ({CHARACTER_32} 'a')
-		ensure
-			character_choice_constant_not_void: Result /= Void
-		end
 
 	integer_choice_constant: ET_REGULAR_INTEGER_CONSTANT
 			-- Integer constant
-		once
-			create Result.make ("1", 1, False)
-		ensure
-			integer_choice_constant_not_void: Result /= Void
-		end
 
 	unique_choice_constant: ET_UNIQUE_CONSTANT
 			-- Integer constant of unique attribute
-		once
-			create Result.make (tokens.unknown_class)
-		ensure
-			unique_choice_constant_not_void: Result /= Void
-		end
+
+	string_choice_constant: ET_VERBATIM_STRING
+			-- String constant
 
 	choice_bounds_list: DS_ARRAYED_LIST [ET_CHOICE_BOUNDS]
 			-- Choice bounds in inspect instructions/expressions
 
-	new_choice_bounds (a_choice: ET_CHOICE): ET_CHOICE_BOUNDS
-			-- New choice bounds
+	new_choice_integer_bounds: ET_CHOICE_INTEGER_BOUNDS
+			-- New choice integer bounds
 		do
-			if unused_choice_bounds.is_empty then
-				create Result.make (a_choice, 0, False, 0, False)
+			if unused_choice_integer_bounds.is_empty then
+				create Result.make (0, False, 0, False)
 			else
-				Result := unused_choice_bounds.last
-				unused_choice_bounds.remove_last
+				Result := unused_choice_integer_bounds.last
+				unused_choice_integer_bounds.remove_last
 			end
 		ensure
-			new_attachment_scope_not_void: Result /= Void
+			new_choice_integer_not_void: Result /= Void
+		end
+
+	new_choice_string_bounds: ET_CHOICE_STRING_BOUNDS
+			-- New choice string bounds
+		do
+			if unused_choice_string_bounds.is_empty then
+				create Result.make_with_lower_value (once "")
+			else
+				Result := unused_choice_string_bounds.last
+				unused_choice_string_bounds.remove_last
+			end
+		ensure
+			new_choice_string_not_void: Result /= Void
+		end
+
+	new_choice_type_bounds: ET_CHOICE_TYPE_BOUNDS
+			-- New choice type bounds
+		do
+			if unused_choice_type_bounds.is_empty then
+				create Result.make_with_lower_value (tokens.unknown_class, system_processor)
+			else
+				Result := unused_choice_type_bounds.last
+				unused_choice_type_bounds.remove_last
+			end
+		ensure
+			new_choice_string_not_void: Result /= Void
 		end
 
 	free_choice_bounds (a_choice_bounds: ET_CHOICE_BOUNDS)
@@ -17859,10 +17960,19 @@ feature {NONE} -- Choice constants
 		require
 			a_choice_bounds_not_void: a_choice_bounds /= Void
 		do
-			a_choice_bounds.set_choice (integer_choice_constant)
-			a_choice_bounds.set_lower_value (0, False)
-			a_choice_bounds.set_upper_value (0, False)
-			unused_choice_bounds.force_last (a_choice_bounds)
+			if attached {ET_CHOICE_INTEGER_BOUNDS} a_choice_bounds as l_integer_bounds then
+				l_integer_bounds.set_lower_value (0, False)
+				l_integer_bounds.set_upper_value (0, False)
+				unused_choice_integer_bounds.force_last (l_integer_bounds)
+			elseif attached {ET_CHOICE_STRING_BOUNDS} a_choice_bounds as l_string_bounds then
+				l_string_bounds.set_lower_value (once "")
+				l_string_bounds.set_upper_value (once "")
+				unused_choice_string_bounds.force_last (l_string_bounds)
+			elseif attached {ET_CHOICE_TYPE_BOUNDS} a_choice_bounds as l_type_bounds then
+				l_type_bounds.set_lower_value (tokens.unknown_class)
+				l_type_bounds.set_upper_value (tokens.unknown_class)
+				unused_choice_type_bounds.force_last (l_type_bounds)
+			end
 		end
 
 	free_all_choice_bounds (a_choice_bounds_list: DS_ARRAYED_LIST [ET_CHOICE_BOUNDS]; a_keep_count: INTEGER)
@@ -17883,8 +17993,14 @@ feature {NONE} -- Choice constants
 			a_choice_bounds_list.keep_first (a_keep_count)
 		end
 
-	unused_choice_bounds: DS_ARRAYED_LIST [ET_CHOICE_BOUNDS]
-			-- Choice bounds that are not currently used
+	unused_choice_integer_bounds: DS_ARRAYED_LIST [ET_CHOICE_INTEGER_BOUNDS]
+			-- Choice integer bounds that are not currently used
+
+	unused_choice_string_bounds: DS_ARRAYED_LIST [ET_CHOICE_STRING_BOUNDS]
+			-- Choice string bounds that are not currently used
+
+	unused_choice_type_bounds: DS_ARRAYED_LIST [ET_CHOICE_TYPE_BOUNDS]
+			-- Choice type bounds that are not currently used
 
 feature {NONE} -- Note clauses
 
@@ -19210,9 +19326,17 @@ invariant
 	unused_call_infos_not_void: unused_call_infos /= Void
 	no_void_unused_call_info: not unused_call_infos.has_void
 		-- Inspect choices.
+	character_choice_constant_not_void: character_choice_constant /= Void
+	integer_choice_constant_not_void: integer_choice_constant /= Void
+	unique_choice_constant_not_void: unique_choice_constant /= Void
+	string_choice_constant_not_void: string_choice_constant /= Void
 	choice_bounds_list_not_void: choice_bounds_list /= Void
 	no_void_choice_bounds: not choice_bounds_list.has_void
-	unused_choice_bounds_not_void: unused_choice_bounds /= Void
-	no_void_unused_choice_bounds: not unused_choice_bounds.has_void
+	unused_choice_integer_bounds_not_void: unused_choice_integer_bounds /= Void
+	no_void_unused_choice_integer_bounds: not unused_choice_integer_bounds.has_void
+	unused_choice_string_bounds_not_void: unused_choice_string_bounds /= Void
+	no_void_unused_choice_string_bounds: not unused_choice_string_bounds.has_void
+	unused_choice_type_bounds_not_void: unused_choice_type_bounds /= Void
+	no_void_unused_choice_type_bounds: not unused_choice_type_bounds.has_void
 
 end

@@ -266,6 +266,8 @@ create
 	make_vomb2b,
 	make_vomb3a,
 	make_vomb3b,
+	make_vomb4a,
+	make_vomb4b,
 	make_vomb6ga,
 	make_vomb7ga,
 	make_vomb8ga,
@@ -12100,6 +12102,104 @@ feature {NONE} -- Initialization
 			-- dollar6: $6 = implementation class name
 		end
 
+	make_vomb4a (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT; a_constant_type, a_value_type: ET_NAMED_TYPE)
+			-- Create a new VOMB-4 error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is of type `a_constant_type' which is not a
+			-- 'TYPE' type.
+			--
+			-- ECMA-367-3-115, 8.22.13 page 214.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+			a_constant_type_not_void: a_constant_type /= Void
+			a_value_type_not_void: a_value_type /= Void
+			a_value_type_once_base_class: a_value_type.base_class (a_class).is_type_class
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_constant.position
+			ast_node := a_constant
+			code := template_code (vomb4a_template_code)
+			etl_code := vomb4_etl_code
+			default_template := default_message_template (vomb4a_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_constant_type.to_text, 7)
+			parameters.put (a_value_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = base type of choice constant
+			-- dollar8: $8 = base type of inspect expression
+		end
+
+	make_vomb4b (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT; a_constant_type: ET_TYPE; a_value_type: ET_NAMED_TYPE)
+			-- Create a new VOMB-4 error: the inspect constant `a_constant' in
+			-- `a_class_impl' and viewed from one of its descendants `a_class'
+			-- (possibly itself) is of type 'TYPE [`a_constant_type']' which
+			-- where `a_constant_type' is not a standalone type.
+			--
+			-- ECMA-367-3-115, 8.22.13 page 214.
+		require
+			a_class_not_void: a_class /= Void
+			a_class_impl_not_void: a_class_impl /= Void
+			a_class_impl_preparsed: a_class_impl.is_preparsed
+			a_constant_not_void: a_constant /= Void
+			a_constant_type_not_void: a_constant_type /= Void
+			a_value_type_not_void: a_value_type /= Void
+			a_value_type_once_base_class: a_value_type.base_class (a_class).is_type_class
+		do
+			current_class := a_class
+			class_impl := a_class_impl
+			position := a_constant.position
+			ast_node := a_constant
+			code := template_code (vomb4b_template_code)
+			etl_code := vomb4_etl_code
+			default_template := default_message_template (vomb4b_default_template)
+			create parameters.make_filled (empty_string, 1, 8)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_constant_type.to_text, 7)
+			parameters.put (a_value_type.to_text, 8)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class_impl
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = manifest type
+			-- dollar8: $8 = base type of inspect expression
+		end
+
 	make_vomb6ga (a_class, a_class_impl: ET_CLASS; a_expression: ET_EXPRESSION; a_type: ET_NAMED_TYPE)
 			-- Create a new VOMB-6G error: the inspect expression `a_expression'
 			-- in `a_class_impl' and viewed from one of its descendants `a_class'
@@ -12147,7 +12247,7 @@ feature {NONE} -- Initialization
 	make_vomb7ga (a_class, a_class_impl: ET_CLASS; a_constant: ET_CHOICE_CONSTANT; a_constant_type, a_value_type: ET_NAMED_TYPE)
 			-- Create a new VOMB-7G error: the inspect constant `a_constant' in
 			-- `a_class_impl' and viewed from one of its descendants `a_class'
-			-- (possibly itself) is of type `a_constant_type' whise base class
+			-- (possibly itself) is of type `a_constant_type' whose base class
 			-- is not the same as the base class (a once class) of the type
 			-- `a_value_type' of the inspect expression.
 			--
@@ -21483,6 +21583,8 @@ feature {NONE} -- Implementation
 	vomb2b_default_template: STRING = "inspect choice `$7' is not a constant attribute."
 	vomb3a_default_template: STRING = "inspect value appears twice in inspect choices."
 	vomb3b_default_template: STRING = "inspect interval contains a value which appears twice in inspect choices."
+	vomb4a_default_template: STRING = "type '$7' of inspect constant is not a generic derivation of 'TYPE'."
+	vomb4b_default_template: STRING = "inspect constant '{$7}' is not a standalone type."
 	vomb6ga_default_template: STRING = "type '$7' of inspect expression is not attached."
 	vomb7ga_default_template: STRING = "inspect constant of type '$7' different from type '$8' of inspect expression."
 	vomb8ga_default_template: STRING = "inspect expression (of type '$7') is separate but not controlled."
@@ -21780,6 +21882,7 @@ feature {NONE} -- Implementation
 	vomb1_etl_code: STRING = "VOMB-1"
 	vomb2_etl_code: STRING = "VOMB-2"
 	vomb3_etl_code: STRING = "VOMB-3"
+	vomb4_etl_code: STRING = "VOMB-4"
 	vomb6g_etl_code: STRING = "VOMB-6G"
 	vomb7g_etl_code: STRING = "VOMB-7G"
 	vomb8g_etl_code: STRING = "VOMB-8G"
@@ -22147,6 +22250,8 @@ feature {NONE} -- Implementation
 	vomb2b_template_code: STRING = "vomb2b"
 	vomb3a_template_code: STRING = "vomb3a"
 	vomb3b_template_code: STRING = "vomb3b"
+	vomb4a_template_code: STRING = "vomb4a"
+	vomb4b_template_code: STRING = "vomb4b"
 	vomb6ga_template_code: STRING = "vomb6ga"
 	vomb7ga_template_code: STRING = "vomb7ga"
 	vomb8ga_template_code: STRING = "vomb8ga"

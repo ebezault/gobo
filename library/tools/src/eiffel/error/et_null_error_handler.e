@@ -124,6 +124,7 @@ inherit
 			reportable_vomb1_error,
 			reportable_vomb2_error,
 			reportable_vomb3_error,
+			reportable_vomb4_error,
 			reportable_vomb6g_error,
 			reportable_vomb7g_error,
 			reportable_vomb8g_error,
@@ -1058,6 +1059,13 @@ feature -- Validity error status
 
 	reportable_vomb3_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VOMB-3 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vomb4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-4 error be reported when it
 			-- appears in `a_class'?
 		do
 			Result := False
