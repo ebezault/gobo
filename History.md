@@ -1,6 +1,6 @@
 # Release History
 
-## Version xx.xx.xx - xxxxxx
+## Version 26.06.30 - 30 June 2026
 
 ### gecop
 
