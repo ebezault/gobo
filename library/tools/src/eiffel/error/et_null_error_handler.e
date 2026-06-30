@@ -117,11 +117,18 @@ inherit
 			reportable_vmss1_error,
 			reportable_vmss2_error,
 			reportable_vmss3_error,
+			reportable_voin_error,
 			reportable_voit1_error,
 			reportable_voit2_error,
 			reportable_voit3_error,
 			reportable_vomb1_error,
 			reportable_vomb2_error,
+			reportable_vomb3_error,
+			reportable_vomb4_error,
+			reportable_vomb6g_error,
+			reportable_vomb7g_error,
+			reportable_vomb8g_error,
+			reportable_vomb9g_error,
 			reportable_vpca1_error,
 			reportable_vpca2_error,
 			reportable_vpca3_error,
@@ -1008,6 +1015,13 @@ feature -- Validity error status
 			Result := False
 		end
 
+	reportable_voin_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOIN error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
 	reportable_voit1_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VOIT-1 error be reported when it
 			-- appears in `a_class'?
@@ -1043,6 +1057,48 @@ feature -- Validity error status
 			Result := False
 		end
 
+	reportable_vomb3_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-3 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vomb4_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-4 error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vomb6g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-6G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vomb7g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-7G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vomb8g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-8G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vomb9g_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VOMB-9G error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+		
 	reportable_vpca1_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VPCA-1 error be reported when it
 			-- appears in `a_class'?

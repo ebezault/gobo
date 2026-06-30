@@ -82,7 +82,7 @@ feature {NONE} -- Initialization
 			create last_manifest_string_items.make (Initial_last_manifest_string_items_capacity)
 			create last_instruction_items.make (Initial_last_instruction_items_capacity)
 			create last_elseif_part_items.make (Initial_last_elseif_part_items_capacity)
-			create last_when_part_items.make (Initial_last_when_part_items_capacity)
+			create last_when_compound_items.make (Initial_last_when_compound_items_capacity)
 			create last_inline_separate_argument_items.make (Initial_last_inline_separate_argument_items_capacity)
 			create last_tokens.make (Initial_last_tokens_capacity)
 			create last_detachable_any_values.make (Initial_last_tokens_capacity)
@@ -147,7 +147,7 @@ feature {NONE} -- Initialization
 			last_manifest_string_items.wipe_out
 			last_instruction_items.wipe_out
 			last_elseif_part_items.wipe_out
-			last_when_part_items.wipe_out
+			last_when_compound_items.wipe_out
 			last_inline_separate_argument_items.wipe_out
 			last_notes := Void
 			last_type := Void
@@ -4317,6 +4317,8 @@ feature {NONE} -- Parsing
 		local
 			l_sign_symbol: detachable ET_SYMBOL_OPERATOR
 			l_left_brace_symbol: detachable ET_SYMBOL
+			l_right_brace_symbol: detachable ET_SYMBOL
+			l_type: detachable ET_TYPE
 			l_target_type: detachable ET_TARGET_TYPE
 			l_dot_symbol: detachable ET_SYMBOL
 			l_identifier: detachable ET_IDENTIFIER
@@ -4354,22 +4356,26 @@ feature {NONE} -- Parsing
 				l_left_brace_symbol := last_detachable_et_symbol_value
 				read_token
 				parse_type
+				l_type := last_type
 				if last_token = Right_brace_code then
-					l_target_type := ast_factory.new_target_type (l_left_brace_symbol, last_type, last_detachable_et_symbol_value)
+					l_right_brace_symbol := last_detachable_et_symbol_value
 					read_token
 					if last_token = E_INTEGER then
+						l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
 						if attached last_detachable_et_integer_constant_value as l_integer_constant then
 							l_integer_constant.set_cast_type (l_target_type)
 							l_last_choice_constant := l_integer_constant
 						end
 						read_token
 					elseif last_token = E_CHARACTER then
+						l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
 						if attached last_detachable_et_character_constant_value as l_character_constant then
 							l_character_constant.set_cast_type (l_target_type)
 							l_last_choice_constant := l_character_constant
 						end
 						read_token
 					elseif last_token = Plus_code or last_token = Minus_code then
+						l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
 						l_sign_symbol := last_detachable_et_symbol_operator_value
 						read_token
 						if last_token = E_INTEGER then
@@ -4385,18 +4391,37 @@ feature {NONE} -- Parsing
 					elseif last_token = Dot_code then
 						l_dot_symbol := last_detachable_et_symbol_value
 						read_token
-						parse_feature_name_identifier
-						l_identifier := last_feature_name_identifier
-						parse_optional_actual_arguments
-						l_last_choice_constant := ast_factory.new_static_call_expression (Void, l_target_type, new_dot_feature_name (l_dot_symbol, l_identifier), last_actual_arguments)
+						if is_identifier_token (last_token) then
+							l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
+							parse_feature_name_identifier
+							l_identifier := last_feature_name_identifier
+							parse_optional_actual_arguments
+							l_last_choice_constant := ast_factory.new_static_call_expression (Void, l_target_type, new_dot_feature_name (l_dot_symbol, l_identifier), last_actual_arguments)
+						else
+							unread_token
+							set_last_symbol_token (Dot_code, l_dot_symbol)
+							l_last_choice_constant := ast_factory.new_manifest_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
+						end
+					elseif is_string_token (last_token) then
+						l_target_type := ast_factory.new_target_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
+						if attached last_detachable_et_manifest_string_value as l_manifest_string then
+							l_manifest_string.set_cast_type (l_target_type)
+							l_last_choice_constant := l_manifest_string
+						end
+						read_token
 					else
-						report_syntax_error (last_position, last_value, integer_or_character_constant_expected)
+						l_last_choice_constant := ast_factory.new_manifest_type (l_left_brace_symbol, l_type, l_right_brace_symbol)
 					end
 				else
 					report_syntax_error (last_position, last_value, right_brace_symbol_expected)
 				end
 			else
-				report_syntax_error (last_position, last_value, integer_or_character_constant_expected)
+				if is_string_token (last_token) then
+					l_last_choice_constant := last_detachable_et_manifest_string_value
+					read_token
+				else
+					report_syntax_error (last_position, last_value, integer_or_character_constant_expected)
+				end
 			end
 			last_choice_constant := l_last_choice_constant
 		end
@@ -6631,9 +6656,9 @@ feature {NONE} -- Parsing
 			l_conditional_expression: detachable ET_EXPRESSION
 			l_then_compound: detachable ET_COMPOUND
 			l_else_compound: detachable ET_COMPOUND
-			l_when_part_list: detachable ET_WHEN_PART_LIST
+			l_when_compound_list: detachable ET_WHEN_COMPOUND_LIST
 			l_end_keyword: detachable ET_KEYWORD
-			l_old_last_when_part_items_count: INTEGER
+			l_old_last_when_compound_items_count: INTEGER
 			l_choices: detachable ET_CHOICE_LIST
 			nb: INTEGER
 			l_instruction: detachable ET_INSTRUCTION
@@ -6649,7 +6674,7 @@ feature {NONE} -- Parsing
 				if l_conditional_expression = Void and has_syntax_error then
 					l_conditional_expression := l_unknown_expression
 				end
-				l_old_last_when_part_items_count := last_when_part_items.count
+				l_old_last_when_compound_items_count := last_when_compound_items.count
 				from until
 					last_token /= E_WHEN
 				loop
@@ -6664,16 +6689,16 @@ feature {NONE} -- Parsing
 						report_syntax_error (last_position, last_value, then_keyword_expected)
 						l_then_compound := Void
 					end
-					last_when_part_items.force (ast_factory.new_when_part (l_choices, l_then_compound))
+					last_when_compound_items.force (ast_factory.new_when_compound (l_choices, l_then_compound))
 				end
-				nb := last_when_part_items.count - l_old_last_when_part_items_count
+				nb := last_when_compound_items.count - l_old_last_when_compound_items_count
 				if nb > 0 then
-					l_when_part_list := ast_factory.new_when_part_list (nb)
+					l_when_compound_list := ast_factory.new_when_compound_list (nb)
 					from until nb <= 0 loop
-						if l_when_part_list /= Void and attached last_when_part_items.item as last_when_part_item then
-							l_when_part_list.put_first (last_when_part_item)
+						if l_when_compound_list /= Void and attached last_when_compound_items.item as last_when_compound_item then
+							l_when_compound_list.put_first (last_when_compound_item)
 						end
-						last_when_part_items.remove
+						last_when_compound_items.remove
 						nb := nb - 1
 					end
 				end
@@ -6689,7 +6714,7 @@ feature {NONE} -- Parsing
 				else
 					report_syntax_error (last_position, last_value, end_keyword_expected)
 				end
-				l_instruction := ast_factory.new_inspect_instruction (ast_factory.new_conditional (l_inspect_keyword, l_conditional_expression), l_when_part_list, l_else_compound, l_end_keyword)
+				l_instruction := ast_factory.new_inspect_instruction (ast_factory.new_conditional (l_inspect_keyword, l_conditional_expression), l_when_compound_list, l_else_compound, l_end_keyword)
 				if end_indentation_mismatch = Void and l_end_keyword /= Void and l_inspect_keyword /= Void then
 					if l_end_keyword.line /= l_inspect_keyword.line and l_end_keyword.column /= l_inspect_keyword.column then
 						end_indentation_mismatch := l_instruction
@@ -7423,8 +7448,8 @@ feature {NONE} -- Access
 	last_elseif_part_items: DS_ARRAYED_STACK [detachable ET_ELSEIF_PART]
 			-- Last elseif part items read
 
-	last_when_part_items: DS_ARRAYED_STACK [detachable ET_WHEN_PART]
-			-- Last when part items read
+	last_when_compound_items: DS_ARRAYED_STACK [detachable ET_WHEN_COMPOUND]
+			-- Last when compound items read
 
 	last_inline_separate_argument_items: DS_ARRAYED_STACK [detachable ET_INLINE_SEPARATE_ARGUMENT_ITEM]
 			-- Last inline separate argument items read
@@ -8776,8 +8801,8 @@ feature {NONE} -- Constants
 	Initial_last_elseif_part_items_capacity: INTEGER = 50
 			-- Initial capacity for `last_elseif_part_items'
 
-	Initial_last_when_part_items_capacity: INTEGER = 100
-			-- Initial capacity for `last_when_part_items'
+	Initial_last_when_compound_items_capacity: INTEGER = 100
+			-- Initial capacity for `last_when_compound_items'
 
 	Initial_last_inline_separate_argument_items_capacity: INTEGER = 50
 			-- Initial capacity for `last_inline_separate_argument_items'
@@ -8814,7 +8839,7 @@ invariant
 	last_manifest_string_items_not_void: last_manifest_string_items /= Void
 	last_instruction_items_not_void: last_instruction_items /= Void
 	last_elseif_part_items_not_void: last_elseif_part_items /= Void
-	last_when_part_items_not_void: last_when_part_items /= Void
+	last_when_compond_items_not_void: last_when_compound_items /= Void
 	last_inline_separate_argument_items_not_void: last_inline_separate_argument_items /= Void
 	last_tokens_not_void: last_tokens /= Void
 	last_detachable_any_values_not_void: last_detachable_any_values /= Void

@@ -10,7 +10,7 @@
 	]"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2007-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2007-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_AST_PRETTY_PRINTER
@@ -195,8 +195,8 @@ inherit
 			process_void,
 			process_when_expression,
 			process_when_expression_list,
-			process_when_part,
-			process_when_part_list
+			process_when_compound,
+			process_when_compound_list
 		end
 
 	KL_IMPORTED_STRING_ROUTINES
@@ -5653,7 +5653,7 @@ feature {ET_AST_NODE} -- Processing
 			end
 		end
 
-	process_when_part (a_when_part: ET_WHEN_PART)
+	process_when_compound (a_when_part: ET_WHEN_COMPOUND)
 			-- Process `a_when_part'.
 		do
 			a_when_part.choices.process (Current)
@@ -5665,7 +5665,7 @@ feature {ET_AST_NODE} -- Processing
 			end
 		end
 
-	process_when_part_list (a_list: ET_WHEN_PART_LIST)
+	process_when_compound_list (a_list: ET_WHEN_COMPOUND_LIST)
 			-- Process `a_list'.
 		local
 			i, nb: INTEGER

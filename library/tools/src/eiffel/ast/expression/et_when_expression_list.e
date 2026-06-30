@@ -5,14 +5,14 @@
 		"Eiffel lists of 'when' parts in inspect expressions"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2020-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2020-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_WHEN_EXPRESSION_LIST
 
 inherit
 
-	ET_AST_NODE
+	ET_WHEN_COMPONENT_LIST
 
 	ET_HEAD_LIST [ET_WHEN_EXPRESSION]
 

@@ -298,6 +298,9 @@ feature {NONE} -- Initialization
 			create inlined_boolean.make
 			create called_features.make (1000)
 			create inlined_features.make (10000)
+			create integer_choice_constant.make ("1", 1, False)
+			create inspect_if_choices.make (1000)
+			create inspect_case_choices.make (1000)
 			create included_header_filenames.make (100)
 			included_header_filenames.set_equality_tester (string_equality_tester)
 			create included_cpp_header_filenames.make (50)
@@ -2115,9 +2118,7 @@ feature {NONE} -- C code Generation
 			l_count: INTEGER
 			l_id: INTEGER
 		do
-			if current_dynamic_system.ise_runtime_type_conforms_to_feature /= Void then
-				sort_types
-			end
+			sort_types
 			l_dynamic_types := dynamic_types
 			nb := l_dynamic_types.count
 			from i := 1 until i > nb loop
@@ -9913,272 +9914,1215 @@ feature {NONE} -- Instruction generation
 			end
 		end
 
-	print_inspect_instruction (an_instruction: ET_INSPECT_INSTRUCTION)
-			-- Print `an_instruction'.
+	print_inspect_instruction (a_instruction: ET_INSPECT_INSTRUCTION)
+			-- Print `a_instruction'.
 		require
-			an_instruction_not_void: an_instruction /= Void
+			a_instruction_not_void: a_instruction /= Void
+		do
+			if line_generation_mode then
+				print_position (a_instruction.position, current_feature.static_feature.implementation_class)
+			end
+			print_inspect_component (a_instruction, Void, Void)
+		end
+
+	print_inspect_component (a_inspect_component: ET_INSPECT_COMPONENT; a_result: detachable ET_IDENTIFIER; a_result_type: detachable ET_DYNAMIC_TYPE)
+			-- Print `a_inspect_component'.
+			-- `a_result` is the temporary variable receiving the value of the expression
+			-- when `a_inspect_component` is an expression.
+			-- a_result_type` is the type of `a_result` when `a_inspect_component` is an expression.
+		require
+			a_inspect_component_not_void: a_inspect_component /= Void
+			a_result_is_temporary: a_result /= Void implies a_result.is_temporary
+			a_result_type_not_void: a_result /= Void implies a_result_type /= Void
 		local
+			l_is_character_n_type: BOOLEAN
+			l_is_integer_n_type: BOOLEAN
+			l_is_string_n_type: BOOLEAN
+			l_is_once_class: BOOLEAN
+			l_is_type_type: BOOLEAN
 			l_expression: ET_EXPRESSION
-			l_when_part: ET_WHEN_PART
+			l_value: ET_IDENTIFIER
+			l_old_value: ET_IDENTIFIER
+			l_count: detachable ET_IDENTIFIER
+			l_value_type_set: ET_DYNAMIC_TYPE_SET
+			l_value_type: ET_DYNAMIC_PRIMARY_TYPE
+			l_when_part: ET_WHEN_COMPONENT
 			l_choices: ET_CHOICE_LIST
 			l_choice: ET_CHOICE
 			i, nb: INTEGER
 			j, nb2: INTEGER
 			l_has_case: BOOLEAN
-			l_lower: detachable ET_CONSTANT
-			l_upper: detachable ET_CONSTANT
-			l_lower_integer: detachable ET_INTEGER_CONSTANT
-			l_upper_integer: detachable ET_INTEGER_CONSTANT
-			l_lower_character: detachable ET_CHARACTER_CONSTANT
-			l_upper_character: detachable ET_CHARACTER_CONSTANT
-			k, nb3: INTEGER
-			l_i_nat32, l_nb_nat32: NATURAL_32
-			l_value_type_set: ET_DYNAMIC_TYPE_SET
-			l_value_type: ET_DYNAMIC_PRIMARY_TYPE
-			l_stop: BOOLEAN
+			l_has_if: BOOLEAN
+			l_is_first: BOOLEAN
+			l_expression_dynamic_type_set: ET_DYNAMIC_TYPE_SET
+			l_inspect_if_choices: like inspect_if_choices
+			l_inspect_case_choices: like inspect_case_choices
+			l_old_inspect_if_choices_count: INTEGER
+			l_old_inspect_case_choices_count: INTEGER
+			l_old_index: INTEGER
+			l_attribute: ET_DYNAMIC_FEATURE
+			l_area_type: ET_DYNAMIC_PRIMARY_TYPE
+			l_index: INTEGER
+			l_need_if: BOOLEAN
 		do
--- TODO.
-			if line_generation_mode then
-				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
-			end
-			l_expression := an_instruction.conditional.expression
+			l_inspect_if_choices := inspect_if_choices
+			l_inspect_case_choices := inspect_case_choices
+			l_old_inspect_if_choices_count := l_inspect_if_choices.count
+			l_old_inspect_case_choices_count := l_inspect_case_choices.count
+			l_expression := a_inspect_component.conditional.expression
 			l_value_type_set := dynamic_type_set (l_expression)
 			l_value_type := l_value_type_set.static_type.primary_type
-			print_operand (l_expression)
+			if current_system.character_8_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_character_n_type := True
+			elseif current_system.character_32_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_character_n_type := True
+			elseif current_system.integer_8_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_integer_n_type := True
+			elseif current_system.integer_16_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_integer_n_type := True
+			elseif current_system.integer_32_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_integer_n_type := True
+			elseif current_system.integer_64_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_integer_n_type := True
+			elseif current_system.natural_8_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_integer_n_type := True
+			elseif current_system.natural_16_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_integer_n_type := True
+			elseif current_system.natural_32_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_integer_n_type := True
+			elseif current_system.natural_64_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
+				l_is_integer_n_type := True
+			elseif current_system.string_8_type.same_named_type_with_type_marks (l_value_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type) then
+				l_is_string_n_type := True
+			elseif current_system.string_32_type.same_named_type_with_type_marks (l_value_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type) then
+				l_is_string_n_type := True
+			elseif current_system.immutable_string_8_type.same_named_type_with_type_marks (l_value_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type) then
+				l_is_string_n_type := True
+			elseif current_system.immutable_string_32_type.same_named_type_with_type_marks (l_value_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type) then
+				l_is_string_n_type := True
+			elseif l_value_type.base_class.is_once then
+				l_is_once_class := True
+			elseif l_value_type.base_class.is_type_class then
+				l_is_type_type := True
+			end
+			l_value := new_temp_variable (l_value_type)
+			mark_temp_variable_frozen (l_value)
+			print_assignment_operand (l_expression, l_value_type_set, l_value, l_value_type)
 			fill_call_operands (1)
-			print_indentation
-			current_file.put_string (c_switch)
-			current_file.put_character (' ')
-			current_file.put_character ('(')
-			if l_value_type.base_class.is_once then
-				print_attribute_once_class_index_access (call_operands.first, l_value_type, True)
-				l_value_type := current_dynamic_system.natural_32_type
-			else
-				print_expression (call_operands.first)
+			if call_operands.first /= l_value then
+				print_indentation
+				print_temp_name (l_value, current_file)
+				print_assign_to
+				print_attachment_expression (call_operands.first, l_value_type_set, l_value_type)
+				print_semicolon_newline
 			end
 			call_operands.wipe_out
-			current_file.put_character (')')
-			current_file.put_character (' ')
-			current_file.put_character ('{')
-			current_file.put_new_line
-			if attached an_instruction.when_parts as l_when_parts then
+			if l_is_once_class then
+					-- Get the once creation procedure index.
+				l_old_value := l_value
+				l_value := new_temp_variable (current_dynamic_system.natural_32_type)
+				mark_temp_variable_frozen (l_value)
+				print_indentation
+				print_temp_name (l_value, current_file)
+				print_assign_to
+				l_old_index := l_old_value.index
+				l_old_value.set_index (l_expression.index)
+				print_attribute_once_class_index_access (l_old_value, l_value_type, True)
+				l_old_value.set_index (l_old_index)
+				print_semicolon_newline
+				mark_temp_variable_unfrozen (l_old_value)
+				mark_temp_variable_free (l_old_value)
+			elseif l_is_type_type then
+					-- Get the type id.
+				l_old_value := l_value
+				l_value := new_temp_variable (current_dynamic_system.integer_32_type)
+				mark_temp_variable_frozen (l_value)
+				print_indentation
+				print_temp_name (l_value, current_file)
+				print_assign_to
+				current_file.put_character ('(')
+				current_file.put_character ('(')
+				current_file.put_string (c_eif_type)
+				current_file.put_character ('*')
+				current_file.put_character (')')
+				current_file.put_character ('(')
+				l_old_index := l_old_value.index
+				l_old_value.set_index (l_expression.index)
+				print_target_expression (l_old_value, l_value_type, True)
+				l_old_value.set_index (l_old_index)
+				current_file.put_character (')')
+				current_file.put_character (')')
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_type_id)
+				print_semicolon_newline
+				mark_temp_variable_unfrozen (l_old_value)
+				mark_temp_variable_free (l_old_value)
+			elseif l_is_string_n_type then
+				if l_value_type.attribute_count < 2 then
+						-- Internal error: string classes should have at least the
+						-- features 'area' and 'count' as first features.
+						-- Already reported in ET_DYNAMIC_SYSTEM.compile_kernel.
+					set_fatal_error
+					error_handler.report_giaac_error (generator, "print_inspect_component", 1, "missing attributes in string class.")
+				else
+						-- 'count'.
+					l_attribute := l_value_type.queries.item (2)
+					if not attached l_attribute.result_type_set as l_dynamic_type_set then
+							-- Error in feature 'count', already reported in ET_DYNAMIC_SYSTEM.compile_kernel.
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_inspect_component", 2, "attribute `count' has no type.")
+					else
+						l_count := new_temp_variable (l_dynamic_type_set.static_type.primary_type)
+						mark_temp_variable_frozen (l_count)
+						print_indentation
+						print_temp_name (l_count, current_file)
+						print_assign_to
+						l_old_index := l_value.index
+						l_value.set_index (l_expression.index)
+						print_attribute_access (l_attribute, l_value, l_value_type, True)
+						l_value.set_index (l_old_index)
+						print_semicolon_newline
+					end
+						-- 'area'.
+					l_attribute := l_value_type.queries.item (1)
+					if not attached l_attribute.result_type_set as l_dynamic_type_set then
+							-- Error in feature 'area', already reported in ET_DYNAMIC_SYSTEM.compile_kernel.
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_inspect_component", 3, "attribute `area' has no type.")
+					else
+						l_area_type := l_dynamic_type_set.static_type.primary_type
+						l_old_value := l_value
+						l_value := new_temp_variable (l_area_type)
+						mark_temp_variable_frozen (l_value)
+						print_indentation
+						print_temp_name (l_value, current_file)
+						print_assign_to
+						l_old_index := l_old_value.index
+						l_old_value.set_index (l_expression.index)
+						print_attribute_access (l_attribute, l_old_value, l_value_type, False)
+						l_old_value.set_index (l_old_index)
+						print_semicolon_newline
+						mark_temp_variable_unfrozen (l_old_value)
+						mark_temp_variable_free (l_old_value)
+						l_old_value := l_value
+						l_value := new_temp_variable (current_dynamic_system.pointer_type)
+						mark_temp_variable_frozen (l_value)
+						print_indentation
+						print_temp_name (l_value, current_file)
+						print_assign_to
+						print_type_cast (current_dynamic_system.pointer_type, current_file)
+						current_file.put_character ('(')
+						l_old_index := l_old_value.index
+						extra_dynamic_type_sets.force_last (l_area_type)
+						l_index := current_dynamic_type_sets.count + extra_dynamic_type_sets.count
+						l_old_value.set_index (l_index)
+						print_attribute_special_item_access (l_old_value, l_area_type, True)
+						l_old_value.set_index (l_old_index)
+						current_file.put_character (')')
+						print_semicolon_newline
+						mark_temp_variable_unfrozen (l_old_value)
+						mark_temp_variable_free (l_old_value)
+					end
+				end
+			end
+			if attached a_inspect_component.when_parts as l_when_parts then
 				nb := l_when_parts.count
 				from i := 1 until i > nb loop
+					l_need_if := False
 					l_when_part := l_when_parts.item (i)
-					if line_generation_mode then
-						print_position (l_when_part.position, current_feature.static_feature.implementation_class)
-					end
-					l_choices := l_when_part.choices
-					nb2 := l_choices.count
-					if nb2 = 0 then
-						-- Do nothing.
-					else
-						l_has_case := False
+					if l_is_string_n_type  then
+						l_need_if := True
+					elseif l_is_type_type or l_is_integer_n_type or l_is_character_n_type then
+						l_choices := l_when_part.choices
+						nb2 := l_choices.count
 						from j := 1 until j > nb2 loop
 							l_choice := l_choices.choice (j)
 							if l_choice.is_range then
--- TODO
-								l_lower := choice_constant (l_choice.lower)
-								l_upper := choice_constant (l_choice.upper)
-								if attached {ET_INTEGER_CONSTANT} l_lower as l_integer_constant then
-									l_lower_integer := l_integer_constant
-									l_lower_character := Void
-								elseif attached {ET_CHARACTER_CONSTANT} l_lower as l_character_constant then
-									l_lower_character := l_character_constant
-									l_lower_integer := Void
-								else
-									l_lower_integer := Void
-									l_lower_character := Void
-								end
-								if attached {ET_INTEGER_CONSTANT} l_upper as l_integer_constant then
-									l_upper_integer := l_integer_constant
-									l_upper_character := Void
-								elseif attached {ET_CHARACTER_CONSTANT} l_upper as l_character_constant then
-									l_upper_character := l_character_constant
-									l_upper_integer := Void
-								else
-									l_upper_integer := Void
-									l_upper_character := Void
-								end
-								if l_lower_integer /= Void and l_upper_integer /= Void then
-									from
--- TODO: check type of inspect value.
-										k := l_lower_integer.to_integer_32
-										nb3 := l_upper_integer.to_integer_32
-									until
-										k > nb3
-									loop
-										l_has_case := True
-										print_indentation
-										current_file.put_string (c_case)
-										current_file.put_character (' ')
-										print_integer_value (k.abs.to_natural_64, k < 0, l_value_type, True)
-										current_file.put_character (':')
-										current_file.put_new_line
-										k := k + 1
+								if l_is_type_type then
+										-- Type conformance cannot be expressed in a case-statement.
+									l_need_if := True
+								elseif l_is_character_n_type then
+										-- Do not use case-statements if there are too many characters
+										-- in the interval.
+									if
+										attached {ET_CHARACTER_CONSTANT} choice_constant (l_choice.lower) as l_lower and then
+										attached {ET_CHARACTER_CONSTANT} choice_constant (l_choice.upper) as l_upper and then
+										l_lower.value.natural_32_code <= l_upper.value.natural_32_code and then
+										l_upper.value.natural_32_code - l_lower.value.natural_32_code >= 256
+									then
+										l_need_if := True
 									end
-								elseif l_lower_character /= Void and l_upper_character /= Void then
-									from
-										l_i_nat32 := l_lower_character.value.natural_32_code
-										l_nb_nat32 := l_upper_character.value.natural_32_code
-										l_stop := l_i_nat32 > l_nb_nat32
-									until
-										l_stop
-									loop
-										l_has_case := True
-										print_indentation
-										current_file.put_string (c_case)
-										current_file.put_character (' ')
-										if current_system.character_32_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
-											current_file.put_string (c_ge_nat32)
-											current_file.put_character ('(')
-											current_file.put_natural_32 (l_i_nat32)
-											current_file.put_character (')')
-										else
-												-- Type cast needed when compiling with mingw when the character
-												-- is represented by '\xyz' where x is not 0.
-											print_type_cast (l_value_type, current_file)
-											print_escaped_character_8 (l_i_nat32.to_character_8)
-										end
-										current_file.put_character (':')
-										current_file.put_new_line
-										if l_i_nat32 = l_nb_nat32 then
-											l_stop := True
-										else
-											l_i_nat32 := l_i_nat32 + 1
+								elseif l_is_integer_n_type then
+										-- Do not use case-statements if there are too many integers
+										-- in the interval.
+									if
+										attached {ET_INTEGER_CONSTANT} choice_constant (l_choice.lower) as l_lower and
+										attached {ET_INTEGER_CONSTANT} choice_constant (l_choice.upper) as l_upper
+									then
+										if l_lower.is_negative then
+											if l_upper.is_negative then
+												if
+													l_upper.value <= l_lower.value and then
+													l_lower.value - l_upper.value >= 256
+												then
+													l_need_if := True
+												end
+											else
+												if
+														-- Try to avoid overflow by using three comparisons.
+													l_lower.value >= 256 or else
+													l_upper.value >= 256 or else
+													l_lower.value + l_upper.value >= 256
+												then
+													l_need_if := True
+												end
+											end
+										elseif not l_upper.is_negative then
+											if
+												l_lower.value <= l_upper.value and then
+												l_upper.value - l_lower.value >= 256
+											then
+												l_need_if := True
+											end
 										end
 									end
-								else
--- TODO
-error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_instruction - range")
 								end
+							end
+							if l_need_if then
+								j := nb2 + 1 -- Jump out of the loop.
 							else
-								l_has_case := True
-								print_indentation
-								current_file.put_string (c_case)
-								current_file.put_character (' ')
-								l_lower := choice_constant (l_choice.lower)
-								if attached {ET_INTEGER_CONSTANT} l_lower as l_integer_constant then
-									print_integer_value (l_integer_constant.value, l_integer_constant.is_negative, l_value_type, True)
-								elseif attached {ET_CHARACTER_CONSTANT} l_lower as l_character_constant then
-									if current_system.character_32_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
-										current_file.put_string (c_ge_nat32)
-										current_file.put_character ('(')
-										current_file.put_natural_32 (l_character_constant.value.natural_32_code)
-										current_file.put_character (')')
-									else
-											-- Type cast needed when compiling with mingw when the character
-											-- is represented by '\xyz' where x is not 0.
-										print_type_cast (l_value_type, current_file)
-										print_escaped_character_8 (l_character_constant.value.to_character_8)
-									end
-								else
-									if l_value_type /= dynamic_type_set (l_choice.lower).static_type.primary_type then
-										print_type_cast (l_value_type, current_file)
-									end
-									print_expression (l_choice.lower)
-								end
-								current_file.put_character (':')
-								current_file.put_new_line
+								j := j + 1
 							end
-							j := j + 1
 						end
-						if l_has_case then
-							indent
-							if attached l_when_part.then_compound as l_then_compound then
-								print_compound (l_then_compound)
-							end
-							print_indentation
-							current_file.put_string (c_break)
-							current_file.put_character (';')
-							current_file.put_new_line
-							dedent
-						end
+					end
+					if l_need_if then
+						l_inspect_if_choices.force_last (l_when_part)
+					else
+						l_inspect_case_choices.force_last (l_when_part)
 					end
 					i := i + 1
 				end
 			end
-			print_indentation
-			current_file.put_string (c_default)
-			current_file.put_character (':')
-			current_file.put_new_line
-			if attached an_instruction.else_compound as l_else_compound then
-				indent
-				print_compound (l_else_compound)
+			l_has_if := l_old_inspect_if_choices_count /= l_inspect_if_choices.count
+			l_has_case := l_old_inspect_case_choices_count /= l_inspect_case_choices.count
+			if l_has_case then
 				print_indentation
-				current_file.put_string (c_break)
-				current_file.put_character (';')
+				current_file.put_string (c_switch)
+				current_file.put_character (' ')
+				current_file.put_character ('(')
+				print_expression (l_value)
+				current_file.put_character (')')
+				current_file.put_character (' ')
+				current_file.put_character ('{')
 				current_file.put_new_line
-				dedent
-			else
+				from
+					i := l_old_inspect_case_choices_count + 1
+					nb := l_inspect_case_choices.count
+				until
+					i > nb
+				loop
+					l_when_part := l_inspect_case_choices.item (i)
+					if line_generation_mode then
+						print_position (l_when_part.position, current_feature.static_feature.implementation_class)
+					end
+					l_choices := l_when_part.choices
+					if l_choices.count /= 0 then
+						if l_is_character_n_type then
+							print_case_character_choices (l_choices, l_value_type)
+						elseif l_is_integer_n_type then
+							print_case_integer_choices (l_choices, l_value_type)
+						elseif l_is_once_class then
+							print_case_integer_choices (l_choices, current_dynamic_system.natural_32_type)
+						elseif l_is_type_type then
+							print_case_type_choices (l_choices, current_dynamic_system.integer_32_type)
+						end
+						indent
+						if a_result /= Void and a_result_type /= Void and attached {ET_EXPRESSION} l_when_part.then_part as l_then_expression then
+							l_expression_dynamic_type_set := dynamic_type_set (l_then_expression)
+							print_assignment_operand (l_then_expression, l_expression_dynamic_type_set, a_result, a_result_type)
+							fill_call_operands (1)
+							if call_operands.first /= a_result then
+								print_indentation
+								print_temp_name (a_result, current_file)
+								print_assign_to
+								print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, a_result_type)
+								print_semicolon_newline
+							end
+							call_operands.wipe_out
+						elseif attached {ET_COMPOUND} l_when_part.then_part as l_then_compund then
+							print_compound (l_then_compund)
+						end
+						print_indentation
+						current_file.put_string (c_break)
+						print_semicolon_newline
+						dedent
+					end
+					i := i + 1
+				end
+				l_inspect_case_choices.keep_first (l_old_inspect_case_choices_count)
+				print_indentation
+				current_file.put_string (c_default)
+				current_file.put_character (':')
+				current_file.put_new_line
 				indent
+			end
+			if l_has_if then
+				from
+					i := l_old_inspect_if_choices_count + 1
+					nb := l_inspect_if_choices.count
+					l_is_first := True
+				until
+					i > nb
+				loop
+					l_when_part := l_inspect_if_choices.item (i)
+					if line_generation_mode then
+						print_position (l_when_part.position, current_feature.static_feature.implementation_class)
+					end
+					l_choices := l_when_part.choices
+					if l_choices.count /= 0 then
+						if l_is_first then
+							print_indentation
+							l_is_first := False
+						end
+						if l_is_integer_n_type then
+							print_if_integer_choices (l_choices, l_value, l_value_type)
+						elseif l_is_character_n_type then
+							print_if_character_choices (l_choices, l_value, l_value_type)
+						elseif l_is_string_n_type and l_count /= Void then
+							print_if_string_choices (l_choices, l_value, l_value_type, l_count)
+						elseif l_is_once_class then
+							print_if_integer_choices (l_choices, l_value, current_dynamic_system.natural_32_type)
+						elseif l_is_type_type then
+							print_if_type_choices (l_choices, l_value, current_dynamic_system.integer_32_type)
+						end
+						indent
+						if a_result /= Void and a_result_type /= Void and attached {ET_EXPRESSION} l_when_part.then_part as l_then_expression then
+							l_expression_dynamic_type_set := dynamic_type_set (l_then_expression)
+							print_assignment_operand (l_then_expression, l_expression_dynamic_type_set, a_result, a_result_type)
+							fill_call_operands (1)
+							if call_operands.first /= a_result then
+								print_indentation
+								print_temp_name (a_result, current_file)
+								print_assign_to
+								print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, a_result_type)
+								print_semicolon_newline
+							end
+							call_operands.wipe_out
+						elseif attached {ET_COMPOUND} l_when_part.then_part as l_then_compund then
+							print_compound (l_then_compund)
+						end
+						dedent
+						print_indentation
+						current_file.put_character ('}')
+						current_file.put_character (' ')
+						current_file.put_string (c_else)
+						current_file.put_character (' ')
+					end
+					i := i + 1
+				end
+				l_inspect_if_choices.keep_first (l_old_inspect_if_choices_count)
+				current_file.put_character ('{')
+				current_file.put_new_line
+				indent
+			end
+			if a_result /= Void and a_result_type /= Void and attached {ET_EXPRESSION} a_inspect_component.else_part as l_else_expression then
+				l_expression_dynamic_type_set := dynamic_type_set (l_else_expression)
+				print_assignment_operand (l_else_expression, l_expression_dynamic_type_set, a_result, a_result_type)
+				fill_call_operands (1)
+				if call_operands.first /= a_result then
+					print_indentation
+					print_temp_name (a_result, current_file)
+					print_assign_to
+					print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, a_result_type)
+					print_semicolon_newline
+				end
+				call_operands.wipe_out
+			elseif attached {ET_COMPOUND} a_inspect_component.else_part as l_else_compund then
+				print_compound (l_else_compund)
+			else
 				print_indentation
 				current_file.put_string (c_ge_raise)
 				current_file.put_character ('(')
 				current_file.put_string (c_ge_ex_when)
 				current_file.put_character (')')
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
+			end
+			if l_has_if then
+				dedent
+				print_indentation_end_newline
+			end
+			if l_has_case then
 				print_indentation
 				current_file.put_string (c_break)
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				dedent
+				print_indentation_end_newline
 			end
-			print_indentation
-			current_file.put_character ('}')
+			mark_temp_variable_unfrozen (l_value)
+			mark_temp_variable_free (l_value)
+			if l_count /= Void then
+				mark_temp_variable_unfrozen (l_count)
+				mark_temp_variable_free (l_count)
+			end
+		end
+
+	print_case_integer_choices (a_choices: ET_CHOICE_LIST; a_value_type: ET_DYNAMIC_PRIMARY_TYPE)
+			-- 'case' statement corresponding to `a_choices`.
+			-- `a_value_type` is the type of the integer values being compared.
+		require
+			a_choices_not_void: a_choices /= Void
+			a_value_type_not_void: a_value_type /= Void
+		local
+			i, nb: INTEGER
+			l_choice: ET_CHOICE
+			l_lower_integer: detachable ET_INTEGER_CONSTANT
+			l_upper_integer: detachable ET_INTEGER_CONSTANT
+			l_lower_is_negative: BOOLEAN
+			l_lower_value: NATURAL_64
+			l_upper_is_negative: BOOLEAN
+			l_upper_value: NATURAL_64
+			j, nb2: NATURAL_64
+			l_stop: BOOLEAN
+		do
+			nb := a_choices.count
+			from i := 1 until i > nb loop
+				l_choice := a_choices.choice (i)
+				if l_choice.is_range then
+					if attached {ET_INTEGER_CONSTANT} choice_constant (l_choice.lower) as l_integer_constant then
+						l_lower_integer := l_integer_constant
+						l_lower_value := l_lower_integer.value
+						l_lower_is_negative := l_lower_integer.is_negative
+					else
+						l_lower_integer := Void
+					end
+					if attached {ET_INTEGER_CONSTANT} choice_constant (l_choice.upper) as l_integer_constant then
+						l_upper_integer := l_integer_constant
+						l_upper_value := l_upper_integer.value
+						l_upper_is_negative := l_upper_integer.is_negative
+					else
+						l_upper_integer := Void
+					end
+					if l_lower_integer /= Void and l_upper_integer /= Void then
+						if l_lower_is_negative and l_lower_value /= 0 then
+							j := l_lower_value
+							if l_upper_is_negative and l_upper_value /= 0 then
+								nb2 := l_upper_value
+							else
+								nb2 := 1
+							end
+							from
+							until
+								j < nb2
+							loop
+								print_indentation
+								current_file.put_string (c_case)
+								current_file.put_character (' ')
+								print_integer_value (j, True, a_value_type, True)
+								current_file.put_character (':')
+								current_file.put_new_line
+								j := j - 1
+							end
+						end
+						if not l_upper_is_negative then
+							nb2 := l_upper_value
+							if not l_lower_is_negative then
+								j := l_lower_value
+							else
+								j := 0
+							end
+							from
+								l_stop := j > nb2
+							until
+								l_stop
+							loop
+								print_indentation
+								current_file.put_string (c_case)
+								current_file.put_character (' ')
+								print_integer_value (j, False, a_value_type, True)
+								current_file.put_character (':')
+								current_file.put_new_line
+									-- Avoid overflow:
+								if j = nb2 then
+									l_stop := True
+								else
+									j := j + 1
+								end
+							end
+						end
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_case_integer_choices", 1, "invalid range type.")
+					end
+				else
+					print_indentation
+					current_file.put_string (c_case)
+					current_file.put_character (' ')
+					if attached {ET_INTEGER_CONSTANT} choice_constant (l_choice.lower) as l_integer_constant then
+						print_integer_value (l_integer_constant.value, l_integer_constant.is_negative, a_value_type, True)
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_case_integer_choices", 2, "integer constant expected.")
+					end
+					current_file.put_character (':')
+					current_file.put_new_line
+				end
+				i := i + 1
+			end
+		end
+
+	print_if_integer_choices (a_choices: ET_CHOICE_LIST; a_value: ET_IDENTIFIER; a_value_type: ET_DYNAMIC_PRIMARY_TYPE)
+			-- 'if' statement corresponding to `a_choices`.
+			-- `a_value` is the integer value being compared.
+			-- `a_value_type` is the type of `a_value`.
+		require
+			a_choices_not_void: a_choices /= Void
+			a_value_not_void: a_value /= Void
+			a_value_is_temporary: a_value.is_temporary
+			a_value_type_not_void: a_value_type /= Void
+		local
+			i, nb: INTEGER
+			l_choice: ET_CHOICE
+			l_lower_integer: detachable ET_INTEGER_CONSTANT
+			l_upper_integer: detachable ET_INTEGER_CONSTANT
+			l_lower_is_negative: BOOLEAN
+			l_lower_value: NATURAL_64
+			l_upper_is_negative: BOOLEAN
+			l_upper_value: NATURAL_64
+		do
+			current_file.put_string (c_if)
+			current_file.put_character (' ')
+			current_file.put_character ('(')
+			nb := a_choices.count
+			from i := 1 until i > nb loop
+				if i /= 1 then
+					current_file.put_character (' ')
+					current_file.put_string (c_or_else)
+					current_file.put_character (' ')
+				end
+				if nb > 1 then
+					current_file.put_character ('(')
+				end
+				l_choice := a_choices.choice (i)
+				if l_choice.is_range then
+					if attached {ET_INTEGER_CONSTANT} choice_constant (l_choice.lower) as l_integer_constant then
+						l_lower_integer := l_integer_constant
+						l_lower_value := l_lower_integer.value
+						l_lower_is_negative := l_lower_integer.is_negative
+					else
+						l_lower_integer := Void
+					end
+					if attached {ET_INTEGER_CONSTANT} choice_constant (l_choice.upper) as l_integer_constant then
+						l_upper_integer := l_integer_constant
+						l_upper_value := l_upper_integer.value
+						l_upper_is_negative := l_upper_integer.is_negative
+					else
+						l_upper_integer := Void
+					end
+					if l_lower_integer /= Void and l_upper_integer /= Void then
+						print_integer_value (l_lower_value, l_lower_is_negative, a_value_type, True)
+						current_file.put_character (' ')
+						current_file.put_character ('<')
+						current_file.put_character ('=')
+						current_file.put_character (' ')
+						print_temp_name (a_value, current_file)
+						current_file.put_character (' ')
+						current_file.put_string (c_and_then)
+						current_file.put_character (' ')
+						print_temp_name (a_value, current_file)
+						current_file.put_character (' ')
+						current_file.put_character ('<')
+						current_file.put_character ('=')
+						current_file.put_character (' ')
+						print_integer_value (l_upper_value, l_upper_is_negative, a_value_type, True)
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_if_integer_choices", 1, "invalid range type.")
+					end
+				else
+					print_temp_name (a_value, current_file)
+					current_file.put_character (' ')
+					current_file.put_string (c_equal)
+					current_file.put_character (' ')
+					if attached {ET_INTEGER_CONSTANT} choice_constant (l_choice.lower) as l_integer_constant then
+						print_integer_value (l_integer_constant.value, l_integer_constant.is_negative, a_value_type, True)
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_if_integer_choices", 2, "integer constant expected.")
+					end
+				end
+				if nb > 1 then
+					current_file.put_character (')')
+				end
+				i := i + 1
+			end
+			current_file.put_character (')')
+			current_file.put_character (' ')
+			current_file.put_character ('{')
 			current_file.put_new_line
 		end
 
-	choice_constant (a_choice_constant: ET_CHOICE_CONSTANT): detachable ET_CONSTANT
-			-- Constant value of the inspect choice `a_choice_constant',
-			-- or Void if it appears not to be a constant after all
-			--
-			-- Note that validity `a_choice_constant' as an expression
-			-- is assumed to have already been checked.
-			-- It will just return Void if something unexpected is encountered.
+	print_case_character_choices (a_choices: ET_CHOICE_LIST; a_value_type: ET_DYNAMIC_PRIMARY_TYPE)
+			-- 'case' statement corresponding to `a_choices`.
+			-- `a_value_type` is the type of the character values being compared.
 		require
-			a_choice_constant_not_void: a_choice_constant /= Void
+			a_choices_not_void: a_choices /= Void
+			a_value_type_not_void: a_value_type /= Void
 		local
-			l_query: detachable ET_QUERY
-			l_seed: INTEGER
-			l_target_type: ET_DYNAMIC_PRIMARY_TYPE
+			i, nb: INTEGER
+			l_choice: ET_CHOICE
+			l_lower: detachable ET_CONSTANT
+			l_upper: detachable ET_CONSTANT
+			l_lower_character: detachable ET_CHARACTER_CONSTANT
+			l_upper_character: detachable ET_CHARACTER_CONSTANT
+			l_i_nat32, l_nb_nat32: NATURAL_32
+			l_stop: BOOLEAN
+			l_is_character_32: BOOLEAN
 		do
-			if attached {ET_CONSTANT} a_choice_constant as l_constant then
-				Result := l_constant
-			else
-				if attached {ET_IDENTIFIER} a_choice_constant as l_identifier then
-					if l_identifier.is_argument then
-							-- This is not a constant.
-					elseif l_identifier.is_local then
-							-- This is not a constant.
-					elseif l_identifier.is_object_test_local then
-							-- This is not a constant.
-					elseif l_identifier.is_iteration_item then
-							-- This is not a constant.
-					elseif l_identifier.is_inline_separate_argument then
-							-- This is not a constant.
+			l_is_character_32 := current_system.character_32_type.same_named_type (a_value_type.base_type, current_type.base_type, current_type.base_type)
+			nb := a_choices.count
+			from i := 1 until i > nb loop
+				l_choice := a_choices.choice (i)
+				if l_choice.is_range then
+					l_lower := choice_constant (l_choice.lower)
+					l_upper := choice_constant (l_choice.upper)
+					if attached {ET_CHARACTER_CONSTANT} l_lower as l_character_constant then
+						l_lower_character := l_character_constant
 					else
-						l_seed := l_identifier.seed
-						l_query := current_type.base_class.seeded_query (l_seed)
+						l_lower_character := Void
 					end
-				elseif attached {ET_UNQUALIFIED_FEATURE_CALL} a_choice_constant as l_unqualified_call and then l_unqualified_call.arguments_count = 0 then
-					l_seed := l_unqualified_call.name.seed
-					l_query := current_type.base_class.seeded_query (l_seed)
-				elseif attached {ET_STATIC_CALL_EXPRESSION} a_choice_constant as l_static_call then
-					l_target_type := current_dynamic_system.dynamic_primary_type (l_static_call.type, current_type.base_type)
-					if l_static_call.is_once_creation_call then
-						if attached l_target_type.base_class.seeded_procedure (l_static_call.name.seed) as l_procedure then
-							create {ET_REGULAR_INTEGER_CONSTANT} Result.make (l_procedure.once_creation_index.out, l_procedure.once_creation_index, False)
+					if attached {ET_CHARACTER_CONSTANT} l_upper as l_character_constant then
+						l_upper_character := l_character_constant
+					else
+						l_upper_character := Void
+					end
+					if l_lower_character /= Void and l_upper_character /= Void then
+						from
+							l_i_nat32 := l_lower_character.value.natural_32_code
+							l_nb_nat32 := l_upper_character.value.natural_32_code
+							l_stop := l_i_nat32 > l_nb_nat32
+						until
+							l_stop
+						loop
+							print_indentation
+							current_file.put_string (c_case)
+							current_file.put_character (' ')
+							if l_is_character_32 then
+								current_file.put_string (c_ge_nat32)
+								current_file.put_character ('(')
+								current_file.put_natural_32 (l_i_nat32)
+								current_file.put_character (')')
+							else
+									-- Type cast needed when compiling with mingw when the character
+									-- is represented by '\xyz' where x is not 0.
+								print_type_cast (a_value_type, current_file)
+								print_escaped_character_8 (l_i_nat32.to_character_8)
+							end
+							current_file.put_character (':')
+							current_file.put_new_line
+								-- Avoid overflow:
+							if l_i_nat32 = l_nb_nat32 then
+								l_stop := True
+							else
+								l_i_nat32 := l_i_nat32 + 1
+							end
 						end
 					else
-						l_query := l_target_type.base_class.seeded_query (l_static_call.name.seed)
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_case_character_choices", 1, "invalid range type.")
+					end
+				else
+					print_indentation
+					current_file.put_string (c_case)
+					current_file.put_character (' ')
+					l_lower := choice_constant (l_choice.lower)
+					if attached {ET_CHARACTER_CONSTANT} l_lower as l_character_constant then
+						if l_is_character_32 then
+							current_file.put_string (c_ge_nat32)
+							current_file.put_character ('(')
+							current_file.put_natural_32 (l_character_constant.value.natural_32_code)
+							current_file.put_character (')')
+						else
+								-- Type cast needed when compiling with mingw when the character
+								-- is represented by '\xyz' where x is not 0.
+							print_type_cast (a_value_type, current_file)
+							print_escaped_character_8 (l_character_constant.value.to_character_8)
+						end
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_case_character_choices", 2, "character constant expected.")
+					end
+					current_file.put_character (':')
+					current_file.put_new_line
+				end
+				i := i + 1
+			end
+		end
+
+	print_if_character_choices (a_choices: ET_CHOICE_LIST; a_value: ET_IDENTIFIER; a_value_type: ET_DYNAMIC_PRIMARY_TYPE)
+			-- 'if' statement corresponding to `a_choices`.
+			-- `a_value` is the character value being compared.
+			-- `a_value_type` is the type of `a_value`.
+		require
+			a_choices_not_void: a_choices /= Void
+			a_value_not_void: a_value /= Void
+			a_value_is_temporary: a_value.is_temporary
+			a_value_type_not_void: a_value_type /= Void
+		local
+			i, nb: INTEGER
+			l_choice: ET_CHOICE
+			l_lower: detachable ET_CONSTANT
+			l_upper: detachable ET_CONSTANT
+			l_lower_character: detachable ET_CHARACTER_CONSTANT
+			l_upper_character: detachable ET_CHARACTER_CONSTANT
+			l_is_character_32: BOOLEAN
+		do
+			l_is_character_32 := current_system.character_32_type.same_named_type (a_value_type.base_type, current_type.base_type, current_type.base_type)
+			current_file.put_string (c_if)
+			current_file.put_character (' ')
+			current_file.put_character ('(')
+			nb := a_choices.count
+			from i := 1 until i > nb loop
+				if i /= 1 then
+					current_file.put_character (' ')
+					current_file.put_string (c_or_else)
+					current_file.put_character (' ')
+				end
+				if nb > 1 then
+					current_file.put_character ('(')
+				end
+				l_choice := a_choices.choice (i)
+				if l_choice.is_range then
+					l_lower := choice_constant (l_choice.lower)
+					l_upper := choice_constant (l_choice.upper)
+					if attached {ET_CHARACTER_CONSTANT} l_lower as l_character_constant then
+						l_lower_character := l_character_constant
+					else
+						l_lower_character := Void
+					end
+					if attached {ET_CHARACTER_CONSTANT} l_upper as l_character_constant then
+						l_upper_character := l_character_constant
+					else
+						l_upper_character := Void
+					end
+					if l_lower_character /= Void and l_upper_character /= Void then
+						if l_is_character_32 then
+							current_file.put_string (c_ge_nat32)
+							current_file.put_character ('(')
+							current_file.put_natural_32 (l_lower_character.value.natural_32_code)
+							current_file.put_character (')')
+						else
+								-- Type cast needed when compiling with mingw when the character
+								-- is represented by '\xyz' where x is not 0.
+							print_type_cast (a_value_type, current_file)
+							print_escaped_character_8 (l_lower_character.value.to_character_8)
+						end
+						current_file.put_character (' ')
+						current_file.put_character ('<')
+						current_file.put_character ('=')
+						current_file.put_character (' ')
+						print_temp_name (a_value, current_file)
+						current_file.put_character (' ')
+						current_file.put_string (c_and_then)
+						current_file.put_character (' ')
+						print_temp_name (a_value, current_file)
+						current_file.put_character (' ')
+						current_file.put_character ('<')
+						current_file.put_character ('=')
+						current_file.put_character (' ')
+						if l_is_character_32 then
+							current_file.put_string (c_ge_nat32)
+							current_file.put_character ('(')
+							current_file.put_natural_32 (l_upper_character.value.natural_32_code)
+							current_file.put_character (')')
+						else
+								-- Type cast needed when compiling with mingw when the character
+								-- is represented by '\xyz' where x is not 0.
+							print_type_cast (a_value_type, current_file)
+							print_escaped_character_8 (l_upper_character.value.to_character_8)
+						end
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_if_character_choices", 1, "invalid range type.")
+					end
+				else
+					print_temp_name (a_value, current_file)
+					current_file.put_character (' ')
+					current_file.put_string (c_equal)
+					current_file.put_character (' ')
+					l_lower := choice_constant (l_choice.lower)
+					if attached {ET_CHARACTER_CONSTANT} l_lower as l_character_constant then
+						if l_is_character_32 then
+							current_file.put_string (c_ge_nat32)
+							current_file.put_character ('(')
+							current_file.put_natural_32 (l_character_constant.value.natural_32_code)
+							current_file.put_character (')')
+						else
+								-- Type cast needed when compiling with mingw when the character
+								-- is represented by '\xyz' where x is not 0.
+							print_type_cast (a_value_type, current_file)
+							print_escaped_character_8 (l_character_constant.value.to_character_8)
+						end
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_if_character_choices", 2, "character constant expected.")
 					end
 				end
-				if attached {ET_CONSTANT_QUERY} l_query as l_constant_query then
-					Result := l_constant_query.constant
+				if nb > 1 then
+					current_file.put_character (')')
 				end
+				i := i + 1
 			end
+			current_file.put_character (')')
+			current_file.put_character (' ')
+			current_file.put_character ('{')
+			current_file.put_new_line
+		end
+
+	print_if_string_choices (a_choices: ET_CHOICE_LIST; a_value: ET_IDENTIFIER; a_value_type: ET_DYNAMIC_PRIMARY_TYPE; a_count: ET_IDENTIFIER)
+			-- 'if' statement corresponding to `a_choices`.
+			-- `a_value` is the string value being compared.
+			-- `a_value_type` is the type of `a_value`.
+		require
+			a_choices_not_void: a_choices /= Void
+			a_value_not_void: a_value /= Void
+			a_value_is_temporary: a_value.is_temporary
+			a_value_type_not_void: a_value_type /= Void
+			a_count_not_void: a_count /= Void
+			a_count_is_temporary: a_count.is_temporary
+		local
+			i, nb: INTEGER
+			l_choice: ET_CHOICE
+			l_lower: detachable ET_CONSTANT
+			l_upper: detachable ET_CONSTANT
+			l_lower_string: detachable ET_MANIFEST_STRING
+			l_upper_string: detachable ET_MANIFEST_STRING
+			l_is_string_32: BOOLEAN
+			l_string_value: STRING_8
+			l_old_file: KI_TEXT_OUTPUT_STREAM
+		do
+			if current_system.string_32_type.same_named_type_with_type_marks (a_value_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type) then
+				l_is_string_32 := True
+			elseif current_system.immutable_string_32_type.same_named_type_with_type_marks (a_value_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type, tokens.implicit_detachable_separate_type_mark, current_type.base_type) then
+				l_is_string_32 := True
+			end
+			current_file.put_string (c_if)
+			current_file.put_character (' ')
+			current_file.put_character ('(')
+			nb := a_choices.count
+			from i := 1 until i > nb loop
+				if i /= 1 then
+					current_file.put_character (' ')
+					current_file.put_string (c_or_else)
+					current_file.put_character (' ')
+				end
+				if nb > 1 then
+					current_file.put_character ('(')
+				end
+				l_choice := a_choices.choice (i)
+				if l_choice.is_range then
+					l_lower := choice_constant (l_choice.lower)
+					l_upper := choice_constant (l_choice.upper)
+					if attached {ET_MANIFEST_STRING} l_lower as l_string_constant then
+						l_lower_string := l_string_constant
+					else
+						l_lower_string := Void
+					end
+					if attached {ET_MANIFEST_STRING} l_upper as l_string_constant then
+						l_upper_string := l_string_constant
+					else
+						l_upper_string := Void
+					end
+					if l_lower_string /= Void and l_upper_string /= Void then
+						if l_is_string_32 then
+							current_file.put_string (c_ge_str32_is_inbetween)
+							current_file.put_character ('(')
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_32)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							print_temp_name (a_value, current_file)
+							print_comma
+							print_temp_name (a_count, current_file)
+							print_comma
+							l_string_value := l_lower_string.value
+							inspect_choice_string_count := inspect_choice_string_count + 1
+							l_old_file := current_file
+							current_file := current_function_header_buffer
+							current_file.put_character ('%T')
+							current_file.put_string (c_eif_character_32)
+							current_file.put_character (' ')
+							current_file.put_character ('k')
+							current_file.put_integer (inspect_choice_string_count)
+							current_file.put_character ('[')
+							current_file.put_character (']')
+							print_assign_to
+							print_utf8_as_array_of_character_32 (l_string_value)
+							print_semicolon_newline
+							current_file := l_old_file
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_32)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							current_file.put_character ('k')
+							current_file.put_integer (inspect_choice_string_count)
+							print_comma
+							current_file.put_integer ({UC_UTF8_ROUTINES}.unicode_character_count (l_string_value))
+							print_comma
+							l_string_value := l_upper_string.value
+							inspect_choice_string_count := inspect_choice_string_count + 1
+							l_old_file := current_file
+							current_file := current_function_header_buffer
+							current_file.put_character ('%T')
+							current_file.put_string (c_eif_character_32)
+							current_file.put_character (' ')
+							current_file.put_character ('k')
+							current_file.put_integer (inspect_choice_string_count)
+							current_file.put_character ('[')
+							current_file.put_character (']')
+							print_assign_to
+							print_utf8_as_array_of_character_32 (l_string_value)
+							print_semicolon_newline
+							current_file := l_old_file
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_32)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							current_file.put_character ('k')
+							current_file.put_integer (inspect_choice_string_count)
+							print_comma
+							current_file.put_integer ({UC_UTF8_ROUTINES}.unicode_character_count (l_string_value))
+							current_file.put_character (')')
+						else
+							current_file.put_string (c_ge_str8_is_inbetween)
+							current_file.put_character ('(')
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_8)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							print_temp_name (a_value, current_file)
+							print_comma
+							print_temp_name (a_count, current_file)
+							print_comma
+							l_string_value := l_lower_string.value
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_8)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							print_utf8_as_escaped_string_8 (l_string_value)
+							print_comma
+							current_file.put_integer (l_string_value.count)
+							print_comma
+							l_string_value := l_upper_string.value
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_8)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							print_utf8_as_escaped_string_8 (l_string_value)
+							print_comma
+							current_file.put_integer (l_string_value.count)
+							current_file.put_character (')')
+						end
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_if_string_choices", 1, "invalid range type.")
+					end
+				else
+					l_lower := choice_constant (l_choice.lower)
+					if attached {ET_MANIFEST_STRING} l_lower as l_string_constant then
+						if l_is_string_32 then
+							current_file.put_string (c_ge_str32_same_characters)
+							current_file.put_character ('(')
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_32)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							print_temp_name (a_value, current_file)
+							print_comma
+							print_temp_name (a_count, current_file)
+							print_comma
+							l_string_value := l_string_constant.value
+							inspect_choice_string_count := inspect_choice_string_count + 1
+							l_old_file := current_file
+							current_file := current_function_header_buffer
+							current_file.put_character ('%T')
+							current_file.put_string (c_eif_character_32)
+							current_file.put_character (' ')
+							current_file.put_character ('k')
+							current_file.put_integer (inspect_choice_string_count)
+							current_file.put_character ('[')
+							current_file.put_character (']')
+							print_assign_to
+							print_utf8_as_array_of_character_32 (l_string_value)
+							print_semicolon_newline
+							current_file := l_old_file
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_32)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							current_file.put_character ('k')
+							current_file.put_integer (inspect_choice_string_count)
+							print_comma
+							current_file.put_integer ({UC_UTF8_ROUTINES}.unicode_character_count (l_string_value))
+							current_file.put_character (')')
+						else
+							current_file.put_string (c_ge_str8_same_characters)
+							current_file.put_character ('(')
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_8)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							print_temp_name (a_value, current_file)
+							print_comma
+							print_temp_name (a_count, current_file)
+							print_comma
+							l_string_value := l_string_constant.value
+							current_file.put_character ('(')
+							current_file.put_string (c_eif_character_8)
+							current_file.put_character ('*')
+							current_file.put_character (')')
+							print_utf8_as_escaped_string_8 (l_string_value)
+							print_comma
+							current_file.put_integer (l_string_value.count)
+							current_file.put_character (')')
+						end
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_if_string_choices", 2, "string constant expected.")
+					end
+				end
+				if nb > 1 then
+					current_file.put_character (')')
+				end
+				i := i + 1
+			end
+			current_file.put_character (')')
+			current_file.put_character (' ')
+			current_file.put_character ('{')
+			current_file.put_new_line
+		end
+
+	print_case_type_choices (a_choices: ET_CHOICE_LIST; a_value_type: ET_DYNAMIC_PRIMARY_TYPE)
+			-- 'case' statement corresponding to `a_choices`.
+			-- `a_value_type` is the type of the type_id values being compared.
+		require
+			a_choices_not_void: a_choices /= Void
+			a_value_type_not_void: a_value_type /= Void
+		local
+			i, nb: INTEGER
+			l_choice: ET_CHOICE
+			l_lower: detachable ET_CONSTANT
+			l_type: ET_DYNAMIC_TYPE
+		do
+			nb := a_choices.count
+			from i := 1 until i > nb loop
+				l_choice := a_choices.choice (i)
+				if l_choice.is_range then
+					set_fatal_error
+					error_handler.report_giaac_error (generator, "print_case_type_choices", 1, "range not allowed.")
+				else
+					print_indentation
+					current_file.put_string (c_case)
+					current_file.put_character (' ')
+					l_lower := choice_constant (l_choice.lower)
+					l_lower := choice_constant (l_choice.lower)
+					if attached {ET_MANIFEST_TYPE} l_lower as l_type_constant then
+						l_type := current_dynamic_system.dynamic_type (l_type_constant.type, current_type.base_type)
+						current_file.put_integer (l_type.type_id)
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_case_type_choices", 2, "type constant expected.")
+					end
+					current_file.put_character (':')
+					current_file.put_new_line
+				end
+				i := i + 1
+			end
+		end
+
+	print_if_type_choices (a_choices: ET_CHOICE_LIST; a_value: ET_IDENTIFIER; a_value_type: ET_DYNAMIC_PRIMARY_TYPE)
+			-- 'if' statement corresponding to `a_choices`.
+			-- `a_value` is the type_id value being compared.
+			-- `a_value_type` is the type of `a_value`.
+		require
+			a_choices_not_void: a_choices /= Void
+			a_value_not_void: a_value /= Void
+			a_value_is_temporary: a_value.is_temporary
+			a_value_type_not_void: a_value_type /= Void
+		local
+			i, nb: INTEGER
+			l_choice: ET_CHOICE
+			l_lower: detachable ET_CONSTANT
+			l_upper: detachable ET_CONSTANT
+			l_lower_type: detachable ET_MANIFEST_TYPE
+			l_upper_type: detachable ET_MANIFEST_TYPE
+			l_type: ET_DYNAMIC_TYPE
+		do
+			current_file.put_string (c_if)
+			current_file.put_character (' ')
+			current_file.put_character ('(')
+			nb := a_choices.count
+			from i := 1 until i > nb loop
+				if i /= 1 then
+					current_file.put_character (' ')
+					current_file.put_string (c_or_else)
+					current_file.put_character (' ')
+				end
+				if nb > 1 then
+					current_file.put_character ('(')
+				end
+				l_choice := a_choices.choice (i)
+				if l_choice.is_range then
+					l_lower := choice_constant (l_choice.lower)
+					l_upper := choice_constant (l_choice.upper)
+					if attached {ET_MANIFEST_TYPE} l_lower as l_type_constant then
+						l_lower_type := l_type_constant
+					else
+						l_lower_type := Void
+					end
+					if attached {ET_MANIFEST_TYPE} l_upper as l_type_constant then
+						l_upper_type := l_type_constant
+					else
+						l_upper_type := Void
+					end
+					if l_lower_type /= Void and l_upper_type /= Void then
+						type_info_ancestors_used := True
+						current_file.put_string (c_ge_encoded_type_is_inbetween)
+						current_file.put_character ('(')
+						print_temp_name (a_value, current_file)
+						print_comma
+						l_type := current_dynamic_system.dynamic_type (l_lower_type.type, current_type.base_type)
+						current_file.put_integer (l_type.type_id)
+						print_comma
+						l_type := current_dynamic_system.dynamic_type (l_upper_type.type, current_type.base_type)
+						current_file.put_integer (l_type.type_id)
+						current_file.put_character (')')
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_if_type_choices", 1, "invalid range type.")
+					end
+				else
+					print_temp_name (a_value, current_file)
+					current_file.put_character (' ')
+					current_file.put_string (c_equal)
+					current_file.put_character (' ')
+					l_lower := choice_constant (l_choice.lower)
+					if attached {ET_MANIFEST_TYPE} l_lower as l_type_constant then
+						l_type := current_dynamic_system.dynamic_type (l_type_constant.type, current_type.base_type)
+						current_file.put_integer (l_type.type_id)
+					else
+						set_fatal_error
+						error_handler.report_giaac_error (generator, "print_if_type_choices", 2, "type constant expected.")
+					end
+				end
+				if nb > 1 then
+					current_file.put_character (')')
+				end
+				i := i + 1
+			end
+			current_file.put_character (')')
+			current_file.put_character (' ')
+			current_file.put_character ('{')
+			current_file.put_new_line
 		end
 
 	print_instruction (an_instruction: ET_INSTRUCTION)
@@ -13941,28 +14885,8 @@ feature {NONE} -- Expression generation
 			l_temp: ET_IDENTIFIER
 			l_temp_index: INTEGER
 			l_dynamic_type_set: ET_DYNAMIC_TYPE_SET
-			l_expression_dynamic_type_set: ET_DYNAMIC_TYPE_SET
 			l_dynamic_type: ET_DYNAMIC_TYPE
-			l_expression: ET_EXPRESSION
-			l_when_part: ET_WHEN_EXPRESSION
-			l_choices: ET_CHOICE_LIST
-			l_choice: ET_CHOICE
-			i, nb: INTEGER
-			j, nb2: INTEGER
-			l_has_case: BOOLEAN
-			l_lower: detachable ET_CONSTANT
-			l_upper: detachable ET_CONSTANT
-			l_lower_integer: detachable ET_INTEGER_CONSTANT
-			l_upper_integer: detachable ET_INTEGER_CONSTANT
-			l_lower_character: detachable ET_CHARACTER_CONSTANT
-			l_upper_character: detachable ET_CHARACTER_CONSTANT
-			k, nb3: INTEGER
-			l_i_nat32, l_nb_nat32: NATURAL_32
-			l_value_type_set: ET_DYNAMIC_TYPE_SET
-			l_value_type: ET_DYNAMIC_PRIMARY_TYPE
-			l_stop: BOOLEAN
 		do
--- TODO
 			assignment_target := Void
 				-- Declaration of temporary result.
 			l_dynamic_type_set := dynamic_type_set (a_expression)
@@ -13973,216 +14897,7 @@ feature {NONE} -- Expression generation
 				-- it could still be used in `call_operands'.
 			l_temp_index := a_expression.index
 			operand_stack.force (l_temp)
-			l_expression := a_expression.conditional.expression
-			l_value_type_set := dynamic_type_set (l_expression)
-			l_value_type := l_value_type_set.static_type.primary_type
-			print_operand (l_expression)
-			fill_call_operands (1)
-			print_indentation
-			current_file.put_string (c_switch)
-			current_file.put_character (' ')
-			current_file.put_character ('(')
-			if l_value_type.base_class.is_once then
-				print_attribute_once_class_index_access (call_operands.first, l_value_type, True)
-				l_value_type := current_dynamic_system.natural_32_type
-			else
-				print_expression (call_operands.first)
-			end
-			call_operands.wipe_out
-			current_file.put_character (')')
-			current_file.put_character (' ')
-			current_file.put_character ('{')
-			current_file.put_new_line
-			if attached a_expression.when_parts as l_when_parts then
-				nb := l_when_parts.count
-				from i := 1 until i > nb loop
-					l_when_part := l_when_parts.item (i)
-					l_choices := l_when_part.choices
-					nb2 := l_choices.count
-					if nb2 = 0 then
-						-- Do nothing.
-					else
-						l_has_case := False
-						from j := 1 until j > nb2 loop
-							l_choice := l_choices.choice (j)
-							if l_choice.is_range then
--- TODO
-								l_lower := choice_constant (l_choice.lower)
-								l_upper := choice_constant (l_choice.upper)
-								if attached {ET_INTEGER_CONSTANT} l_lower as l_integer_constant then
-									l_lower_integer := l_integer_constant
-									l_lower_character := Void
-								elseif attached {ET_CHARACTER_CONSTANT} l_lower as l_character_constant then
-									l_lower_character := l_character_constant
-									l_lower_integer := Void
-								else
-									l_lower_integer := Void
-									l_lower_character := Void
-								end
-								if attached {ET_INTEGER_CONSTANT} l_upper as l_integer_constant then
-									l_upper_integer := l_integer_constant
-									l_upper_character := Void
-								elseif attached {ET_CHARACTER_CONSTANT} l_upper as l_character_constant then
-									l_upper_character := l_character_constant
-									l_upper_integer := Void
-								else
-									l_upper_integer := Void
-									l_upper_character := Void
-								end
-								if l_lower_integer /= Void and l_upper_integer /= Void then
-									from
--- TODO: check type of inspect value.
-										k := l_lower_integer.to_integer_32
-										nb3 := l_upper_integer.to_integer_32
-									until
-										k > nb3
-									loop
-										l_has_case := True
-										print_indentation
-										current_file.put_string (c_case)
-										current_file.put_character (' ')
-										print_integer_value (k.abs.to_natural_64, k < 0, l_value_type, True)
-										current_file.put_character (':')
-										current_file.put_new_line
-										k := k + 1
-									end
-								elseif l_lower_character /= Void and l_upper_character /= Void then
-									from
-										l_i_nat32 := l_lower_character.value.natural_32_code
-										l_nb_nat32 := l_upper_character.value.natural_32_code
-										l_stop := l_i_nat32 > l_nb_nat32
-									until
-										l_stop
-									loop
-										l_has_case := True
-										print_indentation
-										current_file.put_string (c_case)
-										current_file.put_character (' ')
-										if current_system.character_32_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
-											current_file.put_string (c_ge_nat32)
-											current_file.put_character ('(')
-											current_file.put_natural_32 (l_i_nat32)
-											current_file.put_character (')')
-										else
-												-- Type cast needed when compiling with mingw when the character
-												-- is represented by '\xyz' where x is not 0.
-											print_type_cast (l_value_type, current_file)
-											print_escaped_character_8 (l_i_nat32.to_character_8)
-										end
-										current_file.put_character (':')
-										current_file.put_new_line
-										if l_i_nat32 = l_nb_nat32 then
-											l_stop := True
-										else
-											l_i_nat32 := l_i_nat32 + 1
-										end
-									end
-								else
--- TODO
-error_handler.report_warning_message ("ET_C_GENERATOR.print_inspect_expression - range")
-								end
-							else
-								l_has_case := True
-								print_indentation
-								current_file.put_string (c_case)
-								current_file.put_character (' ')
-								l_lower := choice_constant (l_choice.lower)
-								if attached {ET_INTEGER_CONSTANT} l_lower as l_integer_constant then
-									print_integer_value (l_integer_constant.value, l_integer_constant.is_negative, l_value_type, True)
-								elseif attached {ET_CHARACTER_CONSTANT} l_lower as l_character_constant then
-									if current_system.character_32_type.same_named_type (l_value_type.base_type, current_type.base_type, current_type.base_type) then
-										current_file.put_string (c_ge_nat32)
-										current_file.put_character ('(')
-										current_file.put_natural_32 (l_character_constant.value.natural_32_code)
-										current_file.put_character (')')
-									else
-											-- Type cast needed when compiling with mingw when the character
-											-- is represented by '\xyz' where x is not 0.
-										print_type_cast (l_value_type, current_file)
-										print_escaped_character_8 (l_character_constant.value.to_character_8)
-									end
-								else
-									if l_value_type /= dynamic_type_set (l_choice.lower).static_type.primary_type then
-										print_type_cast (l_value_type, current_file)
-									end
-									print_expression (l_choice.lower)
-								end
-								current_file.put_character (':')
-								current_file.put_new_line
-							end
-							j := j + 1
-						end
-						if l_has_case then
-							indent
-							l_expression := l_when_part.then_expression
-							l_expression_dynamic_type_set := dynamic_type_set (l_expression)
-							print_assignment_operand (l_expression, l_expression_dynamic_type_set, l_temp, l_dynamic_type)
-							fill_call_operands (1)
-							if call_operands.first /= l_temp then
-								print_indentation
-								print_temp_name (l_temp, current_file)
-								current_file.put_character (' ')
-								current_file.put_character ('=')
-								current_file.put_character (' ')
-								print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, l_dynamic_type)
-								current_file.put_character (';')
-								current_file.put_new_line
-							end
-							call_operands.wipe_out
-							print_indentation
-							current_file.put_string (c_break)
-							current_file.put_character (';')
-							current_file.put_new_line
-							dedent
-						end
-					end
-					i := i + 1
-				end
-			end
-			print_indentation
-			current_file.put_string (c_default)
-			current_file.put_character (':')
-			current_file.put_new_line
-			if attached a_expression.else_part as l_else_part then
-				indent
-				l_expression := l_else_part.expression
-				l_expression_dynamic_type_set := dynamic_type_set (l_expression)
-				print_assignment_operand (l_expression, l_expression_dynamic_type_set, l_temp, l_dynamic_type)
-				fill_call_operands (1)
-				if call_operands.first /= l_temp then
-					print_indentation
-					print_temp_name (l_temp, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
-					print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, l_dynamic_type)
-					current_file.put_character (';')
-					current_file.put_new_line
-				end
-				call_operands.wipe_out
-				print_indentation
-				current_file.put_string (c_break)
-				current_file.put_character (';')
-				current_file.put_new_line
-				dedent
-			else
-				indent
-				print_indentation
-				current_file.put_string (c_ge_raise)
-				current_file.put_character ('(')
-				current_file.put_string (c_ge_ex_when)
-				current_file.put_character (')')
-				current_file.put_character (';')
-				current_file.put_new_line
-				print_indentation
-				current_file.put_string (c_break)
-				current_file.put_character (';')
-				current_file.put_new_line
-				dedent
-			end
-			print_indentation
-			current_file.put_character ('}')
-			current_file.put_new_line
+			print_inspect_component (a_expression, l_temp, l_dynamic_type)
 			if l_temp_index /= 0 then
 					-- We had to wait until this stage to set the index of `l_temp'
 					-- because it could have still been used in `call_operands'.
@@ -44056,6 +44771,50 @@ feature {NONE} -- String generation
 			end
 		end
 
+	print_utf8_as_array_of_character_32 (a_utf8_string: STRING_8)
+			-- Print `a_utf8_string' as an array of CHARACTER_32 code points.
+		require
+			a_utf8_string_not_void: a_utf8_string /= Void
+			a_utf8_string_is_string: {KL_ANY_ROUTINES}.same_types (a_utf8_string, "")
+			valid_utf8: {UC_UTF8_ROUTINES}.valid_utf8 (a_utf8_string)
+		local
+			i, nb: INTEGER
+			c1: CHARACTER_8
+			l_code: NATURAL_32
+			l_byte_count: INTEGER
+		do
+			current_file.put_character ('{')
+			nb := a_utf8_string.count
+			from i := 1 until i > nb loop
+				if i /= 1 then
+					print_comma
+				end
+				c1 := a_utf8_string.item (i)
+				l_byte_count := {UC_UTF8_ROUTINES}.encoded_byte_count (c1)
+				inspect l_byte_count
+				when 1 then
+						-- 0xxxxxxx
+					l_code := c1.natural_32_code
+				when 2 then
+						-- 110xxxxx 10xxxxxx
+					l_code := {UC_UTF8_ROUTINES}.two_byte_character_code (c1, a_utf8_string.item (i + 1))
+				when 3 then
+						-- 1110xxxx 10xxxxxx 10xxxxxx
+					l_code := {UC_UTF8_ROUTINES}.three_byte_character_code (c1, a_utf8_string.item (i + 1), a_utf8_string.item (i + 2))
+				when 4 then
+						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+					l_code := {UC_UTF8_ROUTINES}.four_byte_character_code (c1, a_utf8_string.item (i + 1), a_utf8_string.item (i + 2), a_utf8_string.item (i + 3))
+				else
+						-- Should never happen.
+					l_code := 0
+					i := i + 1
+				end
+				print_integer_value (l_code, False, current_dynamic_system.natural_32_type, False)
+				i := i + l_byte_count
+			end
+			current_file.put_character ('}')
+		end
+
 	print_escaped_character_8 (c: CHARACTER_8)
 			-- Print escaped version of `c'.
 		local
@@ -46723,6 +47482,7 @@ feature {NONE} -- Temporary variables
 			free_temp_variables.wipe_out
 			frozen_temp_variables.wipe_out
 			volatile_temp_variables.wipe_out
+			inspect_choice_string_count := 0
 		end
 
 feature {NONE} -- Temporary variables (Implementation)
@@ -46927,6 +47687,74 @@ feature {NONE} -- Iteration cursors
 
 	iteration_cursor_name: ET_IDENTIFIER
 			-- Iteration cursor name to be used when printing declarations
+
+feature {NONE} -- Inspect instructions/expressions
+
+	choice_constant (a_choice_constant: ET_CHOICE_CONSTANT): detachable ET_CONSTANT
+			-- Constant value of the inspect choice `a_choice_constant',
+			-- or Void if it appears not to be a constant after all
+			--
+			-- Note that validity `a_choice_constant' as an expression
+			-- is assumed to have already been checked.
+			-- It will just return Void if something unexpected is encountered.
+		require
+			a_choice_constant_not_void: a_choice_constant /= Void
+		local
+			l_query: detachable ET_QUERY
+			l_seed: INTEGER
+			l_target_type: ET_DYNAMIC_PRIMARY_TYPE
+		do
+			if attached {ET_CONSTANT} a_choice_constant as l_constant then
+				Result := l_constant
+			else
+				if attached {ET_IDENTIFIER} a_choice_constant as l_identifier then
+					if l_identifier.is_argument then
+							-- This is not a constant.
+					elseif l_identifier.is_local then
+							-- This is not a constant.
+					elseif l_identifier.is_object_test_local then
+							-- This is not a constant.
+					elseif l_identifier.is_iteration_item then
+							-- This is not a constant.
+					elseif l_identifier.is_inline_separate_argument then
+							-- This is not a constant.
+					else
+						l_seed := l_identifier.seed
+						l_query := current_type.base_class.seeded_query (l_seed)
+					end
+				elseif attached {ET_UNQUALIFIED_FEATURE_CALL} a_choice_constant as l_unqualified_call and then l_unqualified_call.arguments_count = 0 then
+					l_seed := l_unqualified_call.name.seed
+					l_query := current_type.base_class.seeded_query (l_seed)
+				elseif attached {ET_STATIC_CALL_EXPRESSION} a_choice_constant as l_static_call then
+					l_target_type := current_dynamic_system.dynamic_primary_type (l_static_call.type, current_type.base_type)
+					if l_static_call.is_once_creation_call then
+						if attached l_target_type.base_class.seeded_procedure (l_static_call.name.seed) as l_procedure then
+							integer_choice_constant.set_value (l_procedure.once_creation_index)
+							integer_choice_constant.set_sign (Void)
+							Result := integer_choice_constant
+						end
+					else
+						l_query := l_target_type.base_class.seeded_query (l_static_call.name.seed)
+					end
+				end
+				if attached {ET_CONSTANT_QUERY} l_query as l_constant_query then
+					Result := l_constant_query.constant
+				end
+			end
+		end
+
+	integer_choice_constant: ET_REGULAR_INTEGER_CONSTANT
+			-- Integer constant
+
+	inspect_if_choices: DS_ARRAYED_LIST [ET_WHEN_COMPONENT]
+			-- Inspect 'when' components using 'if' statements for its choices
+
+	inspect_case_choices: DS_ARRAYED_LIST [ET_WHEN_COMPONENT]
+			-- Inspect 'when' components using 'case' statements for its choices
+
+	inspect_choice_string_count: INTEGER
+			-- Number of strings appearing in inspect instructions/expressions
+			-- in current feature, so far
 
 feature {NONE} -- SCOOP
 
@@ -47994,6 +48822,7 @@ feature {NONE} -- Constants
 	c_ge_dts: STRING = "GE_dts"
 	c_ge_encoded_type_conforms_to: STRING = "GE_encoded_type_conforms_to"
 	c_ge_encoded_type_from_name: STRING = "GE_encoded_type_from_name"
+	c_ge_encoded_type_is_inbetween: STRING = "GE_encoded_type_is_inbetween"
 	c_ge_ex_cdef: STRING = "GE_EX_CDEF"
 	c_ge_ex_cinv: STRING = "GE_EX_CINV"
 	c_ge_ex_check: STRING = "GE_EX_CHECK"
@@ -48224,6 +49053,10 @@ feature {NONE} -- Constants
 	c_ge_sp8_base_address: STRING = "GE_sp8_base_address"
 	c_ge_sp32_base_address: STRING = "GE_sp32_base_address"
 	c_ge_storable_version_of_encoded_type: STRING = "GE_storable_version_of_encoded_type"
+	c_ge_str8_is_inbetween: STRING = "GE_str8_is_inbetween"
+	c_ge_str8_same_characters: STRING = "GE_str8_same_characters"
+	c_ge_str32_is_inbetween: STRING = "GE_str32_is_inbetween"
+	c_ge_str32_same_characters: STRING = "GE_str32_same_characters"
 	c_ge_thread_create_with_attr: STRING = "GE_thread_create_with_attr"
 	c_ge_thread_onces_set_counts: STRING = "GE_thread_onces_set_counts"
 	c_ge_type_flag_boolean: STRING = "GE_TYPE_FLAG_BOOLEAN"
@@ -48586,5 +49419,11 @@ invariant
 	no_void_old_expression_temp_variable: not old_expression_temp_variables.has_void_item
 	old_expression_exception_temp_variables_not_void: old_expression_exception_temp_variables /= Void
 	no_void_old_expression_exception_temp_variable: not old_expression_exception_temp_variables.has_void_item
+		-- Inspect instructions/expressions.
+	integer_choice_constant_not_void: integer_choice_constant /= Void
+	inspect_if_choices_not_void: inspect_if_choices /= Void
+	no_void_inspect_if_choices: not inspect_if_choices.has_void
+	inspect_case_choices_not_void: inspect_case_choices /= Void
+	no_void_inspect_case_choices: not inspect_case_choices.has_void
 
 end
