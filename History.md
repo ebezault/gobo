@@ -1,5 +1,11 @@
 # Release History
 
+## Version xx.xx.xx - xxxxxx
+
+### gecop
+
+* Added semantics tests for `VOIT` (Iteration rule).
+
 ## Version 26.06.30 - 30 June 2026
 
 ### gecop
