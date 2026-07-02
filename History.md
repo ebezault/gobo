@@ -6,6 +6,11 @@
 
 * Added semantics tests for `VOIT` (Iteration rule).
 
+### Gobo Eiffel Tools Library
+
+* Improved detection of non-initialialized attributes of attached
+  types when the initialization occurs in a once-routine.
+
 ## Version 26.06.30 - 30 June 2026
 
 ### gecop

@@ -2706,7 +2706,9 @@ feature {ET_AST_NODE} -- Processing
 			l_seed: INTEGER
 			had_error: BOOLEAN
 		do
-			if attached an_expression.parenthesis_call as l_parenthesis_call then
+			if an_expression.is_once_creation_call then
+				process_creation_expression (an_expression)
+			elseif attached an_expression.parenthesis_call as l_parenthesis_call then
 				process_qualified_feature_call_expression (l_parenthesis_call)
 			else
 				reset_fatal_error (False)
