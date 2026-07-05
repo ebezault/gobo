@@ -162,6 +162,7 @@ inherit
 			reportable_vtcg3_error,
 			reportable_vtcg4_error,
 			reportable_vtct_error,
+			reportable_vtec2_error,
 			reportable_vtug1_error,
 			reportable_vtug2_error,
 			reportable_vuar1_error,
@@ -1269,6 +1270,13 @@ feature -- Validity error status
 
 	reportable_vtct_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VTCT error be reported when it
+			-- appears in `a_class'?
+		do
+			Result := False
+		end
+
+	reportable_vtec2_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VTEC-2 error be reported when it
 			-- appears in `a_class'?
 		do
 			Result := False

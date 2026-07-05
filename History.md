@@ -2,14 +2,21 @@
 
 ## Version xx.xx.xx - xxxxxx
 
+### gec
+
+* Made sure that `default_create` is called when initializing
+  expanded objects.
+
 ### gecop
 
 * Added semantics tests for `VOIT` (Iteration rule).
+* Added validation tests for `VTEC-2` (Expanded Type rule).
 
 ### Gobo Eiffel Tools Library
 
 * Improved detection of non-initialialized attributes of attached
   types when the initialization occurs in a once-routine.
+* Added validity checks for expanded types. Validity rules `VTEC-2`.
 
 ## Version 26.06.30 - 30 June 2026
 

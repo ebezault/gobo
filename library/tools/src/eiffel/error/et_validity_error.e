@@ -331,6 +331,7 @@ create
 	make_vtcg4b,
 	make_vtct0a,
 	make_vtct0b,
+	make_vtec2a,
 	make_vtug1a,
 	make_vtug2a,
 	make_vuar1a,
@@ -13662,7 +13663,7 @@ feature {NONE} -- Initialization
 		end
 
 	make_vqmc1a (a_class, a_class_impl: ET_CLASS; an_attribute: ET_CONSTANT_ATTRIBUTE)
-			-- Create a new VQMC-1 error: `an_attribute', declared in `a_class_impl, introduces
+			-- Create a new VQMC-1 error: `an_attribute', declared in `a_class_impl', introduces
 			-- a boolean constant but its type is not "BOOLEAN" when viewed from one of its
 			-- descendants `a_class' (possibly itself).
 			--
@@ -15310,6 +15311,48 @@ feature {NONE} -- Initialization
 			-- dollar5: $5 = class name
 			-- dollar6: $6 = implementation class name
 			-- dollar7: $7 = type base class
+		end
+
+	make_vtec2a (a_class: ET_CLASS; a_type: ET_CLASS_TYPE)
+			-- Create a new VTEC error: `a_type', which appears in source code of
+			-- `a_class', is an expanded, but its base class does not export
+			-- 'default_create' as creation procedure to `a_class`.
+			--
+			-- ETL2: p.209
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_type_not_void: a_type /= Void
+		do
+			current_class := a_class
+			class_impl := a_class
+			position := a_type.position
+			ast_node := a_type
+			code := template_code (vtec2a_template_code)
+			etl_code := vtec2_etl_code
+			default_template := default_message_template (vtec2a_default_template)
+			create parameters.make_filled (empty_string, 1, 7)
+			parameters.put (etl_code, 1)
+			parameters.put (filename, 2)
+			parameters.put (position.line.out, 3)
+			parameters.put (position.column.out, 4)
+			parameters.put (current_class.upper_name, 5)
+			parameters.put (class_impl.upper_name, 6)
+			parameters.put (a_type.to_text, 7)
+			set_compilers (True)
+		ensure
+			current_class_set: current_class = a_class
+			class_impl_set: class_impl = a_class
+			all_reported: all_reported
+			all_fatal: all_fatal
+			-- dollar0: $0 = program name
+			-- dollar1: $1 = ETL code
+			-- dollar2: $2 = filename
+			-- dollar3: $3 = line
+			-- dollar4: $4 = column
+			-- dollar5: $5 = class name
+			-- dollar6: $6 = implementation class name
+			-- dollar7: $7 = type name
 		end
 
 	make_vtug1a (a_class: ET_CLASS; a_type: ET_CLASS_TYPE)
@@ -21648,6 +21691,7 @@ feature {NONE} -- Implementation
 	vtcg4b_default_template: STRING = "the $7-th actual generic parameter of $10, which is the $9-th formal generic parameter of class $5, does not list feature `$8' as creation procedure in its constraint."
 	vtct0a_default_template: STRING = "type based on unknown class $7."
 	vtct0b_default_template: STRING = "type based on unknown class $7."
+	vtec2a_default_template: STRING = "the version of 'default_create' in the base class of the expanded type '$7' is not a creation procedure exported to $5."
 	vtug1a_default_template: STRING = "type '$7' has actual generic parameters but class $8 is not generic."
 	vtug2a_default_template: STRING = "type '$7' has wrong number of actual generic parameters."
 	vuar1a_default_template: STRING = "the number of actual arguments is not the same as the number of formal arguments of feature `$8' in class $9."
@@ -21913,6 +21957,7 @@ feature {NONE} -- Implementation
 	vtcg3_etl_code: STRING = "VTCG-3"
 	vtcg4_etl_code: STRING = "VTCG-4"
 	vtct_etl_code: STRING = "VTCT"
+	vtec2_etl_code: STRING = "VTEC-2"
 	vtug1_etl_code: STRING = "VTUG-1"
 	vtug2_etl_code: STRING = "VTUG-2"
 	vuar1_etl_code: STRING = "VUAR-1"
@@ -22315,6 +22360,7 @@ feature {NONE} -- Implementation
 	vtcg4b_template_code: STRING = "vtcg4b"
 	vtct0a_template_code: STRING = "vtct0a"
 	vtct0b_template_code: STRING = "vtct0b"
+	vtec2a_template_code: STRING = "vtec2a"
 	vtgc0a_template_code: STRING = "vtgc0a"
 	vtgc0b_template_code: STRING = "vtgc0b"
 	vtug1a_template_code: STRING = "vtug1a"

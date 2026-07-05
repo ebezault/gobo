@@ -10,7 +10,7 @@
 	]"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2018-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2018-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_DYNAMIC_PRIMARY_TYPE
@@ -447,6 +447,50 @@ feature -- Features
 			end
 		end
 
+	has_custom_default_create_routine: BOOLEAN
+			-- Does the version of routine 'default_create' in current type
+			-- contain code for custom initialization?
+
+	has_nested_default_create_copy_routine: BOOLEAN
+			-- Does the version of routine 'default_create' in current type
+			-- contain code for custom initialization, or recursively does
+			-- it have expanded attributes whose version of routine
+			-- 'default_create' contain code for custom initialization?
+		local
+			i, nb: INTEGER
+			l_type: ET_DYNAMIC_PRIMARY_TYPE
+		do
+			if has_custom_default_create_routine then
+				Result := True
+			elseif is_basic then
+				Result := False
+			else
+					-- We should not have cyclic recursive expanded objects.
+					-- This is either rejected by Eiffel validity rule (see VLEC in ETL2),
+					-- or by another proper handling if ECMA relaxed this rule
+					-- (through the introduction of attached types). But in case
+					-- such a cyclic recursion has slipped through, we temporarily
+					-- set `has_once_per_object_routines' to True to break that cycle.
+				has_custom_default_create_routine := True
+				nb := attribute_count
+				from i := 1 until i > nb loop
+					if attached queries.item (i).result_type_set as l_result_type_set then
+						l_type := l_result_type_set.static_type.primary_type
+						if l_type.is_expanded and then l_type.has_nested_default_create_copy_routine then
+							Result := True
+							i := nb + 1
+						else
+							i := i + 1
+						end
+					else
+							-- Should never happen: queries have a result type set.
+						i := i + 1
+					end
+				end
+				has_custom_default_create_routine := False
+			end
+		end
+
 	queries: ET_DYNAMIC_FEATURE_LIST
 			-- Queries executed at run-time, if any
 			-- (Note that attributes are stored first, from 1 to `attribute_count'.)
@@ -811,6 +855,15 @@ feature {NONE} -- Features
 			end
 			if a_procedure.is_copy_routine then
 				has_redefined_copy_routine := not a_procedure.is_builtin_any_copy
+			end
+			if a_procedure.is_default_create_routine then
+				has_custom_default_create_routine := not attached {ET_DO_PROCEDURE} a_procedure.static_feature as l_do_procedure or else
+					(attached l_do_procedure.locals as l_locals and then not l_locals.is_empty) or else
+					(attached l_do_procedure.compound as l_compound and then not l_compound.is_empty) or else
+					l_do_procedure.rescue_clause /= Void or else
+					base_class.invariants_enabled or else
+					base_class.preconditions_enabled or else
+					base_class.postconditions_enabled
 			end
 		end
 
