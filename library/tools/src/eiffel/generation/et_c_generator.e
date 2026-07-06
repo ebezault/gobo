@@ -2829,12 +2829,9 @@ feature {NONE} -- Feature generation
 					print_type_declaration (l_result_type, current_file)
 					current_file.put_character (' ')
 					print_result_name (current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					print_default_entity_value (l_result_type, current_file)
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 				end
 			end
 				--
@@ -2874,6 +2871,7 @@ feature {NONE} -- Feature generation
 			end
 			if a_creation then
 				print_malloc_current (a_feature)
+				print_attributes_initialization (tokens.current_keyword, current_type, False)
 				if exception_trace_mode and then current_in_exception_trace then
 					print_indentation
 					current_file.put_string (c_tc)
@@ -7400,6 +7398,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			end
 			if a_creation then
 				print_malloc_current (a_feature)
+				print_attributes_initialization (tokens.current_keyword, current_type, False)
 				if l_is_once then
 					print_indentation
 					print_attribute_once_class_index_access (tokens.current_keyword, current_type, False)
@@ -7990,6 +7989,10 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			locals_written := locals_written_in_body
 			locals_read := locals_read_in_body
 			if attached a_feature.compound as l_compound then
+				if a_result_type /= Void then
+					print_result_initialization (a_result_type)
+				end
+				print_local_variables_initialization (a_feature)
 				print_compound (l_compound)
 			end
 			if current_type.base_class.invariants_enabled and not current_closure.is_static then
@@ -23877,6 +23880,9 @@ feature {NONE} -- Separate calls
 						separate_call_instruction.set_arguments (l_separate_call_arguments)
 						l_old_in_separate_creation_call := in_separate_creation_call
 						in_separate_creation_call := l_is_creation_call
+						if l_is_creation_call then
+							print_attributes_initialization (separate_call_instruction.target, l_target_type, False)
+						end
 						print_qualified_call_instruction (separate_call_instruction)
 						in_separate_creation_call := l_old_in_separate_creation_call
 					end
@@ -24226,6 +24232,9 @@ feature {NONE} -- Separate calls
 				separate_call_instruction.set_arguments (l_separate_call_arguments)
 				l_old_in_separate_creation_call := in_separate_creation_call
 				in_separate_creation_call := attached {ET_CREATION_COMPONENT} a_separate_call
+				if in_separate_creation_call then
+					print_attributes_initialization (separate_call_instruction.target, l_target_type, False)
+				end
 				print_qualified_call_instruction (separate_call_instruction)
 				in_separate_creation_call := l_old_in_separate_creation_call
 			end
@@ -43287,6 +43296,154 @@ feature {NONE} -- Type generation
 		end
 
 feature {NONE} -- Default initialization values generation
+
+	print_attributes_initialization (a_object: ET_EXPRESSION; a_type: ET_DYNAMIC_PRIMARY_TYPE; a_check_void_target: BOOLEAN)
+			-- Print initialization of expanded attributes of `a_object` of type `a_type`.
+			-- `a_check_void_target' means that we need to check whether `a_object` is Void or not.
+		require
+			a_object_not_void: a_object /= Void
+			a_type_not_void: a_type /= Void
+		local
+			i, nb: INTEGER
+			l_attribute: ET_DYNAMIC_FEATURE
+		do
+			if current_system.default_create_seed /= 0 then
+				nb := a_type.attribute_count
+				from i := 1 until i > nb loop
+					l_attribute := a_type.queries.item (i)
+					print_attribute_initialization (l_attribute, a_object, a_type, a_check_void_target)
+					i := i + 1
+				end
+			end
+		end
+
+	print_attribute_initialization (a_attribute: ET_DYNAMIC_FEATURE; a_object: ET_EXPRESSION; a_type: ET_DYNAMIC_PRIMARY_TYPE; a_check_void_target: BOOLEAN)
+			-- Print initialization of `a_attribute`, if expanded, of `a_object` of type `a_type`.
+			-- `a_check_void_target' means that we need to check whether `a_object` is Void or not.
+		require
+			a_attribute_not_void: a_attribute /= Void
+			a_object_not_void: a_object /= Void
+			a_type_not_void: a_type /= Void
+		local
+			l_attribute_type: ET_DYNAMIC_PRIMARY_TYPE
+			l_default_create_seed: INTEGER
+		do
+			l_default_create_seed := current_system.default_create_seed
+			if l_default_create_seed = 0 then
+				-- `default_create` not supported.
+			elseif not attached a_attribute.result_type_set as l_result_type_set then
+					-- Internal error: attributes should have a result type.
+				set_fatal_error
+				error_handler.report_giaac_error (generator, "print_attribute_initialization", 1, "attribute with no type.")
+			else
+				l_attribute_type := l_result_type_set.static_type.primary_type
+				if not l_attribute_type.is_expanded or else l_attribute_type.is_basic then
+					-- No initialization needed.
+				elseif not l_attribute_type.has_nested_default_create_copy_routine then
+					-- Empty initialization.
+				elseif not attached l_attribute_type.seeded_dynamic_procedure (l_default_create_seed, current_dynamic_system) as l_default_create then
+						-- Internal error: feature 'default_create' not found.
+					set_fatal_error
+					error_handler.report_giaac_error (generator, "print_attribute_initialization", 2, "feature `default_create` not found.")
+				else
+					print_indentation
+					print_attribute_access (a_attribute, a_object, a_type, a_check_void_target)
+					print_assign_to
+					register_called_feature (l_default_create)
+					print_creation_procedure_name (l_default_create, l_attribute_type, current_file)
+					current_file.put_character ('(')
+					current_file.put_string (c_ac)
+					current_file.put_character (')')
+					print_semicolon_newline
+				end
+			end
+		end
+
+	print_local_variables_initialization (a_feature: ET_INTERNAL_FEATURE_CLOSURE)
+			-- Print initialization of expanded local variables of `a_feature`.
+		require
+			a_feature_not_void: a_feature /= Void
+		local
+			i, nb: INTEGER
+			l_default_create_seed: INTEGER
+		do
+			l_default_create_seed := current_system.default_create_seed
+			if l_default_create_seed /= 0 and then attached a_feature.locals as l_locals then
+				nb := l_locals.count
+				from i := 1 until i > nb loop
+					print_local_variable_initialization (l_locals.local_variable (i))
+					i := i + 1
+				end
+			end
+		end
+
+	print_local_variable_initialization (a_local: ET_LOCAL_VARIABLE)
+			-- Print initialization of `a_local` if its type is expanded.
+		require
+			a_local_not_void: a_local /= Void
+		local
+			l_name: ET_IDENTIFIER
+			l_local_type_set: ET_DYNAMIC_TYPE_SET
+			l_local_type: ET_DYNAMIC_PRIMARY_TYPE
+			l_default_create_seed: INTEGER
+		do
+			l_default_create_seed := current_system.default_create_seed
+			l_name := a_local.name
+			l_local_type_set := dynamic_type_set (l_name)
+			l_local_type := l_local_type_set.static_type.primary_type
+			if l_default_create_seed = 0 then
+				-- `default_create` not supported.
+			elseif not l_local_type.is_expanded or else l_local_type.is_basic then
+				-- No initialization needed.
+			elseif not l_local_type.has_nested_default_create_copy_routine then
+				-- Empty initialization.
+			elseif not attached l_local_type.seeded_dynamic_procedure (l_default_create_seed, current_dynamic_system) as l_default_create then
+					-- Internal error: feature 'default_create' not found.
+				set_fatal_error
+				error_handler.report_giaac_error (generator, "print_local_variable_initialization", 1, "feature `default_create` not found.")
+			else
+				print_indentation
+				print_local_name (l_name, current_file)
+				print_assign_to
+				register_called_feature (l_default_create)
+				print_creation_procedure_name (l_default_create, l_local_type, current_file)
+				current_file.put_character ('(')
+				current_file.put_string (c_ac)
+				current_file.put_character (')')
+				print_semicolon_newline
+			end
+		end
+
+	print_result_initialization (a_result_type: ET_DYNAMIC_PRIMARY_TYPE)
+			-- Print initialization of 'Result' if its type is expanded.
+		require
+			a_result_type_not_void: a_result_type /= Void
+		local
+			l_default_create_seed: INTEGER
+		do
+			l_default_create_seed := current_system.default_create_seed
+			if l_default_create_seed = 0 then
+				-- `default_create` not supported.
+			elseif not a_result_type.is_expanded or else a_result_type.is_basic then
+				-- No initialization needed.
+			elseif not a_result_type.has_nested_default_create_copy_routine then
+				-- Empty initialization.
+			elseif not attached a_result_type.seeded_dynamic_procedure (l_default_create_seed, current_dynamic_system) as l_default_create then
+					-- Internal error: feature 'default_create' not found.
+				set_fatal_error
+				error_handler.report_giaac_error (generator, "print_result_initialization", 1, "feature `default_create` not found.")
+			else
+				print_indentation
+				print_result_name (current_file)
+				print_assign_to
+				register_called_feature (l_default_create)
+				print_creation_procedure_name (l_default_create, a_result_type, current_file)
+				current_file.put_character ('(')
+				current_file.put_string (c_ac)
+				current_file.put_character (')')
+				print_semicolon_newline
+			end
+		end
 
 	print_default_declarations
 			-- Print default initialization declaration of each type

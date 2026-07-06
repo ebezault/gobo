@@ -7551,6 +7551,25 @@ feature -- Validity errors
 			end
 		end
 
+	report_vtec2a_error (a_class: ET_CLASS; a_type: ET_CLASS_TYPE)
+			-- Report VTEC error: `a_type', which appears in source code of
+			-- `a_class', is an expanded, but its base class does not export
+			-- 'default_create' as creation procedure to `a_class`.
+			--
+			-- ETL2: p.209
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+			a_type_not_void: a_type /= Void
+		local
+			l_error: ET_VALIDITY_ERROR
+		do
+			if reportable_vtec2_error (a_class) then
+				create l_error.make_vtec2a (a_class, a_type)
+				report_validity_error (l_error)
+			end
+		end
+
 	report_vtug1a_error (a_class: ET_CLASS; a_type: ET_CLASS_TYPE)
 			-- Report VTUG-1 error: `a_type', which appears in
 			-- source code of `a_class', has actual generic parameters
@@ -11485,6 +11504,15 @@ feature -- Validity error status
 			Result := True
 		end
 
+	reportable_vtec2_error (a_class: ET_CLASS): BOOLEAN
+			-- Can a VTEC-2 error be reported when it
+			-- appears in `a_class'?
+		require
+			a_class_not_void: a_class /= Void
+			a_class_preparsed: a_class.is_preparsed
+		do
+			Result := True
+		end 
 	reportable_vtug1_error (a_class: ET_CLASS): BOOLEAN
 			-- Can a VTUG-1 error be reported when it
 			-- appears in `a_class'?
