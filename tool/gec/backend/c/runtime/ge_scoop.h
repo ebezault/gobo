@@ -4,7 +4,7 @@
 		"C functions used to implement SCOOP facilities"
 
 	system: "Gobo Eiffel Compiler"
-	copyright: "Copyright (c) 2023-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2023-2026, Eric Bezault and others"
 	license: "MIT License"
 */
 
@@ -33,7 +33,7 @@ typedef volatile struct GE_scoop_session_struct GE_scoop_session;
 struct GE_scoop_call_struct {
 	GE_scoop_region* volatile caller; /* Region of the caller of the call. */
 	char volatile is_synchronous; /* Should the caller wait for the call to be executed? */
-	char volatile is_condition; /* Is the current call as condition call? */
+	char volatile is_condition; /* Is the current call a condition call? */
 	void (*volatile execute)(GE_context*, GE_scoop_session*, GE_scoop_call*);
 	GE_scoop_call* volatile next; /* Protected by `mutex' of enclosing session. */
 };
@@ -44,16 +44,18 @@ struct GE_scoop_session_struct {
 	uint32_t volatile is_synchronized; /* Did `callee' synchronously trigger directly (=1) or indirectly (>1) the calls of this session? Needed in case of callbacks. Not protected by a mutex. */
 	uint32_t volatile is_open; /* Number of times this session is being open. When 0, no more calls will be added. Protected by `mutex'. */
 	char volatile is_submitted; /* Has this sesssion been submitted for execution to the processor of its callee's region? Protected by `mutex'. */
+	char volatile was_eiffel_called; /* Has some Eiffel code been called as part of this session? Protected by `mutex'. */
 	GE_scoop_session* volatile next_locked_session; /* Not protected by a mutex. */
 	GE_scoop_session* volatile previous; /* Protected by `mutex' of enclosing region. */
 	GE_scoop_session* volatile next; /* Protected by `mutex' of enclosing region. */
 	GE_scoop_call* volatile first_call; /* Protected by `mutex'. */
 	GE_scoop_call* volatile last_call; /* Protected by `mutex'. */
-	EIF_MUTEX_TYPE* volatile mutex; /* To add, remove and access SCOOP calls, and to update `is_open' and `is_submitted'. */
+	EIF_MUTEX_TYPE* volatile mutex; /* To add, remove and access SCOOP calls, and to update `is_open', `is_submitted' and `was_eiffel_called'. */
 	EIF_COND_TYPE* volatile condition_variable; /* To add, remove and access SCOOP calls, and to update `is_open' and `is_submitted'. */
 };
 
 /* Struct for a SCOOP region and its processor if any. */
+typedef volatile struct GE_scoop_precondition_struct GE_scoop_precondition;
 struct GE_scoop_region_struct {
 	GE_context* volatile context; /* May be null in case of a passive region not currently handled by the caller's prpcessor. */
 	char volatile is_passive; /* Is it a passive region (with no associated processor)? */
@@ -67,10 +69,14 @@ struct GE_scoop_region_struct {
 	GE_scoop_session* volatile first_session; /* Protected by `mutex'. */
 	GE_scoop_session* volatile last_session; /* Protected by `mutex'. */
 	GE_scoop_session** volatile last_session_keep_alive; /* To keep alive the last submitted session not executed yet, and hence its region. Protected by `mutex'. */
+	GE_scoop_precondition* volatile first_precondition; /* Other regions whose preconditions are waiting for some activity of current region. Protected by `mutex'. */
+	GE_scoop_precondition* volatile last_precondition; /* Other regions whose preconditions are waiting for some activity of current region. Protected by `mutex'. */
 	EIF_MUTEX_TYPE* volatile mutex; /* To add, remove and access SCOOP sessions, and to access `is_impersonation_allowed'. */
 	EIF_COND_TYPE* volatile condition_variable; /* To add, remove and access SCOOP sessions, and to access `is_impersonation_allowed'. */
 	EIF_MUTEX_TYPE* volatile sync_mutex; /* For synchronization in case of synchronous calls. */
 	EIF_COND_TYPE* volatile sync_condition_variable; /* For synchronization in case of synchronous calls. */
+	EIF_MUTEX_TYPE* volatile precondition_mutex; /* To make preconditions of current region wait for some activity on other regions. */
+	EIF_COND_TYPE* volatile precondition_condition_variable; /* To make preconditions of current region wait for some activity on other regions. */
 };
 
 /* Struct for SCOOP processor availability condition. */
@@ -90,6 +96,12 @@ typedef volatile struct {
 	GE_scoop_call* volatile next; /* Protected by `mutex' of enclosing session. */
 	GE_scoop_condition* volatile condition;
 } GE_scoop_condition_call;
+
+/* Struct for SCOOP witing precondition. */
+struct GE_scoop_precondition_struct {
+	GE_scoop_region* volatile caller; /* Region of the caller of the precondition. */
+	GE_scoop_precondition* volatile next; /* Protected by `mutex' of enclosing region. */
+};
 
 /*
  * Increment number SCOOP sessions.
@@ -164,6 +176,23 @@ extern void GE_scoop_session_add_call(GE_scoop_session* a_session, GE_scoop_call
 extern void GE_scoop_session_add_sync_call(GE_scoop_region* a_caller, GE_scoop_session* a_session);
 
 /*
+ * Indicate that some preconditions in `a_caller' are waiting for some activity in `a_callee'.
+ */
+extern void GE_scoop_region_add_precondition(GE_scoop_region* a_caller, GE_scoop_region* a_callee);
+
+/*
+ * Indicate that `a_caller' is starting to wait for any activity to occur on the callees
+ * of the preconditions recently added.
+ */
+extern void GE_scoop_region_wait_preconditions(GE_scoop_region* a_caller);
+
+/*
+ * Notify to the callers of all preconditions waiting for some activity in `a_callee'
+ * that such activity just occurred.
+ */
+extern void GE_scoop_region_notify_preconditions(GE_scoop_region* a_callee);
+
+/*
  * Let `a_context' become the new context of `a_region'.
  * Note that `a_context' may be NULL (in case of a passive region).
  */
@@ -199,6 +228,21 @@ extern char GE_scoop_region_has_lock_on(GE_scoop_region* a_caller, GE_scoop_regi
  * Needed in case of callbacks.
  */
 #define GE_scoop_session_is_synchronized(a_session) (a_session)->is_synchronized
+
+/*
+ * Has some Eiffel code been called within `a_session'?
+ */
+extern char GE_scoop_session_was_eiffel_called(GE_scoop_session* a_session);
+
+/*
+ * Indicate that some Eiffel code been called or not within `a_session'?
+ */
+extern void GE_scoop_session_set_eiffel_called(GE_scoop_session* a_session, char a_value);
+
+/*
+ * Number of times `a_session` is being open. When 0, no more calls will be added.
+ */
+extern uint32_t GE_scoop_session_is_open(GE_scoop_session* a_session);
 
 /*
  * Perform lock passing from the processor of `a_caller' to the processor of `a_callee' 

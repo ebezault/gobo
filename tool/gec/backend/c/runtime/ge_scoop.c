@@ -4,7 +4,7 @@
 		"C functions used to implement SCOOP facilities"
 
 	system: "Gobo Eiffel Compiler"
-	copyright: "Copyright (c) 2023-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2023-2026, Eric Bezault and others"
 	license: "MIT License"
 */
 
@@ -161,6 +161,8 @@ static void GE_scoop_region_destroy(GE_scoop_region* a_region)
 	GE_condition_variable_destroy((EIF_POINTER)a_region->condition_variable);
 	GE_mutex_destroy((EIF_POINTER)a_region->sync_mutex);
 	GE_condition_variable_destroy((EIF_POINTER)a_region->sync_condition_variable);
+	GE_mutex_destroy((EIF_POINTER)a_region->precondition_mutex);
+	GE_condition_variable_destroy((EIF_POINTER)a_region->precondition_condition_variable);
 	GE_free(a_region->last_session_keep_alive);
 }
 
@@ -201,6 +203,8 @@ GE_scoop_region* GE_new_scoop_region(GE_context* a_context, char a_is_passive)
 	l_region->condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
 	l_region->sync_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
 	l_region->sync_condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
+	l_region->precondition_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
+	l_region->precondition_condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
 	l_region->is_impersonation_allowed = '\1';
 	l_region->is_passive = a_is_passive;
 	GE_scoop_region_set_context(l_region, a_context);
@@ -660,6 +664,103 @@ void GE_scoop_region_set_impersonation_allowed(GE_scoop_region* a_region, char a
 }
 
 /*
+ * Indicate that some preconditions in `a_caller' are waiting for some activity in `a_callee'.
+ */
+void GE_scoop_region_add_precondition(GE_scoop_region* a_caller, GE_scoop_region* a_callee)
+{
+	GE_scoop_precondition* l_precondition;
+	GE_scoop_precondition* l_last_precondition;
+
+	l_precondition = (GE_scoop_precondition*)GE_calloc(1, sizeof(GE_scoop_precondition));
+	l_precondition->caller = a_caller;
+	GE_mutex_lock((EIF_POINTER)a_callee->mutex);
+	l_last_precondition = a_callee->last_precondition;
+	a_callee->last_precondition = l_precondition;
+	if (l_last_precondition) {
+		l_last_precondition->next = l_precondition;
+	} else {
+		a_callee->first_precondition = l_precondition;
+	}
+	GE_mutex_unlock((EIF_POINTER)a_callee->mutex);
+}
+
+/*
+ * Indicate that `a_caller' is starting to wait for any activity to occur on the callees
+ * of the preconditions recently added.
+ */
+void GE_scoop_region_wait_preconditions(GE_scoop_region* a_caller)
+{
+	GE_mutex_lock((EIF_POINTER)a_caller->precondition_mutex);
+	GE_condition_variable_wait((EIF_POINTER)a_caller->precondition_condition_variable, (EIF_POINTER)a_caller->precondition_mutex);
+	GE_mutex_unlock((EIF_POINTER)a_caller->precondition_mutex);
+}
+
+/*
+ * Indicate to the callers of all preconditions waiting for some activity in `a_callee'
+ * that such activity just occurred.
+ */
+void GE_scoop_region_notify_preconditions(GE_scoop_region* a_callee)
+{
+	GE_scoop_precondition* l_precondition;
+	GE_scoop_precondition* l_next_precondition;
+	GE_scoop_region* l_caller;
+
+	GE_mutex_lock((EIF_POINTER)a_callee->mutex);
+	l_precondition = a_callee->first_precondition;
+	while (l_precondition) {
+		l_caller = l_precondition->caller;
+		GE_mutex_lock((EIF_POINTER)l_caller->precondition_mutex);
+		GE_condition_variable_broadcast((EIF_POINTER)l_caller->precondition_condition_variable);
+		GE_mutex_unlock((EIF_POINTER)l_caller->precondition_mutex);
+		l_next_precondition = l_precondition->next;
+		GE_free(l_precondition);
+		l_precondition = l_next_precondition;
+	}
+	a_callee->first_precondition = 0;
+	a_callee->last_precondition = 0;
+	GE_mutex_unlock((EIF_POINTER)a_callee->mutex);
+}
+
+/*
+ * Has some Eiffel code been called within `a_session'?
+ */
+char GE_scoop_session_was_eiffel_called(GE_scoop_session* a_session)
+{
+	char l_result;
+
+	GE_mutex_lock((EIF_POINTER)a_session->mutex);
+	l_result = a_session->was_eiffel_called;
+	GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+	return l_result;
+}
+
+/*
+ * Indicate that some Eiffel code been called or not within `a_session'?
+ */
+void GE_scoop_session_set_eiffel_called(GE_scoop_session* a_session, char a_value)
+{
+	GE_mutex_lock((EIF_POINTER)a_session->mutex);
+	a_session->was_eiffel_called = a_value;
+	GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+	if (a_value) {
+		GE_scoop_region_notify_preconditions(a_session->callee);
+	}
+}
+
+/*
+ * Number of times `a_session` is being open. When 0, no more calls will be added.
+ */
+uint32_t GE_scoop_session_is_open(GE_scoop_session* a_session)
+{
+	uint32_t l_result;
+
+	GE_mutex_lock((EIF_POINTER)a_session->mutex);
+	l_result = a_session->is_open;
+	GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+	return l_result;
+}
+
+/*
  * Is `a_callee' locked (directly or indirectly) by the processor of `a_caller'?
  */
 char GE_scoop_region_has_lock_on(GE_scoop_region* a_caller, GE_scoop_region* a_callee)
@@ -731,6 +832,7 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 				return;
 			}
 			a_call->execute(a_context, a_session, a_call);
+			GE_scoop_session_set_eiffel_called(a_session, '\1');
 			a_context->last_rescue = r.previous;
 			*a_context = l_old_context;
 			if (l_is_synchronous) {

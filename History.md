@@ -6,6 +6,7 @@
 
 * Made sure that `default_create` is called when initializing
   expanded objects.
+* Implemented SCOOP wait conditions.
 
 ### gecop
 
