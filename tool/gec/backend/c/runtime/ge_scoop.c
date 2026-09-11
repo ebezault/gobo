@@ -180,8 +180,6 @@ static void GE_scoop_region_destroy(GE_scoop_region* a_region)
 {
 	GE_mutex_destroy((EIF_POINTER)a_region->mutex);
 	GE_condition_variable_destroy((EIF_POINTER)a_region->condition_variable);
-	GE_mutex_destroy((EIF_POINTER)a_region->sync_mutex);
-	GE_condition_variable_destroy((EIF_POINTER)a_region->sync_condition_variable);
 	GE_mutex_destroy((EIF_POINTER)a_region->precondition_mutex);
 	GE_condition_variable_destroy((EIF_POINTER)a_region->precondition_condition_variable);
 	GE_free(a_region->keep_alive);
@@ -222,8 +220,6 @@ GE_scoop_region* GE_new_scoop_region(GE_context* a_context, char a_is_passive)
 	l_region->keep_alive = (GE_scoop_region**)GE_calloc_uncollectable(1, sizeof(GE_scoop_region*));
 	l_region->mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
 	l_region->condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
-	l_region->sync_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
-	l_region->sync_condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
 	l_region->precondition_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
 	l_region->precondition_condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
 	l_region->is_impersonation_allowed = '\1';
@@ -376,7 +372,7 @@ static void GE_add_scoop_multisession(GE_scoop_session* a_session)
  * - `a_session->callee->mutex`.
  * - `a_session->mutex` to set `a_session->is_submitted`.
  */
-void GE_add_scoop_session(GE_scoop_session* a_session)
+static void GE_add_scoop_session(GE_scoop_session* a_session)
 {
 	GE_scoop_region* l_region;
 
@@ -538,23 +534,27 @@ static void GE_promote_scoop_session(GE_scoop_region* a_region)
 }
 
 /*
- * Is `a_session` the first session submitted for execution to the processor of its callee's region?
- *
- * To be executed by the thread associated with the caller of `a_session'.
- *
- * Thread-safe.
- * Protected by:
- * - `a_session->callee->mutex`.
+ * New of SCOOP synchronization.
  */
-static char GE_scoop_session_is_first(GE_scoop_session* a_session)
+GE_scoop_synchronization* GE_new_scoop_synchronization()
 {
-	char l_result;
-	GE_scoop_region* l_callee = a_session->callee;
+	GE_scoop_synchronization* l_synchronization;
 
-	GE_mutex_lock((EIF_POINTER)l_callee->mutex);
-	l_result = (l_callee->first_session == a_session);
-	GE_mutex_unlock((EIF_POINTER)l_callee->mutex);
-	return l_result;
+	l_synchronization = (GE_scoop_synchronization*)GE_calloc(1, sizeof(GE_scoop_synchronization));
+	l_synchronization->wait = '\1';
+	l_synchronization->mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
+	l_synchronization->condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
+	return l_synchronization;
+}
+
+/*
+ * Free memory allocated by `a_synchronization'.
+ */
+void GE_free_scoop_synchronization(GE_scoop_synchronization* a_synchronization)
+{
+	GE_mutex_destroy((EIF_POINTER)a_synchronization->mutex);
+	GE_condition_variable_destroy((EIF_POINTER)a_synchronization->condition_variable);
+	GE_free(a_synchronization);
 }
 
 /* 
@@ -567,6 +567,9 @@ GE_scoop_call* GE_new_scoop_call(GE_scoop_region* a_caller, char a_is_synchronou
 	l_call = (GE_scoop_call*)GE_calloc(1, a_size);
 	l_call->caller = a_caller;
 	l_call->is_synchronous = a_is_synchronous;
+	if (a_is_synchronous) {
+		l_call->synchronization = GE_new_scoop_synchronization();
+	}
 	l_call->execute = a_execute;
 	return l_call;
 }
@@ -585,6 +588,9 @@ static void GE_free_scoop_call(GE_scoop_call* a_call)
  * To be executed by the thread associated with the caller of `a_session'.
  * 
  * Thread-safe.
+ * Protected by:
+ * - `a_session->mutex`.
+ * - `a_session->callee->mutex`.
  */
 void GE_scoop_session_add_call(GE_scoop_session* a_session, GE_scoop_call* a_call)
 {
@@ -592,9 +598,17 @@ void GE_scoop_session_add_call(GE_scoop_session* a_session, GE_scoop_call* a_cal
 	GE_scoop_region* l_caller = a_call->caller;
 	GE_scoop_region* l_callee = a_session->callee;
 	char l_is_synchronous = a_call->is_synchronous;
+	GE_scoop_synchronization* l_synchronization = a_call->synchronization;
 
-	if (l_is_synchronous) {
-		GE_mutex_lock((EIF_POINTER)l_caller->sync_mutex);
+	if (l_is_synchronous && l_synchronization && l_callee->is_passive) {
+		GE_mutex_lock((EIF_POINTER)l_callee->mutex);
+		if (!l_callee->first_session) {
+				/* No need to wait. */
+			GE_free_scoop_synchronization(l_synchronization);
+			a_call->synchronization = 0;
+			l_synchronization = 0;
+		}
+		GE_mutex_unlock((EIF_POINTER)l_callee->mutex);
 	}
 	GE_mutex_lock((EIF_POINTER)a_session->mutex);
 	l_last_call = a_session->last_call;
@@ -613,14 +627,14 @@ void GE_scoop_session_add_call(GE_scoop_session* a_session, GE_scoop_call* a_cal
 		GE_mutex_unlock((EIF_POINTER)a_session->mutex);
 	} 
 	if (l_is_synchronous) {
-		char l_wait = '\1';
-		if (l_callee->is_passive) {
-			l_wait = !GE_scoop_session_is_first(a_session);
+		if (l_synchronization) {
+			GE_mutex_lock((EIF_POINTER)l_synchronization->mutex);
+			if (l_synchronization->wait) {
+				GE_condition_variable_wait((EIF_POINTER)l_synchronization->condition_variable, (EIF_POINTER)l_synchronization->mutex);
+			}
+			GE_mutex_unlock((EIF_POINTER)l_synchronization->mutex);
+			GE_free_scoop_synchronization(l_synchronization);
 		}
-		if (l_wait) {
-			GE_condition_variable_wait((EIF_POINTER)l_caller->sync_condition_variable, (EIF_POINTER)l_caller->sync_mutex);
-		}
-		GE_mutex_unlock((EIF_POINTER)l_caller->sync_mutex);
 		if (l_callee->progagate_exception) {
 			l_callee->progagate_exception = 0;
 			/* The exception is propagated to the caller region. */
@@ -631,6 +645,25 @@ void GE_scoop_session_add_call(GE_scoop_session* a_session, GE_scoop_call* a_cal
 			GE_raise(GE_EX_DIRTY);
 		}
 	}
+}
+
+/*
+ * Has `a_session` been submitted for execution to the processor of its callee's region?
+ *
+ * To be executed by the thread associated with the caller of `a_session'.
+ * 
+ * Thread-safe.
+ * Protected by:
+ * - `a_session->mutex`.
+ */
+static char GE_scoop_session_is_submitted(GE_scoop_session* a_session)
+{
+	char l_result;
+
+	GE_mutex_lock((EIF_POINTER)a_session->mutex);
+	l_result = a_session->is_submitted;
+	GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+	return l_result;
 }
 
 /*
@@ -647,6 +680,50 @@ void GE_scoop_session_add_sync_call(GE_scoop_region* a_caller, GE_scoop_session*
 	if (!GE_scoop_session_is_synchronized(a_session) && (!a_session->callee->is_passive || !GE_scoop_session_is_submitted(a_session))) {
 		l_call = GE_new_scoop_call(a_caller, '\1', 0, sizeof(GE_scoop_call));
 		GE_scoop_session_add_call(a_session, l_call);
+	}
+}
+
+/* 
+ * Add a SCOOP call to `a_session' to indicate that `a_session` is running.
+ *
+ * To be executed by the thread associated with `a_caller'.
+ * 
+ * Thread-safe.
+ * Protected by:
+ * - `a_session->mutex`.
+ * - `a_session->callee->mutex`.
+ */
+void GE_scoop_session_add_running_call(GE_scoop_region* a_caller, GE_scoop_session* a_session, GE_scoop_synchronization* a_synchronization)
+{
+	GE_scoop_call* l_call;
+
+	GE_mutex_lock((EIF_POINTER)a_session->callee->mutex);
+	if (a_session->is_running) {
+		GE_mutex_unlock((EIF_POINTER)a_session->callee->mutex);
+		GE_mutex_lock((EIF_POINTER)a_synchronization->mutex);
+		GE_condition_variable_broadcast((EIF_POINTER)a_synchronization->condition_variable);
+		a_synchronization->wait = 0;
+		GE_mutex_unlock((EIF_POINTER)a_synchronization->mutex);
+	} else {
+		l_call = GE_new_scoop_call(a_caller, 0, 0, sizeof(GE_scoop_call));
+		l_call->is_synchronous = '\1';
+		l_call->synchronization = a_synchronization;
+		GE_mutex_lock((EIF_POINTER)a_session->mutex);
+		l_call->next = a_session->first_call;
+		a_session->first_call = l_call;
+		if (!a_session->last_call) {
+			a_session->last_call = l_call;
+		}
+		if (!a_session->is_submitted) {
+			/* First call added to `a_session'. */
+			GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+			GE_mutex_unlock((EIF_POINTER)a_session->callee->mutex);
+			GE_add_scoop_session(a_session);
+		} else {
+			GE_mutex_unlock((EIF_POINTER)a_session->callee->mutex);
+			GE_condition_variable_broadcast((EIF_POINTER)a_session->condition_variable);
+			GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+		}
 	}
 }
 
@@ -877,21 +954,20 @@ uint32_t GE_scoop_session_is_open(GE_scoop_session* a_session)
 }
 
 /*
- * Has `a_session` been submitted for execution to the processor of its callee's region?
+ * Is `a_session` already running?
  *
  * To be executed by the thread associated with the caller of `a_session'.
  * 
  * Thread-safe.
  * Protected by:
- * - `a_session->mutex`.
+ * - `a_session->callee->mutex`.
  */
-char GE_scoop_session_is_submitted(GE_scoop_session* a_session)
-{
+char GE_scoop_session_is_running(GE_scoop_session* a_session){
 	char l_result;
 
-	GE_mutex_lock((EIF_POINTER)a_session->mutex);
-	l_result = a_session->is_submitted;
-	GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+	GE_mutex_lock((EIF_POINTER)a_session->callee->mutex);
+	l_result = a_session->is_running;
+	GE_mutex_unlock((EIF_POINTER)a_session->callee->mutex);
 	return l_result;
 }
 
@@ -929,6 +1005,7 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 	GE_context* l_caller_context;
 	GE_context l_old_context;
 	char l_is_synchronous = a_call->is_synchronous;
+	GE_scoop_synchronization* l_synchronization = a_call->synchronization;
 	GE_rescue r;
 
 	l_caller = a_call->caller;
@@ -954,9 +1031,12 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 					GE_wipe_out_exception_trace_buffer(&a_context->exception_trace_buffer);
 					GE_scoop_region_release_locks(l_caller, l_callee);
 					l_callee->progagate_exception = '\1';
-					GE_mutex_lock((EIF_POINTER)l_caller->sync_mutex);
-					GE_condition_variable_broadcast((EIF_POINTER)l_caller->sync_condition_variable);
-					GE_mutex_unlock((EIF_POINTER)l_caller->sync_mutex);
+					if (l_synchronization) {
+						GE_mutex_lock((EIF_POINTER)l_synchronization->mutex);
+						GE_condition_variable_broadcast((EIF_POINTER)l_synchronization->condition_variable);
+						l_synchronization->wait = 0;
+						GE_mutex_unlock((EIF_POINTER)l_synchronization->mutex);
+					}
 				} else {
 					l_callee->is_dirty = '\1';
 #ifdef GE_SCOOP_EXCEPTIONS_STOP_WHEN_DIRTY
@@ -979,10 +1059,20 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 			GE_scoop_session_set_eiffel_called(a_session, '\1');
 		}
 	}
-	if (l_is_synchronous) {
-		GE_mutex_lock((EIF_POINTER)l_caller->sync_mutex);
-		GE_condition_variable_broadcast((EIF_POINTER)l_caller->sync_condition_variable);
-		GE_mutex_unlock((EIF_POINTER)l_caller->sync_mutex);
+	if (l_synchronization) {
+		if (l_is_synchronous) {
+			GE_mutex_lock((EIF_POINTER)l_synchronization->mutex);
+			GE_condition_variable_broadcast((EIF_POINTER)l_synchronization->condition_variable);
+			l_synchronization->wait = 0;
+			GE_mutex_unlock((EIF_POINTER)l_synchronization->mutex);
+		} else {
+			GE_mutex_lock((EIF_POINTER)l_synchronization->mutex);
+			if (l_synchronization->wait) {
+				GE_condition_variable_wait((EIF_POINTER)l_synchronization->condition_variable, (EIF_POINTER)l_synchronization->mutex);
+			}
+			GE_mutex_unlock((EIF_POINTER)l_synchronization->mutex);
+			GE_free_scoop_synchronization(l_synchronization);
+		}
 	}
 }
 
@@ -998,15 +1088,13 @@ static void GE_scoop_session_execute(GE_context* a_context, GE_scoop_session* a_
 		GE_mutex_lock((EIF_POINTER)a_session->mutex);
 		l_call = a_session->first_call;
 		if (l_call) {
-			GE_mutex_unlock((EIF_POINTER)a_session->mutex);
-			GE_scoop_call_execute(a_context, a_session, l_call);
-			GE_mutex_lock((EIF_POINTER)a_session->mutex);
 			l_next_call = l_call->next;
 			a_session->first_call = l_next_call;
 			if (!l_next_call) {
 				a_session->last_call = 0;
 			}
 			GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+			GE_scoop_call_execute(a_context, a_session, l_call);
 			GE_free_scoop_call(l_call);
 		} else if (a_session->is_open && !a_session->callee->is_passive) {
 				/* The session is not finished. New calls may still be registered. */
