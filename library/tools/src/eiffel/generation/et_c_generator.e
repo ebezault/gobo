@@ -24464,13 +24464,6 @@ feature {NONE} -- SCOOP
 					current_file.put_character (' ')
 					current_file.put_character ('(')
 					current_file.put_character ('!')
-					print_separate_argument_session_name (a_name, current_file)
-					current_file.put_string (c_arrow)
-					current_file.put_string (c_callee)
-					current_file.put_string (c_arrow)
-					current_file.put_string (c_is_passive)
-					print_and_then
-					current_file.put_character ('!')
 					current_file.put_string (c_ge_scoop_session_is_running)
 					current_file.put_character ('(')
 					print_separate_argument_session_name (a_name, current_file)
