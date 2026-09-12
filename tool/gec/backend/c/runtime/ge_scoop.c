@@ -58,11 +58,11 @@ static EIF_COND_TYPE* GE_scoop_passive_region_condition_variable;
  * If the processor of `a_region` was waiting for a session to execute,
  * then wake it up.
  * 
- * Not thread-safe.
- * Need to be protected by:
- * - `a_region->mutex`.
+ * Thread-safe.
+ * Protected by:
+ * - `GE_scoop_passive_region_mutex` when `a_region` is passive.
  */
-static void GE_unprotected_scoop_region_wakeup(GE_scoop_region* a_region)
+static void GE_scoop_region_wakeup(GE_scoop_region* a_region)
 {
 	if (a_region->is_passive) {
 		GE_mutex_lock((EIF_POINTER)GE_scoop_passive_region_mutex);
@@ -129,7 +129,6 @@ uint32_t GE_increment_scoop_sessions_count()
  * Thread-safe.
  * Protected by:
  * - `GE_scoop_sessions_count_mutex`
- * - `mutex` of main region
  */
 uint32_t GE_decrement_scoop_sessions_count()
 {
@@ -150,9 +149,7 @@ uint32_t GE_decrement_scoop_sessions_count()
 				the SCOOP processor of the main thread.
 			*/
 		l_main_region = GE_main_context->region;
-		GE_mutex_lock((EIF_POINTER)l_main_region->mutex);
-		GE_unprotected_scoop_region_wakeup(l_main_region);
-		GE_mutex_unlock((EIF_POINTER)l_main_region->mutex);
+		GE_scoop_region_wakeup(l_main_region);
 	}
 	return l_result;
 }
@@ -233,10 +230,7 @@ static void GE_scoop_region_dispose(void* a_region, void* data)
 
 	if (l_context && l_context->region == l_region) {
 		l_context->is_region_alive = 0;
-		if (GE_mutex_try_lock((EIF_POINTER)l_region->mutex)) {
-			GE_unprotected_scoop_region_wakeup(l_region);
-			GE_mutex_unlock((EIF_POINTER)l_region->mutex);
-		}
+		GE_scoop_region_wakeup(l_region);
 	} else if (l_region->is_passive) {
 		GE_scoop_region_destroy(l_region);
 	}
@@ -346,7 +340,7 @@ static void GE_unprotected_add_scoop_session(GE_scoop_session* a_session)
 	}
 	l_region->last_session = a_session;
 	*(l_region->keep_alive) = l_region;
-	GE_unprotected_scoop_region_wakeup(l_region);
+	GE_scoop_region_wakeup(l_region);
 }
 
 /* 
@@ -550,7 +544,7 @@ static void GE_promote_scoop_session(GE_scoop_region* a_region)
 				}
 				if (l_sibling != l_session) {
 					l_sibling_region = l_sibling->callee;
-					GE_unprotected_scoop_region_wakeup(l_sibling_region);
+					GE_scoop_region_wakeup(l_sibling_region);
 					GE_mutex_unlock((EIF_POINTER)l_sibling_region->mutex);
 				}
 				l_sibling = l_sibling->next_sibling_session;
@@ -1210,9 +1204,7 @@ void GE_scoop_session_close(GE_scoop_region* a_caller, GE_scoop_session* a_sessi
 				GE_mutex_unlock((EIF_POINTER)a_session->mutex);
 				l_mutex_unlocked = '\1';
 				GE_remove_scoop_session(a_session);
-				GE_mutex_lock(l_callee->mutex);
-				GE_unprotected_scoop_region_wakeup (l_callee);
-				GE_mutex_unlock(l_callee->mutex);
+				GE_scoop_region_wakeup (l_callee);
 			} else {
 				/* Wake up the callee's processor if needed to tell it that there is no call
 				 * to be added anymore. */
@@ -1434,9 +1426,9 @@ void GE_process_scoop_passive_regions()
 {
 	GE_scoop_region* l_region = 0;
 
+	GE_mutex_lock(GE_scoop_passive_region_mutex);
 		/* The thread is now ready to handle passive regions. */
 	GE_condition_variable_broadcast((EIF_POINTER)GE_scoop_passive_region_condition_variable);
-	GE_mutex_lock(GE_scoop_passive_region_mutex);
 	while (1) {
 		GE_condition_variable_wait(GE_scoop_passive_region_condition_variable, GE_scoop_passive_region_mutex);
 		l_region = GE_current_scoop_passive_region;

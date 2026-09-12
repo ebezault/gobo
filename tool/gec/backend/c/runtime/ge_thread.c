@@ -1592,6 +1592,7 @@ void GE_scoop_passive_regions_thread_create_with_attr(EIF_THR_ATTR_TYPE* attr)
 #ifdef GE_USE_POSIX_THREADS
 	{
 		pthread_attr_t l_attr;
+		EIF_THR_TYPE l_thread_id;
 
 		if (pthread_attr_init(&l_attr) == 0) {
 				/* Initialize the stack size if more than the minimum. */
