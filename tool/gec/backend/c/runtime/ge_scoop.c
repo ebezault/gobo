@@ -54,6 +54,16 @@ static EIF_MUTEX_TYPE* GE_scoop_passive_region_mutex;
  */
 static EIF_COND_TYPE* GE_scoop_passive_region_condition_variable;
 
+/* 
+ * Mutex to initialize passive region processing.
+ */
+static EIF_MUTEX_TYPE* GE_scoop_init_passive_region_mutex;
+
+/* 
+ * Condition variable to initialize passive region processing.
+ */
+static EIF_COND_TYPE* GE_scoop_init_passive_region_condition_variable;
+
 /*
  * If the processor of `a_region` was waiting for a session to execute,
  * then wake it up.
@@ -291,7 +301,9 @@ static void GE_scoop_region_notify_preconditions(GE_scoop_region* a_callee)
 	l_precondition = a_callee->first_precondition;
 	while (l_precondition) {
 		l_caller = l_precondition->caller;
+		GE_mutex_lock((EIF_POINTER)l_caller->precondition_mutex);
 		GE_condition_variable_broadcast((EIF_POINTER)l_caller->precondition_condition_variable);
+		GE_mutex_unlock((EIF_POINTER)l_caller->precondition_mutex);
 		l_precondition = l_precondition->next;
 	}
 	GE_mutex_unlock((EIF_POINTER)a_callee->mutex);
@@ -723,9 +735,9 @@ void GE_scoop_session_add_running_call(GE_scoop_region* a_caller, GE_scoop_sessi
 			GE_mutex_unlock((EIF_POINTER)a_session->callee->mutex);
 			GE_add_scoop_session(a_session);
 		} else {
-			GE_mutex_unlock((EIF_POINTER)a_session->callee->mutex);
 			GE_condition_variable_broadcast((EIF_POINTER)a_session->condition_variable);
 			GE_mutex_unlock((EIF_POINTER)a_session->mutex);
+			GE_mutex_unlock((EIF_POINTER)a_session->callee->mutex);
 		}
 	}
 }
@@ -1436,7 +1448,9 @@ void GE_process_scoop_passive_regions()
 
 	GE_mutex_lock(GE_scoop_passive_region_mutex);
 		/* The thread is now ready to handle passive regions. */
-	GE_condition_variable_broadcast((EIF_POINTER)GE_scoop_passive_region_condition_variable);
+	GE_mutex_lock(GE_scoop_init_passive_region_mutex);
+	GE_condition_variable_broadcast((EIF_POINTER)GE_scoop_init_passive_region_condition_variable);
+	GE_mutex_unlock(GE_scoop_init_passive_region_mutex);
 	while (1) {
 		GE_condition_variable_wait(GE_scoop_passive_region_condition_variable, GE_scoop_passive_region_mutex);
 		l_region = GE_current_scoop_passive_region;
@@ -1460,12 +1474,16 @@ void GE_init_scoop()
 	GE_current_scoop_passive_region = 0;
 	GE_scoop_passive_region_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
 	GE_scoop_passive_region_condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
+	GE_scoop_init_passive_region_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
+	GE_scoop_init_passive_region_condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
 	/* Make sure that we don't try tp handle passive regions before
 	 * the corresponding thread has been started and is ready. */
-	GE_mutex_lock(GE_scoop_passive_region_mutex);
+	GE_mutex_lock(GE_scoop_init_passive_region_mutex);
 	GE_scoop_passive_regions_thread_create_with_attr(0);
-	GE_condition_variable_wait(GE_scoop_passive_region_condition_variable, GE_scoop_passive_region_mutex);
-	GE_mutex_unlock(GE_scoop_passive_region_mutex);
+	GE_condition_variable_wait(GE_scoop_init_passive_region_condition_variable, GE_scoop_init_passive_region_mutex);
+	GE_mutex_unlock(GE_scoop_init_passive_region_mutex);
+	GE_mutex_destroy((EIF_POINTER)GE_scoop_init_passive_region_mutex);
+	GE_condition_variable_destroy((EIF_POINTER)GE_scoop_init_passive_region_condition_variable);
 }
 
 #ifdef __cplusplus
