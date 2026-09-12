@@ -692,7 +692,7 @@ void GE_scoop_session_add_sync_call(GE_scoop_region* a_caller, GE_scoop_session*
 {
 	GE_scoop_call* l_call;
 
-	if (!GE_scoop_session_is_synchronized(a_session)) {
+	if (!GE_scoop_session_is_synchronized(a_session) && !a_session->callee->is_passive) {
 		l_call = GE_new_scoop_call(a_caller, '\1', 0, sizeof(GE_scoop_call));
 		GE_scoop_session_add_call(a_session, l_call);
 	}
@@ -1223,7 +1223,7 @@ void GE_scoop_session_close(GE_scoop_region* a_caller, GE_scoop_session* a_sessi
 				l_mutex_unlocked = '\1';
 				GE_remove_scoop_session(a_session);
 				GE_mutex_lock(l_callee->mutex);
-				GE_unprotected_scoop_region_wakeup (l_callee);
+				GE_unprotected_scoop_region_wakeup(l_callee);
 				GE_mutex_unlock(l_callee->mutex);
 			} else {
 				/* Wake up the callee's processor if needed to tell it that there is no call
