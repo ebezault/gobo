@@ -36691,6 +36691,7 @@ feature {NONE} -- C function generation
 					print_routine_name (l_ise_exception_manager_set_exception_data_feature, current_dynamic_system.ise_exception_manager_type, current_file)
 					print_semicolon_newline
 				end
+				current_file.put_line ("fprintf(stderr, %"G2\n%");%N")
 				print_indentation
 				current_file.put_string ("GE_init_onces")
 				current_file.put_character ('(')
@@ -36704,6 +36705,7 @@ feature {NONE} -- C function generation
 				current_file.put_character (')')
 				print_semicolon_newline
 				if use_threads then
+					current_file.put_line ("fprintf(stderr, %"G3\n%");%N")
 					print_indentation
 					current_file.put_string (c_ge_once_per_object_data_mutex)
 					print_assign_to
@@ -36711,6 +36713,7 @@ feature {NONE} -- C function generation
 					current_file.put_character ('(')
 					current_file.put_character (')')
 					print_semicolon_newline
+					current_file.put_line ("fprintf(stderr, %"G4\n%");%N")
 					print_indentation
 					current_file.put_string (c_ge_thread_onces_set_counts)
 					current_file.put_character ('(')
@@ -36725,9 +36728,11 @@ feature {NONE} -- C function generation
 					print_semicolon_newline
 						-- We need to call 'GE_init_thread' before 'GE_init_exception' because
 						-- 'GE_init_exception' will create once-per-thread objects.
+					current_file.put_line ("fprintf(stderr, %"G5\n%");%N")
 					print_indentation
 					current_file.put_line ("GE_init_thread(ac);")
 				end
+				current_file.put_line ("fprintf(stderr, %"G6\n%");%N")
 				if use_scoop then
 					print_indentation
 					current_file.put_string (c_ge_init_scoop)
@@ -36750,10 +36755,13 @@ feature {NONE} -- C function generation
 					print_indentation
 					current_file.put_line ("GE_init_exception(ac);")
 				end
+				current_file.put_line ("fprintf(stderr, %"G7\n%");%N")
 				print_indentation
 				current_file.put_line ("GE_init_console();")
+				current_file.put_line ("fprintf(stderr, %"G8\n%");%N")
 				print_indentation
 				current_file.put_line ("GE_init_identified();")
+				current_file.put_line ("fprintf(stderr, %"G9\n%");%N")
 				print_indentation
 				current_file.put_line ("GE_init_const();")
 
@@ -36768,6 +36776,7 @@ feature {NONE} -- C function generation
 					current_file.put_line (c_endif)
 				end
 				if use_scoop then
+					current_file.put_line ("fprintf(stderr, %"G10\n%");%N")
 					print_indentation
 					current_file.put_string (c_ge_increment_scoop_sessions_count)
 					current_file.put_character ('(')
@@ -36776,12 +36785,14 @@ feature {NONE} -- C function generation
 				end
 					-- Create root object.
 				if l_temp_arg /= Void and l_argument_call /= Void then
+					current_file.put_line ("fprintf(stderr, %"G11\n%");%N")
 					print_indentation
 					print_temp_name (l_temp_arg, current_file)
 					print_assign_to
 					print_static_call_expression (l_argument_call)
 					print_semicolon_newline
 				end
+				current_file.put_line ("fprintf(stderr, %"G12\n%");%N")
 				print_indentation
 				print_temp_name (l_temp, current_file)
 				print_assign_to
@@ -36803,6 +36814,7 @@ feature {NONE} -- C function generation
 				end
 				reset_temp_variables
 				if use_scoop then
+					current_file.put_line ("fprintf(stderr, %"G13\n%");%N")
 					print_indentation
 					current_file.put_string (c_ge_decrement_scoop_sessions_count)
 					current_file.put_character ('(')
@@ -36825,6 +36837,7 @@ feature {NONE} -- C function generation
 						i := i + 1
 					end
 				end
+				current_file.put_line ("fprintf(stderr, %"G14\n%");%N")
 				print_indentation
 				current_file.put_string (c_return)
 				current_file.put_character (' ')
