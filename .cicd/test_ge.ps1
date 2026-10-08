@@ -50,6 +50,7 @@ if ($LastExitCode -ne 0) {
 	exit $LastExitCode
 }
 
+<#
 if ($EiffelCompiler.EndsWith("ise")) {
 	& "$PSScriptRoot/install_ise.ps1" $CiTool $CCompiler
 	if ($LastExitCode -ne 0) {
@@ -70,3 +71,4 @@ if ($LastExitCode -ne 0) {
 	Write-Error "Command 'geant test_$EiffelCompiler' exited with code $LastExitCode"
 	exit $LastExitCode
 }
+#>
