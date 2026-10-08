@@ -47,6 +47,7 @@ feature -- Execution
 	execute
 			-- Start 'gec' execution, reading arguments from the command-line.
 		do
+			io.error.put_string ("G9000%N")
 			execute_with_arguments (Arguments.to_array)
 			Exceptions.die (exit_code)
 		rescue

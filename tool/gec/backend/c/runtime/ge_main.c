@@ -159,6 +159,7 @@ int main(int dummy_arg1, char** dummy_argv)
 	eif_nCmdShow = SW_SHOW;
 	cmd = GE_nstrdup(GetCommandLineW());
 	GE_get_argcargv(cmd, &argc, &argv);
+	fprintf(stderr, "G1\n");
 	code = GE_main(argc, argv);
 	free(cmd);
 	if (argc > 0) {
@@ -188,6 +189,7 @@ int main(int argc, char** argv)
 #ifdef GE_USE_THREADS
 	GE_init_ignored_signals_mutex();
 #endif
+	fprintf(stderr, "G1\n");
 	return GE_main(argc, argv);
 }
 
