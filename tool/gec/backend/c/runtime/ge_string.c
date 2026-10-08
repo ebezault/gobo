@@ -312,6 +312,18 @@ static void GE_str8_to_str32(const char* s, EIF_CHARACTER_32* a_buffer, EIF_INTE
 	}
 }
 
+void* GE_memcpy(void* destination, const void* source, size_t size)
+{
+	size_t i;
+	char volatile* d = (char*)destination;
+	char volatile* s = (char*)source;
+
+	for (i = 0; i < size; i++) {
+		d[i] = s[i];
+	}
+	return destination;
+}
+
 /*
  * New Eiffel string of type "STRING_8" containing the
  * first `c' characters found in ISO 8859-1 string `s'.
@@ -325,7 +337,7 @@ EIF_REFERENCE GE_ms8(const char* s, EIF_INTEGER c)
 	l_string = (EIF_STRING_8*)GE_new_str8(c);
 	l_area = (EIF_SPECIAL*)(l_string->area);
 	l_area_base_address = (EIF_CHARACTER_8*)GE_sp8_base_address((EIF_REFERENCE)l_area);
-	memcpy((char*)l_area_base_address, s, c);
+	GE_memcpy((char*)l_area_base_address, s, c);
 	/* Note that the area was calloc-ed, so not need to add a trailing null character. */
 	l_area->count = (c + 1);
 	l_string->count = c;
