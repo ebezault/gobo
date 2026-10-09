@@ -37731,8 +37731,10 @@ feature {NONE} -- C function generation
 				print_indentation
 				current_file.put_line ("va_start(v, n);")
 				print_indentation
-				current_file.put_line ("while (j--) {")
+				current_file.put_line ("while (j) {")
 				indent
+				print_indentation
+				current_file.put_line ("j--;")
 				print_indentation
 				if
 					l_item_type = current_dynamic_system.boolean_type or
@@ -37754,16 +37756,18 @@ feature {NONE} -- C function generation
 				then
 						-- ISO C 99 says that 'float' is promoted to 'double' when
 						-- passed as argument of a function.
-					current_file.put_string ("*(i++) = ")
+					current_file.put_string ("*i = ")
 					print_type_cast (l_item_type, current_file)
 					current_file.put_string ("va_arg(v, double")
 				else
-					current_file.put_string ("*(i++) = va_arg(v, ")
+					current_file.put_string ("*i = va_arg(v, ")
 					print_type_declaration (l_item_type, current_file)
 				end
 				current_file.put_character (')')
 				current_file.put_character (';')
 				current_file.put_new_line
+				print_indentation
+				current_file.put_line ("i++;")
 				dedent
 				print_indentation
 				current_file.put_character ('}')
