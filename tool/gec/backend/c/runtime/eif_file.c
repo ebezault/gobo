@@ -44,7 +44,6 @@ extern int utime(const char *, struct utimbuf *);
 #include <direct.h> /* for (ch|mk|rm)dir */
 #include <share.h>  /* added for temporary file */
 #include <fcntl.h>  /* added for temporary file */
-#undef memcpy
 #include <wchar.h>
 #else
 #include <utime.h>

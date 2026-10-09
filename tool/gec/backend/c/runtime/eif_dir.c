@@ -36,7 +36,6 @@ typedef struct {
 #endif
 #include <io.h> /* for 'access' */
 #include <direct.h> /* (ch|rm)dir */
-#undef memcpy
 #include <wchar.h>
 #else
 #include <dirent.h>
