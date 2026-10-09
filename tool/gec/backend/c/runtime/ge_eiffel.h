@@ -382,6 +382,9 @@ extern void* GE_memset(void* str, int c, size_t n);
 #define memset(x, y, z) GE_memset((x), (y), (z))
 extern void* GE_memcpy(void* destination, const void* source, size_t size);
 #define memcpy(x, y, z) GE_memcpy((x), (y), (z))
+#else
+#define GE_memset(x, y, z) memset((x), (y), (z))
+#define GE_memcpy(x, y, z) memcpy((x), (y), (z))
 #endif
 
 /* Posix threads */
