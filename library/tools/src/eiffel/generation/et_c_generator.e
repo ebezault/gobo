@@ -1371,12 +1371,14 @@ feature {NONE} -- Generate external C files
 
 /*
  * Workaround for crashes (illegal instruction signal) when calling
- * `memset` in Azure Devops pipelines under Windows.
+ * `memset` and `memcpy` in Azure Devops pipelines under Windows and Linux.
  */
-#if defined(GE_WINDOWS) && defined(__clang__)
+#if !defined(GE_MACOS) && defined(__clang__)
 #include <string.h>
 extern void* GE_memset(void* str, int c, size_t n);
 #define memset(x, y, z) GE_memset((x), (y), (z))
+extern void* GE_memcpy(void* destination, const void* source, size_t size);
+#define memcpy(x, y, z) GE_memcpy((x), (y), (z))
 #endif
 
 #define GC_IGNORE_WARN
@@ -21505,7 +21507,7 @@ feature {NONE} -- Deep features generation
 					current_file.put_new_line
 					if l_special_type.attribute_count > 2 then
 						print_indentation
-						current_file.put_string (c_memcpy)
+						current_file.put_string (c_ge_memcpy)
 						current_file.put_character ('(')
 						current_file.put_character ('(')
 						current_file.put_character ('(')
@@ -21564,7 +21566,7 @@ feature {NONE} -- Deep features generation
 								-- Copy items if they are not reference objects or expanded
 								-- objects containing (recursively) reference attributes.
 							print_indentation
-							current_file.put_string (c_memcpy)
+							current_file.put_string (c_ge_memcpy)
 							current_file.put_character ('(')
 							current_file.put_character ('(')
 							current_file.put_string (c_void)
@@ -21626,7 +21628,7 @@ feature {NONE} -- Deep features generation
 						attached {ET_DYNAMIC_TUPLE_TYPE} a_type as l_tuple_type and then not l_tuple_type.item_type_sets.is_empty
 					then
 						print_indentation
-						current_file.put_string (c_memcpy)
+						current_file.put_string (c_ge_memcpy)
 						current_file.put_character ('(')
 						current_file.put_character ('(')
 						current_file.put_character ('(')
@@ -26739,7 +26741,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 			else
 					-- Note: do not copy the flag, SCOOP region, nor once-per-object.
 				print_indentation
-				current_file.put_string (c_memcpy)
+				current_file.put_string (c_ge_memcpy)
 				current_file.put_character ('(')
 				current_file.put_character ('(')
 				current_file.put_character ('(')
@@ -26861,7 +26863,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 						-- nor 'capacity' and 'count'.
 				if a_special_type.attribute_count > 2 then
 					print_indentation
-					current_file.put_string (c_memcpy)
+					current_file.put_string (c_ge_memcpy)
 					current_file.put_character ('(')
 					current_file.put_character ('(')
 					current_file.put_character ('(')
@@ -26920,7 +26922,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 					print_semicolon_newline
 				else
 					print_indentation
-					current_file.put_string (c_memcpy)
+					current_file.put_string (c_ge_memcpy)
 					current_file.put_character ('(')
 						-- Get rid of the volatile type marker.
 					current_file.put_character ('(')
@@ -27310,7 +27312,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 				else
 						-- Note: do not copy the flag, SCOOP region, nor once-per-object.
 					print_indentation
-					current_file.put_string (c_memcpy)
+					current_file.put_string (c_ge_memcpy)
 					current_file.put_character ('(')
 					current_file.put_character ('(')
 					current_file.put_character ('(')
@@ -49949,6 +49951,7 @@ feature {NONE} -- Constants
 	c_ge_lock_marking: STRING = "GE_lock_marking"
 	c_ge_ma: STRING = "GE_ma"
 	c_ge_mark_object: STRING = "GE_mark_object"
+	c_ge_memcpy: STRING = "GE_memcpy"
 	c_ge_memset: STRING = "GE_memset"
 	c_ge_min_int32: STRING = "GE_min_int32"
 	c_ge_min_int64: STRING = "GE_min_int64"
@@ -50189,7 +50192,6 @@ feature {NONE} -- Constants
 	c_last_rescue: STRING = "last_rescue"
 	c_line: STRING = "#line"
 	c_memcmp: STRING = "memcmp"
-	c_memcpy: STRING = "memcpy"
 	c_mutex: STRING = "mutex"
 	c_mutex_suffix: STRING = "_mutex"
 	c_not: STRING = "!"

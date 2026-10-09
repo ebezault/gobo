@@ -60,7 +60,7 @@ void* GE_unprotected_recalloc(void* p, size_t old_nelem, size_t new_nelem, size_
 	return new_p;
 }
 
-#if defined(GE_WINDOWS) && defined(__clang__)
+#if !defined(GE_MACOS) && defined(__clang__)
 /*
  * Memory setting.
  * Workaround for crashes (illegal instruction signal) when calling 
@@ -75,6 +75,23 @@ void* GE_memset(void* str, int c, size_t n)
 		s[i] = (char)c;
 	}
 	return str;
+}
+
+/*
+ * Memory copy.
+ * Workaround for crashes (illegal instruction signal) when calling 
+ * `memset` in Azure Devops pipelines under Windows and Linux.
+ */
+void* GE_memcpy(void* destination, const void* source, size_t size)
+{
+	size_t i;
+	char volatile* d = (char*)destination;
+	char volatile* s = (char*)source;
+
+	for (i = 0; i < size; i++) {
+		d[i] = s[i];
+	}
+	return destination;
 }
 #endif
 
