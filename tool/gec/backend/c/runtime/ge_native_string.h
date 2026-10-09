@@ -24,6 +24,7 @@
 /* With lcc-win32, stat.h should be included before wchar.h. */
 #include <sys/stat.h>
 #endif
+#undef memcpy
 #include <wchar.h>
 #else
 #include <sys/types.h>
