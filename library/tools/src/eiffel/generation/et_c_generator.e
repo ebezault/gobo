@@ -37661,6 +37661,33 @@ feature {NONE} -- C function generation
 				current_file.put_character ('{')
 				current_file.put_new_line
 				indent
+if exception_trace_mode then
+	print_indentation
+	current_file.put_string (c_ge_call)
+	current_file.put_character (' ')
+	current_file.put_string (c_tc)
+	current_file.put_character (' ')
+	current_file.put_character ('=')
+	current_file.put_character (' ')
+	current_file.put_character ('{')
+	if current_in_exception_trace then
+		current_file.put_character ('0')
+		current_file.put_character (',')
+	end
+	print_escaped_string (current_type.base_class.upper_name)
+	current_file.put_character (',')
+	current_file.put_character ('%"')
+	current_file.put_string (c_ge_ma)
+	current_file.put_integer (an_array_type.id)
+	current_file.put_character ('%"')
+	current_file.put_character (',')
+	current_file.put_string (c_ac)
+	current_file.put_string (c_arrow)
+	current_file.put_string (c_call)
+	current_file.put_character ('}')
+	current_file.put_character (';')
+	current_file.put_new_line
+end
 				print_indentation
 				print_type_declaration (an_array_type, current_file)
 				current_file.put_character (' ')
@@ -37746,7 +37773,7 @@ feature {NONE} -- C function generation
 						-- 'int', and that promotion to 'int' leaves the type unchanged
 						-- if all values cannot be represented with an 'int' or
 						-- 'unsigned int'.
-					current_file.put_string ("*(i++) = ")
+					current_file.put_string ("*i = ")
 					print_type_cast (l_item_type, current_file)
 					current_file.put_string ("va_arg(v, int")
 				elseif
@@ -37818,6 +37845,18 @@ feature {NONE} -- C function generation
 				current_file.put_character ('c')
 				current_file.put_character (';')
 				current_file.put_new_line
+if exception_trace_mode then
+	print_indentation
+	current_file.put_string (c_ac)
+	current_file.put_string (c_arrow)
+	current_file.put_string (c_call)
+	current_file.put_character (' ')
+	current_file.put_character ('=')
+	current_file.put_character (' ')
+	current_file.put_string (c_tc_address)
+	current_file.put_character (';')
+	current_file.put_new_line
+end
 					-- Return the array.
 				print_indentation
 				current_file.put_string (c_return)
