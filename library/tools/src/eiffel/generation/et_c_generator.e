@@ -441,6 +441,9 @@ feature -- Compilation options
 	finalize_mode: BOOLEAN
 			-- Compilation with optimizations turned on?
 
+	debug_mode: BOOLEAN
+			-- Compilation with debugging facilities turned on?
+
 	split_mode: BOOLEAN
 			-- Should generated C code be split over several C files
 			-- instead of being held in a single possibly large C file?
@@ -472,6 +475,14 @@ feature -- Compilation options setting
 			finalize_mode := b
 		ensure
 			finalize_mode_set: finalize_mode = b
+		end
+
+	set_debug_mode (b: BOOLEAN)
+			-- Set `debug_mode' to `b'.
+		do
+			debug_mode := b
+		ensure
+			debug_mode_set: debug_mode = b
 		end
 
 	set_split_mode (b: BOOLEAN)
@@ -1715,10 +1726,16 @@ feature {NONE} -- C code Generation
 					header_file.put_line (c_eif_trace)
 					l_newline_needed_in_header_file := True
 				end
-				if exception_trace_mode then
+				if exception_trace_mode or debug_mode then
 					header_file.put_string (c_define)
 					header_file.put_character (' ')
 					header_file.put_line (c_eif_exception_trace)
+					l_newline_needed_in_header_file := True
+				end
+				if current_in_exception_trace or debug_mode then
+					header_file.put_string (c_define)
+					header_file.put_character (' ')
+					header_file.put_line (c_ge_use_current_in_exception_trace)
 					l_newline_needed_in_header_file := True
 				end
 				if use_boehm_gc then
@@ -1772,6 +1789,10 @@ feature {NONE} -- C code Generation
 				end
 				if use_scoop then
 					include_runtime_header_file ("ge_scoop.h", True, header_file)
+					header_file.put_new_line
+				end
+				if debug_mode then
+					include_runtime_header_file ("ge_debug.h", True, header_file)
 					header_file.put_new_line
 				end
 				include_runtime_header_file ("ge_native_string.h", True, header_file)
@@ -2758,7 +2779,7 @@ feature {NONE} -- Feature generation
 				l_is_cpp := True
 			end
 			l_need_distinct_inline := l_is_inline and then not a_inline and then
-				(l_has_reference_arguments or (exception_trace_mode or trace_mode) or
+				(l_has_reference_arguments or (exception_trace_mode or debug_mode or trace_mode) or
 				(current_type.base_class.invariants_enabled and then not current_feature.is_static) or
 				(current_type.base_class.postconditions_enabled and then not current_feature.postconditions.is_empty))
 				--
@@ -2802,7 +2823,7 @@ feature {NONE} -- Feature generation
 					print_semicolon_newline
 				end
 					-- Variable for exception trace.
-				if exception_trace_mode then
+				if exception_trace_mode or debug_mode then
 					print_indentation
 					current_file.put_string (c_ge_call)
 					current_file.put_character (' ')
@@ -2811,10 +2832,11 @@ feature {NONE} -- Feature generation
 					current_file.put_character ('=')
 					current_file.put_character (' ')
 					current_file.put_character ('{')
-					if current_in_exception_trace then
+					if current_in_exception_trace or debug_mode then
 						if current_feature.is_static or a_creation then
 							current_file.put_character ('0')
 						else
+							current_file.put_string ("(void* volatile)")
 							print_current_name (current_file)
 						end
 						current_file.put_character (',')
@@ -2847,7 +2869,7 @@ feature {NONE} -- Feature generation
 			current_file := current_function_body_buffer
 			if not a_inline then
 					-- Call stack.
-				if exception_trace_mode then
+				if exception_trace_mode or debug_mode then
 					print_indentation
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -2910,12 +2932,13 @@ feature {NONE} -- Feature generation
 			if a_creation then
 				print_malloc_current (a_feature)
 				print_attributes_initialization (tokens.current_keyword, current_type, False)
-				if exception_trace_mode and then current_in_exception_trace then
+				if exception_trace_mode and then current_in_exception_trace or debug_mode then
 					print_indentation
 					current_file.put_string (c_tc)
 					current_file.put_character ('.')
 					current_file.put_string (c_object)
 					print_assign_to
+					current_file.put_string ("(void* volatile)")
 					print_current_name (current_file)
 					print_semicolon_newline
 				end
@@ -3205,7 +3228,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				end
 				print_feature_trace_message_call (False)
 					-- Call stack.
-				if exception_trace_mode then
+				if exception_trace_mode or debug_mode then
 					print_indentation
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -7106,7 +7129,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_semicolon_newline
 			end
 				-- Call stack.
-			if exception_trace_mode then
+			if exception_trace_mode or debug_mode then
 				l_is_empty :=
 					not a_creation and then
 					not current_feature.has_separate_argument and then
@@ -7122,10 +7145,11 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_string (c_tc)
 					print_assign_to
 					current_file.put_character ('{')
-					if current_in_exception_trace then
+					if current_in_exception_trace or debug_mode then
 						if current_feature.is_static or a_creation then
 							current_file.put_character ('0')
 						else
+							current_file.put_string ("(void* volatile)")
 							print_current_name (current_file)
 						end
 						current_file.put_character (',')
@@ -7146,7 +7170,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				--
 			current_file := current_function_body_buffer
 				-- Call stack.
-			if exception_trace_mode and then not l_is_empty then
+			if (exception_trace_mode or debug_mode) and then not l_is_empty then
 				print_indentation
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
@@ -7180,12 +7204,13 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					end
 					print_assign_result_to_once_value (current_feature, l_once_kind, l_once_index, a_creation)
 				end
-				if exception_trace_mode and then current_in_exception_trace then
+				if (exception_trace_mode and then current_in_exception_trace or debug_mode) and not l_is_empty then
 					print_indentation
 					current_file.put_string (c_tc)
 					current_file.put_character ('.')
 					current_file.put_string (c_object)
 					print_assign_to
+					current_file.put_string ("(void* volatile)")
 					print_current_name (current_file)
 					print_semicolon_newline
 				end
@@ -7240,7 +7265,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			end
 			print_feature_trace_message_call (False)
 				-- Call stack.
-			if exception_trace_mode and then not l_is_empty then
+			if (exception_trace_mode or debug_mode) and then not l_is_empty then
 				print_indentation
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
@@ -7457,7 +7482,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_character ('{')
 				current_file.put_new_line
 				indent
-				if exception_trace_mode and then l_rescue /= Void then
+				if (exception_trace_mode or debug_mode) and then l_rescue /= Void then
 					print_indentation
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -8224,7 +8249,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					print_semicolon_newline
 				end
 					-- Variable for exception trace.
-				if exception_trace_mode then
+				if exception_trace_mode or debug_mode then
 					print_indentation
 					current_file.put_string (c_ge_call)
 					current_file.put_character (' ')
@@ -8233,7 +8258,8 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character ('=')
 					current_file.put_character (' ')
 					current_file.put_character ('{')
-					if current_in_exception_trace then
+					if current_in_exception_trace or debug_mode then
+						current_file.put_string ("(void* volatile)")
 						print_current_name (current_file)
 						current_file.put_character (',')
 					end
@@ -8264,7 +8290,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					--
 				current_file := current_function_body_buffer
 					-- Call stack.
-				if exception_trace_mode then
+				if exception_trace_mode or debug_mode then
 					print_indentation
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -8323,7 +8349,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				extra_dynamic_type_sets.remove_last
 				free_unqualified_call_expression (l_wrapper_expression)
 					-- Call stack.
-				if exception_trace_mode then
+				if exception_trace_mode or debug_mode then
 					print_indentation
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -19784,7 +19810,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 				print_semicolon_newline
 			end
 				-- Variable for exception trace.
-			if exception_trace_mode then
+			if exception_trace_mode or debug_mode then
 				print_indentation
 				current_file.put_string (c_ge_call)
 				current_file.put_character (' ')
@@ -19793,7 +19819,8 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 				current_file.put_character ('=')
 				current_file.put_character (' ')
 				current_file.put_character ('{')
-				if current_in_exception_trace then
+				if current_in_exception_trace or debug_mode then
+					current_file.put_string ("(void* volatile)")
 					print_current_name (current_file)
 					current_file.put_character (',')
 				end
@@ -19850,7 +19877,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 				--
 			current_file := current_function_body_buffer
 				-- Call stack.
-			if exception_trace_mode then
+			if exception_trace_mode or debug_mode then
 				print_indentation
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
@@ -19864,7 +19891,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 			end
 			print_agent_body_declaration (a_agent)
 				-- Call stack.
-			if exception_trace_mode then
+			if exception_trace_mode or debug_mode then
 				print_indentation
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
@@ -36613,7 +36640,7 @@ feature {NONE} -- C function generation
 				current_file.put_string (c_tc)
 				print_assign_to
 				current_file.put_character ('{')
-				if current_in_exception_trace then
+				if current_in_exception_trace or debug_mode then
 					current_file.put_character ('0')
 					current_file.put_character (',')
 				end
@@ -36770,7 +36797,10 @@ feature {NONE} -- C function generation
 				current_file.put_line ("GE_init_identified();")
 				print_indentation
 				current_file.put_line ("GE_init_const();")
-
+				if debug_mode then
+					print_indentation
+					current_file.put_line ("GE_debug_init();")
+				end
 				if trace_mode then
 						-- We need to make sure that a DOS console is available (for
 						-- Windows application) when in trace mode, because information
@@ -41160,7 +41190,7 @@ feature {NONE} -- Assertion generation
 				current_file.put_character ('.')
 				current_file.put_string (c_previous)
 				print_semicolon_newline
-				if exception_trace_mode then
+				if exception_trace_mode or debug_mode then
 					print_indentation
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -41358,7 +41388,7 @@ feature {NONE} -- Inlining
 			a_target_type_not_void: a_target_type /= Void
 			call_operands_not_empty: not call_operands.is_empty
 		do
-			if exception_trace_mode then
+			if exception_trace_mode or debug_mode then
 					-- Exception trace mode makes the code too big to inline.
 				Result := False
 			elseif use_scoop and then a_feature.has_separate_argument then
@@ -41416,7 +41446,7 @@ feature {NONE} -- Inlining
 		local
 			l_result_type: ET_DYNAMIC_TYPE
 		do
-			if exception_trace_mode then
+			if exception_trace_mode or debug_mode then
 					-- Exception trace mode makes the code too big to inline.
 				Result := False
 			elseif use_scoop and then a_feature.has_separate_argument then
@@ -46476,6 +46506,8 @@ feature {NONE} -- Include files
 					l_c_filename := "ge_com_failure.c"
 				elseif a_filename.same_string ("ge_console.h") then
 					l_c_filename := "ge_console.c"
+				elseif a_filename.same_string ("ge_debug.h") then
+					l_c_filename := "ge_debug.c"
 				elseif a_filename.same_string ("ge_deep.h") then
 					include_runtime_header_file ("ge_eiffel.h", a_force, a_file)
 					l_c_filename := "ge_deep.c"
@@ -46626,6 +46658,9 @@ feature {NONE} -- Include files
 					if use_threads then
 						include_runtime_header_file ("ge_thread.h", False, a_header_file)
 					end
+				elseif a_filename.same_string ("ge_debug.c") then
+					include_runtime_header_file ("ge_debug.h", False, a_header_file)
+					include_runtime_header_file ("ge_gc.h", False, a_header_file)
 				elseif a_filename.same_string ("ge_deep.c") then
 					include_runtime_header_file ("ge_deep.h", False, a_header_file)
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
@@ -50154,6 +50189,7 @@ feature {NONE} -- Constants
 	c_ge_use_attribute_type_id: STRING = "GE_USE_ATTRIBUTE_TYPE_ID"
 	c_ge_use_attributes: STRING = "GE_USE_ATTRIBUTES"
 	c_ge_use_boehm_gc: STRING = "GE_USE_BOEHM_GC"
+	c_ge_use_current_in_exception_trace: STRING = "GE_USE_CURRENT_IN_EXCEPTION_TRACE"
 	c_ge_use_posix_threads: STRING = "GE_USE_POSIX_THREADS"
 	c_ge_use_scoop: STRING = "GE_USE_SCOOP"
 	c_ge_use_scoop_region_id: STRING = "GE_USE_SCOOP_REGION_ID"

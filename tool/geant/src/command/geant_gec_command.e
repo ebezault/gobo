@@ -5,7 +5,7 @@
 		"Gec commands"
 
 	library: "Gobo Eiffel Ant"
-	copyright: "Copyright (c) 2005-2024, Sven Ehrke and others"
+	copyright: "Copyright (c) 2005-2026, Sven Ehrke and others"
 	license: "MIT License"
 
 class GEANT_GEC_COMMAND
@@ -81,8 +81,11 @@ feature -- Access
 			-- Should the back-end C compiler be invoked on the generated C code, and if yes with what method?
 			-- (default: gecc)
 
-	finalize: BOOLEAN
+	finalize_mode: BOOLEAN
 			-- Should system be compiled in finalized mode?
+
+	debug_mode: BOOLEAN
+			-- Should system be compiled in debug mode?
 
 	gelint: BOOLEAN
 			-- Should gelint be run on the full content of each class being compiled?
@@ -181,12 +184,20 @@ feature -- Setting
 			c_compile_set: c_compile = a_c_compile
 		end
 
-	set_finalize (b: BOOLEAN)
-			-- Set `finalize' to `b'.
+	set_finalize_mode (b: BOOLEAN)
+			-- Set `finalize_mode' to `b'.
 		do
-			finalize := b
+			finalize_mode := b
 		ensure
-			finalize_set: finalize = b
+			finalize_mode_set: finalize_mode = b
+		end
+
+	set_debug_mode (b: BOOLEAN)
+			-- Set `debug_mode' to `b'.
+		do
+			debug_mode := b
+		ensure
+			debug_mode_set: debug_mode = b
 		end
 
 	set_gelint (b: BOOLEAN)
@@ -395,8 +406,11 @@ feature -- Command-line
 				Result.append_string (l_executable_name)
 				Result.append_character (' ')
 			end
-			if finalize then
+			if finalize_mode then
 				Result.append_string ("--finalize ")
+			end
+			if debug_mode then
+				Result.append_string ("--debug ")
 			end
 			if gelint then
 				Result.append_string ("--gelint ")

@@ -5,7 +5,7 @@
 		"Gec tasks"
 
 	library: "Gobo Eiffel Ant"
-	copyright: "Copyright (c) 2005-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2005-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class GEANT_GEC_TASK
@@ -84,7 +84,11 @@ feature {NONE} -- Initialization
 			end
 				-- finalize.
 			if has_attribute (Finalize_attribute_name) then
-				command.set_finalize (boolean_value (Finalize_attribute_name))
+				command.set_finalize_mode (boolean_value (Finalize_attribute_name))
+			end
+				-- debug.
+			if has_attribute (Debug_attribute_name) then
+				command.set_debug_mode (boolean_value (Debug_attribute_name))
 			end
 				-- gelint.
 			if has_attribute (Gelint_attribute_name) then
@@ -241,6 +245,15 @@ feature {NONE} -- Constants
 			-- Name of xml attribute for "clean"
 		once
 			Result := "clean"
+		ensure
+			attribute_name_not_void: Result /= Void
+			atribute_name_not_empty: Result.count > 0
+		end
+
+	Debug_attribute_name: STRING
+			-- Name of xml attribute for "debug"
+		once
+			Result := "debug"
 		ensure
 			attribute_name_not_void: Result /= Void
 			atribute_name_not_empty: Result.count > 0

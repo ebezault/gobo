@@ -20,7 +20,7 @@
 		<firstname>Eric</firstname><surname>Bezault</surname>
 	</author>
 	<email>ericb@gobosoft.com</email>
-	<date>10 May 2026</date>
+	<date>24 October 2026</date>
 </chapterinfo>
 
 <title>Using gec</title>
@@ -107,6 +107,14 @@ used with <projectname>gec</projectname>:
 		</term>
 		<listitem><para>
 			Compile with optimizations turned on.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+			<filename>--debug</filename>
+		</term>
+		<listitem><para>
+			Compile with debugging facilities turned on.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

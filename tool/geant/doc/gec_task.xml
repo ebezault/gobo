@@ -6,14 +6,14 @@
 		"Gec Tasks"
 
 	library: "Gobo Eiffel Ant"
-	copyright: "Copyright (c) 2006-2025, Eric Bezault and others"
+	copyright: "Copyright (c) 2006-2026, Eric Bezault and others"
 	license: "MIT License"
 -->
 
 <chapter xmlns="http://gobo-eiffel.gobosoft.com/documentation" id="gec_task">
 <chapterinfo>
 	<copyright>
-		<year>2006-2023</year>
+		<year>2006-2026</year>
 		<holder>Eric Bezault</holder>
 	</copyright>
 	<author>
@@ -21,7 +21,7 @@
 		<surname>Bezault</surname>
 	</author>
 	<email>ericb@gobosoft.com</email>
-	<date>20 December 2023</date>
+	<date>24 October 2026</date>
 </chapterinfo>
 
 	<title>gec</title>
@@ -67,6 +67,19 @@
 				<term>finalize</term>
 				<listitem>
 					<para><emphasis>Description: </emphasis>Should system be compiled in finalized mode?</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Domain: </emphasis>Boolean (true|false)</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Default: </emphasis>false</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>debug</term>
+				<listitem>
+					<para><emphasis>Description: </emphasis>Should system be compiled in debug mode?</para>
 				</listitem>
 				<listitem>
 					<para><emphasis>Domain: </emphasis>Boolean (true|false)</para>

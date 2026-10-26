@@ -4,7 +4,7 @@
 
 	<description>
 		description: "Eiffel compilation"
-		copyright: "Copyright (c) 2001-2024, Eric Bezault and others"
+		copyright: "Copyright (c) 2001-2026, Eric Bezault and others"
 		license: "MIT License"
 	</description>
 
@@ -69,8 +69,10 @@
 		<delete file="${system}${exe}"/>
 		<set name="gec_executable" value="gec"/>
 		<set name="gec_executable" value="${GEC_EXECUTABLE}" if="${GEC_EXECUTABLE}"/>
-		<set name="finalize" value="true"/>
-		<set name="finalize" value="false" if="${debug}"/>
+		<set name="finalize_mode" value="true"/>
+		<set name="finalize_mode" value="false" if="${debug}"/>
+		<set name="debug_mode" value="false"/>
+		<set name="debug_mode" value="true" if="${debug}"/>
 		<set name="split" value="true"/>
 		<set name="split" value="false" if="${no_split}"/>
 		<set name="split_size_option" value=""/>
@@ -82,7 +84,7 @@
 		<set name="thread_count_option" value="${thread_count}" if="${thread_count}"/>
 		<set name="executable_name_option" value=""/>
 		<set name="executable_name_option" value="${executable_name}" if="${executable_name}"/>
-		<gec ecf="${ecf_filename}" executable="${gec_executable}" target="${system}" executable_name="${executable_name_option}" finalize="${finalize}" gelint="${gelint_option}" catcall="${catcall_option}" split="${split}" split_size="${split_size_option}" thread="${thread_count_option}"/>
+		<gec ecf="${ecf_filename}" executable="${gec_executable}" target="${system}" executable_name="${executable_name_option}" finalize="${finalize_mode}" debug="${debug_mode}" gelint="${gelint_option}" catcall="${catcall_option}" split="${split}" split_size="${split_size_option}" thread="${thread_count_option}"/>
 	</target>
 
 	<target name="compile_ise" depend="prepare_compile">

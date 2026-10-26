@@ -364,6 +364,7 @@ feature {NONE} -- Processing
 			end
 			l_generator.set_scoop_exceptions_stop_when_dirty (scoop_exceptions_stop_when_dirty)
 			l_generator.set_finalize_mode (is_finalize)
+			l_generator.set_debug_mode (is_debug)
 			l_generator.set_split_mode (not no_split)
 			if split_size > 0 then
 				l_generator.set_split_threshold (split_size)
@@ -787,6 +788,12 @@ feature -- Arguments
 			Result := finalize_flag.was_found
 		end
 
+	is_debug: BOOLEAN
+			-- Compilation with debugging facilities turned on?
+		do
+			Result := debug_flag.was_found
+		end
+
 	is_gelint: BOOLEAN
 			-- Should gelint be run on the full content of each class being compiled?
 		do
@@ -936,6 +943,9 @@ feature -- Argument parsing
 	finalize_flag: AP_FLAG
 			-- Flag for '--finalize'
 
+	debug_flag: AP_FLAG
+			-- Flag for '--debug'
+
 	gelint_flag: AP_FLAG
 			-- Flag for '--gelint'
 
@@ -1026,6 +1036,10 @@ feature -- Argument parsing
 			create finalize_flag.make_with_long_form ("finalize")
 			finalize_flag.set_description ("Compile with optimizations turned on.")
 			a_parser.options.force_last (finalize_flag)
+				-- debug.
+			create debug_flag.make_with_long_form ("debug")
+			debug_flag.set_description ("Compile with debugging facilities turned on.")
+			a_parser.options.force_last (debug_flag)
 				-- gelint.
 			create gelint_flag.make_with_long_form ("gelint")
 			gelint_flag.set_description ("Run gelint on the full content of each class being compiled.")
@@ -1139,6 +1153,7 @@ feature -- Argument parsing
 			variable_option_not_void: variable_option /= Void
 			catcall_option_not_void: catcall_option /= Void
 			finalize_flag_not_void: finalize_flag /= Void
+			debug_flag_not_void: debug_flag /= Void
 			silent_flag_not_void: silent_flag /= Void
 			no_benchmark_flag_not_void: no_benchmark_flag /= Void
 			nested_benchmark_flag_not_void: nested_benchmark_flag /= Void
@@ -1444,6 +1459,7 @@ invariant
 	gelint_flag_not_void: gelint_flag /= Void
 	ise_option_not_void: ise_option /= Void
 	finalize_flag_not_void: finalize_flag /= Void
+	debug_flag_not_void: debug_flag /= Void
 	silent_flag_not_void: silent_flag /= Void
 	no_benchmark_flag_not_void: no_benchmark_flag /= Void
 	nested_benchmark_flag_not_void: nested_benchmark_flag /= Void
