@@ -8259,8 +8259,12 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character (' ')
 					current_file.put_character ('{')
 					if current_in_exception_trace or debug_mode then
-						current_file.put_string ("(void* volatile)")
-						print_current_name (current_file)
+						if current_feature.is_static then
+							current_file.put_character ('0')
+						else
+							current_file.put_string ("(void* volatile)")
+							print_current_name (current_file)
+						end
 						current_file.put_character (',')
 					end
 					print_escaped_string (current_type.base_class.upper_name)
@@ -19820,8 +19824,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 				current_file.put_character (' ')
 				current_file.put_character ('{')
 				if current_in_exception_trace or debug_mode then
-					current_file.put_string ("(void* volatile)")
-					print_current_name (current_file)
+					current_file.put_character ('0')
 					current_file.put_character (',')
 				end
 				if l_result /= Void then
