@@ -24,6 +24,10 @@
 
 #include <stdio.h>
 
+#if defined(_MSC_VER)
+#include <crtdbg.h>  // Required for _set_invalid_parameter_handler
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -134,18 +138,49 @@ GE_debug_receive_done:
 	GE_free(command);
 }
 
+#if defined(_MSC_VER)
+/* Handler to avoid a crash when calling `_fdopen` with an invalid file descriptor. */
+void my_invalid_parameter_handler(const wchar_t* expression,
+	const wchar_t* function, 
+	const wchar_t* file, 
+	unsigned int line, 
+	uintptr_t pReserved)
+{
+    // Do nothing. This safely suppresses the crash and allows 
+    // the calling CRT function to fail and return its error code.
+}
+#endif
+
 /* Initialize debugging facilities. */
 void GE_debug_init()
 {
+#if defined(_MSC_VER)
+    /* Register custom handler. */
+    _invalid_parameter_handler oldHandler, newHandler;
+    newHandler = my_invalid_parameter_handler;
+    oldHandler = _set_invalid_parameter_handler(newHandler);
+    /* Disable the default Windows crash dialog box popups (optional but helpful) */
+    /* _CrtSetReportMode(_CRT_ASSERT, 0); */
+
+	GE_debug_in = _fdopen(4, "r");
+#else
 	GE_debug_in = fdopen(4, "r");
+#endif
 	if (GE_debug_in) {
+#if defined(_MSC_VER)
+		GE_debug_out = _fdopen(3, "w");
+#else
 		GE_debug_out = fdopen(3, "w");
+#endif
 		if (!GE_debug_out) {
 			fclose(GE_debug_in);
 			GE_debug_in = NULL;
 			GE_debug_out = NULL;
 		}
 	}
+#if defined(_MSC_VER)
+	newHandler = _set_invalid_parameter_handler(oldHandler);
+#endif
 	if (GE_debug_in && GE_debug_out) {
 		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"started\",\"body\":{}}\n");
 		fflush(GE_debug_out);
