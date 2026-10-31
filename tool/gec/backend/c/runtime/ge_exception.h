@@ -101,11 +101,16 @@ typedef volatile struct {
  */
 typedef volatile struct GE_call_struct GE_call;
 struct GE_call_struct {
-#ifdef GE_USE_CURRENT_IN_EXCEPTION_TRACE
+#if defined(GE_USE_CURRENT_IN_EXCEPTION_TRACE) || defined(GE_DEBUG_MODE)
 	void* volatile object; /* Current object */
 #endif
 	const char* volatile class_name;
 	const char* volatile feature_name;
+#ifdef GE_DEBUG_MODE
+	const char* volatile filename;
+	uint32_t volatile line;
+	uint32_t volatile column;
+#endif
 	GE_call* volatile caller; /* previous feature in the call chain */
 };
 

@@ -291,6 +291,7 @@ feature {NONE} -- Processing
 		local
 			l_system: ET_DYNAMIC_SYSTEM
 			l_system_processor: ET_SYSTEM_PROCESSOR
+			l_ast_factory: ET_DECORATED_AST_FACTORY
 			l_builder: ET_DYNAMIC_TYPE_SET_BUILDER
 			l_thread_count: INTEGER
 			dt_total: detachable DT_DATE_TIME
@@ -304,6 +305,10 @@ feature {NONE} -- Processing
 			l_system_processor.set_benchmark_shown (not is_no_benchmark and not is_silent)
 			l_system_processor.set_nested_benchmark_shown (is_nested_benchmark and not is_no_benchmark and not is_silent)
 			l_system_processor.set_metrics_shown (is_metrics and not is_silent)
+			if is_debug then
+				create l_ast_factory.make
+				l_system_processor.set_ast_factory (l_ast_factory)
+			end
 			dt_total := l_system_processor.benchmark_start_time
 			if is_gelint then
 				l_system_processor.set_flat_mode (True)

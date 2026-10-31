@@ -283,14 +283,15 @@ feature {NONE} -- Initialization
 			create constant_features.make_map (10000)
 			create inline_constants.make_map (10000)
 			create dispose_procedures.make_map (dynamic_types.count)
+			create breakpoints.make_map (current_system.registered_class_count)
 			create dynamic_type_id_set_names.make_map (10000)
 			dynamic_type_id_set_names.set_key_equality_tester (string_equality_tester)
 			create used_inlined_operands.make (1000)
 			create unused_inlined_operands.make (1000)
 			create used_call_contexts.make (100)
 			create unused_call_contexts.make (100)
-			if a_system.current_system.inlining_mode then
-				max_nested_inlining_count := a_system.current_system.inlining_size.max (0)
+			if current_system.inlining_mode then
+				max_nested_inlining_count := current_system.inlining_size.max (0)
 			end
 			create inlined_void.make
 			create inlined_integer.make ("0", 0, False)
@@ -1732,10 +1733,16 @@ feature {NONE} -- C code Generation
 					header_file.put_line (c_eif_exception_trace)
 					l_newline_needed_in_header_file := True
 				end
-				if current_in_exception_trace or debug_mode then
+				if current_in_exception_trace then
 					header_file.put_string (c_define)
 					header_file.put_character (' ')
 					header_file.put_line (c_ge_use_current_in_exception_trace)
+					l_newline_needed_in_header_file := True
+				end
+				if debug_mode then
+					header_file.put_string (c_define)
+					header_file.put_character (' ')
+					header_file.put_line (c_ge_debug_mode)
 					l_newline_needed_in_header_file := True
 				end
 				if use_boehm_gc then
@@ -1913,6 +1920,12 @@ feature {NONE} -- C code Generation
 				print_types_array
 				current_file.put_new_line
 				flush_to_c_file
+					-- Print breakpoints.
+				if debug_mode then
+					print_breakpoints
+					current_file.put_new_line
+					flush_to_c_file
+				end
 					-- Print 'GE_dts' dynamic type id set constants.
 				print_dynamic_type_id_set_constants
 				flush_to_c_file
@@ -1970,6 +1983,7 @@ feature {NONE} -- C code Generation
 				constant_features.wipe_out
 				inline_constants.wipe_out
 				dispose_procedures.wipe_out
+				breakpoints.wipe_out
 				dynamic_types := current_dynamic_system.dynamic_types
 				dynamic_type_id_set_names.wipe_out
 				l_header_file.close
@@ -2605,6 +2619,7 @@ feature {NONE} -- Feature generation
 			l_preconditions_enabled: BOOLEAN
 			l_print_body: BOOLEAN
 			l_print_footer: BOOLEAN
+			l_position: ET_POSITION
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -2845,12 +2860,29 @@ feature {NONE} -- Feature generation
 					current_file.put_character (',')
 					print_escaped_string (a_feature.lower_name)
 					current_file.put_character (',')
+					if debug_mode then
+						if attached a_feature.implementation_class.filename as l_filename then
+							print_escaped_string (l_filename)
+						else
+							current_file.put_character ('%"')
+							current_file.put_character ('%"')
+						end
+						current_file.put_character (',')
+						l_position := a_feature.implementation_feature.position
+						current_file.put_integer (l_position.line)
+						current_file.put_character (',')
+						current_file.put_integer (l_position.column)
+						current_file.put_character (',')
+					end
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
 					current_file.put_string (c_call)
 					current_file.put_character ('}')
 					current_file.put_character (';')
 					current_file.put_new_line
+					if debug_mode then
+						last_non_empty_line := a_feature.implementation_feature.position.line
+					end
 				end
 					-- Variable for 'Result' entity.
 				if l_result_type /= Void and (not l_is_inline or else l_need_distinct_inline) then
@@ -2941,6 +2973,13 @@ feature {NONE} -- Feature generation
 					current_file.put_string ("(void* volatile)")
 					print_current_name (current_file)
 					print_semicolon_newline
+				end
+			end
+			if not a_inline and debug_mode then
+				if l_is_inline and then attached a_feature.alias_clause as l_alias_clause then
+					print_set_exception_trace_position (l_alias_clause.manifest_string.position)
+				else
+					print_set_exception_trace_position (a_feature.language.manifest_string.position)
 				end
 			end
 				-- Put the body of the feature in a block so that there
@@ -3225,6 +3264,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				if l_has_separate_formal_arguments then
 					print_unprotect_scoop_sessions
 					print_close_formal_argument_scoop_sessions (a_feature, False)
+				end
+				if debug_mode then
+					print_position_reached (a_feature.end_keyword.position)
 				end
 				print_feature_trace_message_call (False)
 					-- Call stack.
@@ -7011,6 +7053,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			l_once_index: INTEGER
 			l_is_once: BOOLEAN
 			l_is_self_initialized_attribute: BOOLEAN
+			l_position: ET_POSITION
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -7137,7 +7180,8 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					not current_type.base_class.preconditions_enabled and then
 					not current_type.base_class.postconditions_enabled and then
 					(not attached a_feature.compound as l_compound or else l_compound.is_empty) and then
-					a_feature.rescue_clause = Void
+					a_feature.rescue_clause = Void and then
+					not debug_mode
 				if not l_is_empty then
 					print_indentation
 					current_file.put_string (c_ge_call)
@@ -7158,11 +7202,28 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character (',')
 					print_escaped_string (a_feature.lower_name)
 					current_file.put_character (',')
+					if debug_mode then
+						if attached a_feature.implementation_class.filename as l_filename then
+							print_escaped_string (l_filename)
+						else
+							current_file.put_character ('%"')
+							current_file.put_character ('%"')
+						end
+						current_file.put_character (',')
+						l_position := a_feature.implementation_feature.position
+						current_file.put_integer (l_position.line)
+						current_file.put_character (',')
+						current_file.put_integer (l_position.column)
+						current_file.put_character (',')
+					end
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
 					current_file.put_string (c_call)
 					current_file.put_character ('}')
 					print_semicolon_newline
+					if debug_mode then
+						last_non_empty_line := a_feature.implementation_feature.position.line
+					end
 				end
 			end
 				--
@@ -7262,6 +7323,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_string (c_ge_attribute_return)
 				current_file.put_character (':')
 				current_file.put_new_line
+			end
+			if debug_mode then
+				print_position_reached (a_feature.end_keyword.position)
 			end
 			print_feature_trace_message_call (False)
 				-- Call stack.
@@ -8169,6 +8233,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			l_result: ET_RESULT
 			l_index: INTEGER
 			l_print_footer: BOOLEAN
+			l_position: ET_POSITION
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -8271,6 +8336,20 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character (',')
 					print_escaped_string (a_feature.lower_name)
 					current_file.put_character (',')
+					if debug_mode then
+						if attached a_feature.implementation_class.filename as l_filename then
+							print_escaped_string (l_filename)
+						else
+							current_file.put_character ('%"')
+							current_file.put_character ('%"')
+						end
+						current_file.put_character (',')
+						l_position := a_feature.implementation_feature.position
+						current_file.put_integer (l_position.line)
+						current_file.put_character (',')
+						current_file.put_integer (l_position.column)
+						current_file.put_character (',')
+					end
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
 					current_file.put_string (c_call)
@@ -8688,6 +8767,9 @@ feature {NONE} -- Instruction generation
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
 			end
+			if debug_mode then
+				print_position_reached (an_instruction.position)
+			end
 			l_source := an_instruction.source
 			l_source_type_set := dynamic_type_set (l_source)
 			l_target := an_instruction.target
@@ -8729,6 +8811,9 @@ feature {NONE} -- Instruction generation
 					print_assign_result_to_once_value (current_feature, l_once_kind, l_once_index, False)
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := an_instruction.last_position.line
+			end
 		end
 
 	print_assignment_attempt (an_instruction: ET_ASSIGNMENT_ATTEMPT)
@@ -8756,6 +8841,9 @@ feature {NONE} -- Instruction generation
 		do
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (an_instruction.position)
 			end
 			l_source := an_instruction.source
 			l_source_type_set := dynamic_type_set (l_source)
@@ -9050,6 +9138,9 @@ feature {NONE} -- Instruction generation
 					print_assign_result_to_once_value (current_feature, l_once_kind, l_once_index, False)
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := an_instruction.last_position.line
+			end
 		end
 
 	print_bang_instruction (an_instruction: ET_BANG_INSTRUCTION)
@@ -9064,22 +9155,32 @@ feature {NONE} -- Instruction generation
 			-- Print `an_instruction'.
 		require
 			an_instruction_not_void: an_instruction /= Void
+		local
+			l_check_enabled: BOOLEAN
+			l_then_compound: detachable ET_COMPOUND
 		do
-			if attached an_instruction.then_compound as l_then_compound then
+			l_then_compound := an_instruction.then_compound
+			if l_then_compound /= Void or (current_type.base_class.check_assertions_enabled and then not an_instruction.are_all_true) then
 				if line_generation_mode then
 					print_position (an_instruction.position, current_feature.static_feature.implementation_class)
 				end
+				if debug_mode then
+					print_position_reached (an_instruction.position)
+				end
+				l_check_enabled := True
+			end
+			if l_then_compound /= Void then
 				print_assertions (an_instruction, c_ge_ex_check)
 				print_compound (l_then_compound)
-			elseif current_type.base_class.check_assertions_enabled and then not an_instruction.are_all_true then
-				if line_generation_mode then
-					print_position (an_instruction.position, current_feature.static_feature.implementation_class)
-				end
+			elseif l_check_enabled then
 				print_before_assertions (False)
 				print_assertions (an_instruction, c_ge_ex_check)
 				print_after_assertions
 			else
 				-- Do not check assertions at run-time, or nothing to check.
+			end
+			if l_check_enabled and debug_mode then
+				print_position_reached (an_instruction.end_keyword.position)
 			end
 		end
 
@@ -9090,6 +9191,9 @@ feature {NONE} -- Instruction generation
 		local
 			i, nb: INTEGER
 		do
+			if debug_mode then
+				print_position_reached (a_compound.keyword.position)
+			end
 			nb := a_compound.count
 			from i := 1 until i > nb loop
 				print_instruction (a_compound.item (i))
@@ -9124,9 +9228,13 @@ feature {NONE} -- Instruction generation
 			l_once_index: INTEGER
 			l_once_kind: INTEGER
 			l_is_separate_call: BOOLEAN
+			l_position: ET_POSITION
 		do
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (an_instruction.position)
 			end
 				-- Look for the static and dynamic types of the creation.
 			l_target := an_instruction.target
@@ -9143,9 +9251,14 @@ feature {NONE} -- Instruction generation
 			if attached an_instruction.creation_call as l_creation_call then
 				l_seed := l_creation_call.name.seed
 				l_actuals := l_creation_call.arguments
+				l_position := l_creation_call.position
 			else
 				l_seed := current_system.default_create_seed
 				l_actuals := Void
+				l_position := an_instruction.position
+			end
+			if debug_mode then
+				print_position_reached (l_position)
 			end
 			l_dynamic_procedure := l_dynamic_primary_type.seeded_dynamic_procedure (l_seed, current_dynamic_system)
 			if l_dynamic_procedure = Void then
@@ -9164,6 +9277,9 @@ feature {NONE} -- Instruction generation
 					end
 				end
 				fill_call_operands (nb)
+				if debug_mode then
+					print_set_exception_trace_position (l_position)
+				end
 				print_indentation
 				print_writable (l_target)
 				print_assign_to
@@ -9197,6 +9313,9 @@ feature {NONE} -- Instruction generation
 					print_assign_result_to_once_value (current_feature, l_once_kind, l_once_index, False)
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := an_instruction.last_position.line
+			end
 			if l_is_separate_call then
 					-- Print the separate call declaration now, otherwise some
 					-- temporary data (temporary dynamic type sets, reused calls,
@@ -9223,6 +9342,9 @@ feature {NONE} -- Instruction generation
 		do
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (an_instruction.position)
 			end
 			print_operand (an_instruction.expression)
 			fill_call_operands (1)
@@ -9254,6 +9376,9 @@ feature {NONE} -- Instruction generation
 					current_file.put_new_line
 					if line_generation_mode then
 						print_position (l_elseif.position, current_feature.static_feature.implementation_class)
+					end
+					if debug_mode then
+						print_position_reached (l_elseif.position)
 					end
 					indent
 					print_operand (l_elseif.expression)
@@ -9298,6 +9423,9 @@ feature {NONE} -- Instruction generation
 				i := i + 1
 			end
 			current_file.put_new_line
+			if debug_mode then
+				print_position_reached (an_instruction.end_keyword.position)
+			end
 		end
 
 	print_inline_separate_instruction (a_instruction: ET_INLINE_SEPARATE_INSTRUCTION)
@@ -9314,6 +9442,9 @@ feature {NONE} -- Instruction generation
 		do
 			if line_generation_mode then
 				print_position (a_instruction.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (a_instruction.position)
 			end
 			l_arguments := a_instruction.arguments
 			nb := l_arguments.count
@@ -9346,6 +9477,9 @@ feature {NONE} -- Instruction generation
 					print_close_inline_argument_scoop_sessions (a_instruction, False)
 				end
 			end
+			if debug_mode then
+				print_position_reached (a_instruction.end_keyword.position)
+			end
 		end
 
 	print_inspect_instruction (a_instruction: ET_INSPECT_INSTRUCTION)
@@ -9356,7 +9490,13 @@ feature {NONE} -- Instruction generation
 			if line_generation_mode then
 				print_position (a_instruction.position, current_feature.static_feature.implementation_class)
 			end
+			if debug_mode then
+				print_position_reached (a_instruction.position)
+			end
 			print_inspect_component (a_instruction, Void, Void)
+			if debug_mode then
+				print_position_reached (a_instruction.end_keyword.position)
+			end
 		end
 
 	print_inspect_component (a_inspect_component: ET_INSPECT_COMPONENT; a_result: detachable ET_IDENTIFIER; a_result_type: detachable ET_DYNAMIC_TYPE)
@@ -9659,6 +9799,9 @@ feature {NONE} -- Instruction generation
 					if line_generation_mode then
 						print_position (l_when_part.position, current_feature.static_feature.implementation_class)
 					end
+					if debug_mode then
+						print_position_reached (l_when_part.position)
+					end
 					l_choices := l_when_part.choices
 					if l_choices.count /= 0 then
 						if l_is_character_n_type then
@@ -9712,6 +9855,9 @@ feature {NONE} -- Instruction generation
 					if line_generation_mode then
 						print_position (l_when_part.position, current_feature.static_feature.implementation_class)
 					end
+					if debug_mode then
+						print_position_reached (l_when_part.position)
+					end
 					l_choices := l_when_part.choices
 					if l_choices.count /= 0 then
 						if l_is_first then
@@ -9760,6 +9906,11 @@ feature {NONE} -- Instruction generation
 				indent
 			end
 			if a_result /= Void and a_result_type /= Void and attached {ET_EXPRESSION} a_inspect_component.else_part as l_else_expression then
+				if debug_mode then
+					if attached {ET_INSPECT_EXPRESSION} a_inspect_component as l_inspect_expression and then attached l_inspect_expression.else_part as l_else_part then
+						print_position_reached (l_else_part.position)
+					end
+				end
 				l_expression_dynamic_type_set := dynamic_type_set (l_else_expression)
 				print_assignment_operand (l_else_expression, l_expression_dynamic_type_set, a_result, a_result_type)
 				fill_call_operands (1)
@@ -9771,9 +9922,12 @@ feature {NONE} -- Instruction generation
 					print_semicolon_newline
 				end
 				call_operands.wipe_out
-			elseif attached {ET_COMPOUND} a_inspect_component.else_part as l_else_compund then
-				print_compound (l_else_compund)
+			elseif attached {ET_COMPOUND} a_inspect_component.else_part as l_else_compound then
+				print_compound (l_else_compound)
 			else
+				if debug_mode then
+					print_position_reached (a_inspect_component.end_keyword.position)
+				end
 				print_indentation
 				current_file.put_string (c_ge_raise)
 				current_file.put_character ('(')
@@ -10583,6 +10737,9 @@ feature {NONE} -- Instruction generation
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
 			end
+			if debug_mode then
+				print_position_reached (an_instruction.position)
+			end
 			l_cursor_name := an_instruction.unfolded_cursor_name
 			l_cursor_type_set := dynamic_type_set (l_cursor_name)
 			l_cursor_type := l_cursor_type_set.static_type
@@ -10677,6 +10834,9 @@ feature {NONE} -- Instruction generation
 			if l_temp_old_var /= Void then
 				mark_temp_variable_free (l_temp_old_var)
 			end
+			if debug_mode then
+				print_position_reached (an_instruction.last_position)
+			end
 		end
 
 	print_loop_instruction (an_instruction: ET_LOOP_INSTRUCTION)
@@ -10691,6 +10851,9 @@ feature {NONE} -- Instruction generation
 		do
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (an_instruction.position)
 			end
 			if attached an_instruction.from_compound as l_from_compound and then not l_from_compound.is_empty then
 				print_compound (l_from_compound)
@@ -10750,6 +10913,9 @@ feature {NONE} -- Instruction generation
 			print_indentation
 			current_file.put_character ('}')
 			current_file.put_new_line
+			if debug_mode then
+				print_position_reached (an_instruction.end_keyword.position)
+			end
 			if l_temp_var /= Void then
 				mark_temp_variable_free (l_temp_var)
 			end
@@ -10779,6 +10945,9 @@ feature {NONE} -- Instruction generation
 		do
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (an_instruction.position)
 			end
 			l_old_in_qualified_call := in_qualified_call
 			in_qualified_call := False
@@ -10842,12 +11011,21 @@ feature {NONE} -- Instruction generation
 						end
 						nb := nb + 1
 						fill_call_operands (nb)
+						if debug_mode then
+							print_set_exception_trace_position (an_instruction.position)
+						end
 						print_procedure_call (l_dynamic_precursor, current_type, False)
 						call_operands.wipe_out
 					end
 				end
 			end
 			in_qualified_call := l_old_in_qualified_call
+			if debug_mode then
+				if attached {ET_ACTUAL_ARGUMENT_LIST} an_instruction.arguments as l_arguments then
+					print_position_reached (l_arguments.right_symbol.position)
+				end
+				last_non_empty_line := an_instruction.last_position.line
+			end
 		end
 
 	print_qualified_call_instruction (a_call: ET_QUALIFIED_FEATURE_CALL_INSTRUCTION)
@@ -10876,6 +11054,9 @@ feature {NONE} -- Instruction generation
 		do
 			if line_generation_mode then
 				print_position (a_call.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (a_call.position)
 			end
 			l_old_in_qualified_call := in_qualified_call
 			in_qualified_call := True
@@ -10936,6 +11117,9 @@ feature {NONE} -- Instruction generation
 				end
 				nb := nb + 1
 				fill_call_operands (nb)
+			end
+			if debug_mode then
+				print_set_exception_trace_position (a_call.position)
 			end
 			if use_scoop and a_call /= separate_call_instruction and l_target_type.is_separate then
 				print_separate_qualified_call_instruction (a_call)
@@ -11093,6 +11277,12 @@ feature {NONE} -- Instruction generation
 			end
 			call_operands.wipe_out
 			in_qualified_call := l_old_in_qualified_call
+			if debug_mode then
+				if attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
+					print_position_reached (l_arguments.right_symbol.position)
+				end
+				last_non_empty_line := a_call.last_position.line
+			end
 			if l_is_separate_call then
 					-- Print the separate call declaration now, otherwise some
 					-- temporary data (temporary dynamic type sets, reused calls,
@@ -11159,6 +11349,9 @@ feature {NONE} -- Instruction generation
 		do
 			if line_generation_mode then
 				print_position (an_instruction.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (an_instruction.position)
 			end
 			print_indentation
 			current_file.put_string (c_ac)
@@ -11236,6 +11429,9 @@ feature {NONE} -- Instruction generation
 			if line_generation_mode then
 				print_position (a_instruction.position, current_feature.static_feature.implementation_class)
 			end
+			if debug_mode then
+				print_position_reached (a_instruction.position)
+			end
 			l_old_in_qualified_call := in_qualified_call
 			in_qualified_call := True
 				-- Add dummy target (which will not be used).
@@ -11252,9 +11448,18 @@ feature {NONE} -- Instruction generation
 			end
 			fill_call_operands (nb + 1)
 			l_target_type := current_dynamic_system.dynamic_primary_type (a_instruction.type, current_type.base_type)
+			if debug_mode then
+				print_set_exception_trace_position (a_instruction.position)
+			end
 			print_named_procedure_call (a_instruction.name, l_target_type, False)
 			call_operands.wipe_out
 			in_qualified_call := l_old_in_qualified_call
+			if debug_mode then
+				if attached {ET_ACTUAL_ARGUMENT_LIST} a_instruction.arguments as l_arguments then
+					print_position_reached (l_arguments.right_symbol.position)
+				end
+				last_non_empty_line := a_instruction.last_position.line
+			end
 		end
 
 	print_unqualified_call_instruction (a_call: ET_UNQUALIFIED_FEATURE_CALL_INSTRUCTION)
@@ -11273,6 +11478,9 @@ feature {NONE} -- Instruction generation
 		do
 			if line_generation_mode then
 				print_position (a_call.position, current_feature.static_feature.implementation_class)
+			end
+			if debug_mode then
+				print_position_reached (a_call.position)
 			end
 			l_old_in_qualified_call := in_qualified_call
 			in_qualified_call := False
@@ -11329,6 +11537,9 @@ feature {NONE} -- Instruction generation
 					nb := nb + 1
 					fill_call_operands (nb)
 				end
+				if debug_mode then
+					print_set_exception_trace_position (a_call.position)
+				end
 				print_named_procedure_call (a_call.name, current_type, False)
 				call_operands.wipe_out
 				if l_manifest_tuple_operand /= Void then
@@ -11337,6 +11548,12 @@ feature {NONE} -- Instruction generation
 				end
 			end
 			in_qualified_call := l_old_in_qualified_call
+			if debug_mode then
+				if attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
+					print_position_reached (l_arguments.right_symbol.position)
+				end
+				last_non_empty_line := a_call.last_position.line
+			end
 		end
 
 feature {NONE} -- Procedure call generation
@@ -13045,18 +13262,18 @@ feature {NONE} -- Expression generation
 			l_dynamic_type: ET_DYNAMIC_PRIMARY_TYPE
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_constant.position)
+				end
 				if in_call_target then
 					in_operand := False
 					l_dynamic_type := dynamic_type_set (a_constant).static_type.primary_type
 					l_temp := new_temp_variable (l_dynamic_type)
 					print_indentation
 					print_temp_name (l_temp, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					print_character_constant (a_constant)
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 					l_temp.set_index (a_constant.index)
 					operand_stack.force (l_temp)
 					in_operand := True
@@ -13076,6 +13293,9 @@ feature {NONE} -- Expression generation
 					print_escaped_character_8 (a_constant.value.to_character_8)
 				end
 				current_file.put_character (')')
+			end
+			if debug_mode then
+				last_non_empty_line := a_constant.last_position.line
 			end
 		end
 
@@ -13160,9 +13380,7 @@ feature {NONE} -- Expression generation
 						print_indentation
 						print_temp_name (l_temp, current_file)
 					end
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					current_file.put_character ('(')
 				end
 				print_type_cast (l_target_type, current_file)
@@ -13171,8 +13389,7 @@ feature {NONE} -- Expression generation
 				current_file.put_character (')')
 				if in_operand then
 					current_file.put_character (')')
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 				end
 				call_operands.wipe_out
 				if l_temp /= Void then
@@ -13225,12 +13442,24 @@ feature {NONE} -- Expression generation
 			l_assignment_target: like assignment_target
 			l_actual: ET_EXPRESSION
 			l_is_separate_call: BOOLEAN
+			l_position: ET_POSITION
 		do
 			l_assignment_target := assignment_target
 			assignment_target := Void
 			l_target_type_set := dynamic_type_set (an_expression)
 			l_target_type := l_target_type_set.static_type
 			l_target_primary_type := l_target_type.primary_type
+			if attached an_expression.creation_call as l_creation_call then
+				l_seed := l_creation_call.name.seed
+				l_position := l_creation_call.position
+			else
+				l_seed := current_system.default_create_seed
+				l_position := an_expression.position
+			end
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+				print_position_reached (l_position)
+			end
 			if attached an_expression.arguments as l_actuals then
 				nb := l_actuals.count
 				from i := 1 until i > nb loop
@@ -13241,6 +13470,9 @@ feature {NONE} -- Expression generation
 			end
 			fill_call_operands (nb)
 			if in_operand then
+				if debug_mode then
+					print_set_exception_trace_position (l_position)
+				end
 				print_indentation
 				if l_assignment_target /= Void then
 					operand_stack.force (l_assignment_target)
@@ -13256,11 +13488,6 @@ feature {NONE} -- Expression generation
 				end
 				print_assign_to
 				current_file.put_character ('(')
-			end
-			if attached an_expression.creation_call as l_creation_call then
-				l_seed := l_creation_call.name.seed
-			else
-				l_seed := current_system.default_create_seed
 			end
 			if not attached l_target_primary_type.seeded_dynamic_procedure (l_seed, current_dynamic_system) as l_procedure then
 					-- Internal error: there should be a procedure with `l_seed'.
@@ -13287,6 +13514,9 @@ feature {NONE} -- Expression generation
 					l_temp.set_index (l_temp_index)
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
+			end
 			if l_is_separate_call then
 					-- Print the separate call declaration now, otherwise some
 					-- temporary data (temporary dynamic type sets, reused calls,
@@ -13308,6 +13538,9 @@ feature {NONE} -- Expression generation
 			elseif current_agent /= Void then
 				agent_target.process (Current)
 			elseif in_operand then
+				if debug_mode then
+					print_position_reached (an_expression.position)
+				end
 				operand_stack.force (an_expression)
 			elseif attached call_target_type as l_call_target_type then
 				check in_call_target: in_call_target end
@@ -13324,6 +13557,9 @@ feature {NONE} -- Expression generation
 			else
 				current_file.put_character ('*')
 				print_current_name (current_file)
+			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
 			end
 		end
 
@@ -13343,6 +13579,10 @@ feature {NONE} -- Expression generation
 			l_dynamic_type_set := dynamic_type_set (an_expression)
 			l_dynamic_type := l_dynamic_type_set.static_type.primary_type
 			l_pointer := (l_dynamic_type = l_pointer_type)
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+				print_position_reached (an_expression.current_keyword.position)
+			end
 			if not l_pointer then
 					-- $Current is of type TYPED_POINTER.
 				l_temp := new_temp_variable (l_dynamic_type)
@@ -13357,9 +13597,7 @@ feature {NONE} -- Expression generation
 				else
 					print_indentation
 					print_attribute_access (l_queries.first, l_temp, l_dynamic_type, False)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 				end
 			end
 			if l_pointer and in_operand then
@@ -13379,8 +13617,10 @@ feature {NONE} -- Expression generation
 				current_file.put_character (')')
 			end
 			if not l_pointer then
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
+			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
 			end
 		end
 
@@ -13396,6 +13636,9 @@ feature {NONE} -- Expression generation
 			l_equality_types: ET_DYNAMIC_EQUALITY_TYPES
 			l_assignment_target: like assignment_target
 		do
+			if in_operand and debug_mode then
+				print_position_reached (a_expression.position)
+			end
 			l_left_operand := a_expression.left
 			l_right_operand := a_expression.right
 			l_left_type_set := dynamic_type_set (l_left_operand)
@@ -13417,6 +13660,9 @@ feature {NONE} -- Expression generation
 				free_equality_types (l_equality_types)
 			end
 			call_operands.wipe_out
+			if debug_mode then
+				last_non_empty_line := a_expression.last_position.line
+			end
 		end
 
 	print_expression (an_expression: ET_EXPRESSION)
@@ -13449,23 +13695,30 @@ feature {NONE} -- Expression generation
 			l_dynamic_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_temp: ET_IDENTIFIER
 			l_feature_address: ET_FEATURE_ADDRESS
+			l_position: ET_POSITION
 		do
+			l_position := an_expression.expression.position
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+			end
 			l_dynamic_type_set := dynamic_type_set (an_expression.expression)
 			l_dynamic_type := l_dynamic_type_set.static_type.primary_type
 			l_temp := new_temp_variable (l_dynamic_type)
 			mark_temp_variable_frozen (l_temp)
 			l_temp.set_index (an_expression.expression.index)
+			l_temp.set_position (l_position.line, l_position.column)
 			print_indentation
 			print_temp_name (l_temp, current_file)
-			current_file.put_character (' ')
-			current_file.put_character ('=')
-			current_file.put_character (' ')
+			print_assign_to
 			print_expression (an_expression.expression)
-			current_file.put_character (';')
-			current_file.put_new_line
+			print_semicolon_newline
 			create l_feature_address.make (l_temp)
+			l_feature_address.set_dollar (an_expression.dollar)
 			l_feature_address.set_index (an_expression.index)
 			print_feature_address (l_feature_address)
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
+			end
 		end
 
 	print_false_constant (a_constant: ET_FALSE_CONSTANT)
@@ -13476,16 +13729,16 @@ feature {NONE} -- Expression generation
 			l_temp: ET_IDENTIFIER
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_constant.position)
+				end
 				if in_call_target then
 					l_temp := new_temp_variable (dynamic_type_set (a_constant).static_type.primary_type)
 					print_indentation
 					print_temp_name (l_temp, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					current_file.put_string (c_eif_false)
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 					l_temp.set_index (a_constant.index)
 					operand_stack.force (l_temp)
 				else
@@ -13493,6 +13746,9 @@ feature {NONE} -- Expression generation
 				end
 			else
 				current_file.put_string (c_eif_false)
+			end
+			if debug_mode then
+				last_non_empty_line := a_constant.last_position.line
 			end
 		end
 
@@ -13519,6 +13775,11 @@ feature {NONE} -- Expression generation
 			l_dynamic_type_set := dynamic_type_set (an_expression)
 			l_dynamic_type := l_dynamic_type_set.static_type.primary_type
 			l_pointer := (l_dynamic_type = l_pointer_type)
+			l_name := an_expression.name
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+				print_position_reached (l_name.position)
+			end
 			if not l_pointer then
 					-- $feature_name is of type TYPED_POINTER.
 				l_temp := new_temp_variable (l_dynamic_type)
@@ -13543,7 +13804,6 @@ feature {NONE} -- Expression generation
 				operand_stack.force (an_expression)
 			else
 				current_file.put_character ('(')
-				l_name := an_expression.name
 				if not attached {ET_IDENTIFIER} l_name as l_identifier then
 					-- Do nothing here.
 				elseif l_identifier.is_argument then
@@ -13742,6 +14002,9 @@ feature {NONE} -- Expression generation
 			if not l_pointer then
 				print_semicolon_newline
 			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
+			end
 		end
 
 	print_formal_argument (a_name: ET_IDENTIFIER)
@@ -13772,6 +14035,9 @@ feature {NONE} -- Expression generation
 					agent_arguments.actual_argument (l_seed).process (Current)
 				end
 			elseif in_operand then
+				if debug_mode then
+					print_position_reached (a_name.position)
+				end
 				operand_stack.force (a_name)
 			elseif attached call_target_type as l_call_target_type then
 				check in_call_target: in_call_target end
@@ -13789,6 +14055,9 @@ feature {NONE} -- Expression generation
 				end
 			else
 				print_argument_name (a_name, current_file)
+			end
+			if debug_mode then
+				last_non_empty_line := a_name.last_position.line
 			end
 		end
 
@@ -13815,6 +14084,9 @@ feature {NONE} -- Expression generation
 			i, nb: INTEGER
 		do
 			assignment_target := Void
+			if in_operand and debug_mode then
+				print_position_reached (a_expression.position)
+			end
 				-- Declaration of temporary result.
 			l_dynamic_type_set := dynamic_type_set (a_expression)
 			l_dynamic_type := l_dynamic_type_set.static_type
@@ -13844,12 +14116,9 @@ feature {NONE} -- Expression generation
 			if call_operands.first /= l_temp then
 				print_indentation
 				print_temp_name (l_temp, current_file)
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
+				print_assign_to
 				print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, l_dynamic_type)
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 			end
 			call_operands.wipe_out
 			dedent
@@ -13865,6 +14134,9 @@ feature {NONE} -- Expression generation
 					current_file.put_character ('{')
 					current_file.put_new_line
 					indent
+					if debug_mode then
+						print_position_reached (l_elseif.position)
+					end
 					print_operand (l_elseif.conditional_expression)
 					fill_call_operands (1)
 					print_indentation
@@ -13885,12 +14157,9 @@ feature {NONE} -- Expression generation
 					if call_operands.first /= l_temp then
 						print_indentation
 						print_temp_name (l_temp, current_file)
-						current_file.put_character (' ')
-						current_file.put_character ('=')
-						current_file.put_character (' ')
+						print_assign_to
 						print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, l_dynamic_type)
-						current_file.put_character (';')
-						current_file.put_new_line
+						print_semicolon_newline
 					end
 					call_operands.wipe_out
 					dedent
@@ -13905,6 +14174,9 @@ feature {NONE} -- Expression generation
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
+			if debug_mode then
+				print_position_reached (a_expression.else_keyword.position)
+			end
 			l_expression := a_expression.else_expression
 			l_expression_dynamic_type_set := dynamic_type_set (l_expression)
 			print_assignment_operand (l_expression, l_expression_dynamic_type_set, l_temp, l_dynamic_type)
@@ -13912,12 +14184,9 @@ feature {NONE} -- Expression generation
 			if call_operands.first /= l_temp then
 				print_indentation
 				print_temp_name (l_temp, current_file)
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
+				print_assign_to
 				print_attachment_expression (call_operands.first, l_expression_dynamic_type_set, l_dynamic_type)
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 			end
 			call_operands.wipe_out
 			dedent
@@ -13937,6 +14206,9 @@ feature {NONE} -- Expression generation
 				l_temp.set_index (l_temp_index)
 			end
 			mark_temp_variable_unfrozen (l_temp)
+			if debug_mode then
+				print_position_reached (a_expression.end_keyword.position)
+			end
 		end
 
 	print_infix_cast_expression (an_expression: ET_INFIX_CAST_EXPRESSION)
@@ -14005,6 +14277,9 @@ feature {NONE} -- Expression generation
 			l_assignment_target := assignment_target
 			assignment_target := Void
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_call.position)
+				end
 				l_target := a_call.left
 				l_name := a_call.name
 				l_target_type_set := dynamic_type_set (l_target)
@@ -14111,6 +14386,9 @@ feature {NONE} -- Expression generation
 					end
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := a_call.last_position.line
+			end
 		end
 
 	print_inline_separate_argument (a_name: ET_IDENTIFIER)
@@ -14123,6 +14401,9 @@ feature {NONE} -- Expression generation
 			l_static_type: ET_DYNAMIC_TYPE
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_name.position)
+				end
 				operand_stack.force (a_name)
 			elseif attached call_target_type as l_call_target_type then
 				check in_call_target: in_call_target end
@@ -14144,6 +14425,9 @@ feature {NONE} -- Expression generation
 				end
 			else
 				print_inline_separate_argument_name (a_name, current_file)
+			end
+			if debug_mode then
+				last_non_empty_line := a_name.last_position.line
 			end
 		end
 
@@ -14216,18 +14500,18 @@ feature {NONE} -- Expression generation
 			l_dynamic_type: ET_DYNAMIC_PRIMARY_TYPE
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_constant.position)
+				end
 				if in_call_target then
 					in_operand := False
 					l_dynamic_type := dynamic_type_set (a_constant).static_type.primary_type
 					l_temp := new_temp_variable (l_dynamic_type)
 					print_indentation
 					print_temp_name (l_temp, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					print_integer_constant (a_constant)
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 					l_temp.set_index (a_constant.index)
 					operand_stack.force (l_temp)
 					in_operand := True
@@ -14240,6 +14524,9 @@ feature {NONE} -- Expression generation
 				current_file.put_character ('(')
 				print_integer_value (a_constant.value, a_constant.is_negative, l_dynamic_type, False)
 				current_file.put_character (')')
+			end
+			if debug_mode then
+				last_non_empty_line := a_constant.last_position.line
 			end
 		end
 
@@ -14344,6 +14631,9 @@ feature {NONE} -- Expression generation
 			l_dynamic_type: ET_DYNAMIC_TYPE
 		do
 			assignment_target := Void
+			if debug_mode then
+				print_position_reached (a_expression.position)
+			end
 				-- Declaration of temporary result.
 			l_dynamic_type_set := dynamic_type_set (a_expression)
 			l_dynamic_type := l_dynamic_type_set.static_type
@@ -14360,6 +14650,9 @@ feature {NONE} -- Expression generation
 				l_temp.set_index (l_temp_index)
 			end
 			mark_temp_variable_unfrozen (l_temp)
+			if debug_mode then
+				print_position_reached (a_expression.end_keyword.position)
+			end
 		end
 
 	print_iteration_cursor (a_iteration_cursor: ET_ITERATION_CURSOR)
@@ -14373,6 +14666,9 @@ feature {NONE} -- Expression generation
 		do
 			l_name := a_iteration_cursor.item_name
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_iteration_cursor.position)
+				end
 				operand_stack.force (a_iteration_cursor)
 			elseif attached call_target_type as l_call_target_type then
 				check in_call_target: in_call_target end
@@ -14394,6 +14690,9 @@ feature {NONE} -- Expression generation
 				end
 			else
 				print_iteration_cursor_name (l_name, current_file)
+			end
+			if debug_mode then
+				last_non_empty_line := a_iteration_cursor.last_position.line
 			end
 		end
 
@@ -14424,6 +14723,9 @@ feature {NONE} -- Expression generation
 			if l_done then
 				-- Already printed.
 			elseif in_operand then
+				if debug_mode then
+					print_position_reached (a_name.position)
+				end
 				operand_stack.force (a_name)
 			elseif attached call_target_type as l_call_target_type then
 				check in_call_target: in_call_target end
@@ -14446,6 +14748,9 @@ feature {NONE} -- Expression generation
 			else
 				print_iteration_cursor_name (a_name, current_file)
 			end
+			if debug_mode then
+				last_non_empty_line := a_name.last_position.line
+			end
 		end
 
 	print_iteration_expression (an_expression: ET_ITERATION_EXPRESSION)
@@ -14466,6 +14771,9 @@ feature {NONE} -- Expression generation
 			l_var_type: ET_DYNAMIC_PRIMARY_TYPE
 		do
 			assignment_target := Void
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+			end
 			l_cursor_name := an_expression.unfolded_cursor_name
 			l_cursor_type_set := dynamic_type_set (l_cursor_name)
 			l_cursor_type := l_cursor_type_set.static_type
@@ -14584,6 +14892,9 @@ feature {NONE} -- Expression generation
 			print_indentation
 			current_file.put_character ('}')
 			current_file.put_new_line
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
+			end
 			if l_temp_var /= Void then
 				mark_temp_variable_free (l_temp_var)
 			end
@@ -14608,6 +14919,9 @@ feature {NONE} -- Expression generation
 			l_static_type: ET_DYNAMIC_PRIMARY_TYPE
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_name.position)
+				end
 				operand_stack.force (a_name)
 			else
 				if has_rescue then
@@ -14640,6 +14954,9 @@ feature {NONE} -- Expression generation
 					print_local_name (a_name, current_file)
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := a_name.last_position.line
+			end
 		end
 
 	print_manifest_array (an_expression: ET_MANIFEST_ARRAY)
@@ -14667,6 +14984,9 @@ feature {NONE} -- Expression generation
 			l_argument_limit := 1024 -- lcc-win32 limitation
 			l_assignment_target := assignment_target
 			assignment_target := Void
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+			end
 			l_dynamic_type := dynamic_type_set (an_expression).static_type.primary_type
 			if l_dynamic_type.attribute_count < 3 then
 					-- Internal error: class "ARRAY" should have at least the
@@ -14747,9 +15067,7 @@ feature {NONE} -- Expression generation
 						print_indentation
 						print_temp_name (l_temp, current_file)
 					end
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 				end
 				current_file.put_string (c_ge_ma)
 				current_file.put_integer (l_dynamic_type.id)
@@ -14792,8 +15110,7 @@ feature {NONE} -- Expression generation
 						check l_temp_not_void: l_temp /= Void then
 							nb2 := (nb - i + 1).min (l_argument_limit - 3)
 							current_file.put_character (')')
-							current_file.put_character (';')
-							current_file.put_new_line
+							print_semicolon_newline
 							print_indentation
 							current_file.put_string (c_ge_bma)
 							current_file.put_integer (l_dynamic_type.id)
@@ -14812,8 +15129,10 @@ feature {NONE} -- Expression generation
 				end
 				current_file.put_character (')')
 				if in_operand then
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
+					if debug_mode then
+						print_position_reached (an_expression.right_symbol.position)
+					end
 				end
 				call_operands.wipe_out
 				if l_temp /= Void then
@@ -14843,6 +15162,9 @@ feature {NONE} -- Expression generation
 			l_assignment_target := assignment_target
 			assignment_target := Void
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_string.position)
+				end
 				if l_atomic then
 					operand_stack.force (a_string)
 				else
@@ -14858,9 +15180,7 @@ feature {NONE} -- Expression generation
 						print_indentation
 						print_temp_name (l_temp, current_file)
 					end
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					current_file.put_character ('(')
 				end
 			end
@@ -14871,40 +15191,38 @@ feature {NONE} -- Expression generation
 					current_file.put_string (c_ge_ms32_from_utf32le)
 					current_file.put_character ('(')
 					print_utf8_as_escaped_string_32 (l_string)
-					current_file.put_character (',')
-					current_file.put_character (' ')
+					print_comma
 					current_file.put_integer ({UC_UTF8_ROUTINES}.unicode_character_count (l_string))
 					current_file.put_character (')')
 				elseif current_system.immutable_string_32_type.same_named_type_with_type_marks (l_string_type.base_type, tokens.implicit_detachable_type_mark, current_system.any_type, tokens.implicit_detachable_type_mark, current_system.any_type) then
 					current_file.put_string (c_ge_ims32_from_utf32le)
 					current_file.put_character ('(')
 					print_utf8_as_escaped_string_32 (l_string)
-					current_file.put_character (',')
-					current_file.put_character (' ')
+					print_comma
 					current_file.put_integer ({UC_UTF8_ROUTINES}.unicode_character_count (l_string))
 					current_file.put_character (')')
 				elseif current_system.immutable_string_8_type.same_named_type_with_type_marks (l_string_type.base_type, tokens.implicit_detachable_type_mark, current_system.any_type, tokens.implicit_detachable_type_mark, current_system.any_type) then
 					current_file.put_string (c_ge_ims8)
 					current_file.put_character ('(')
 					print_utf8_as_escaped_string_8 (l_string)
-					current_file.put_character (',')
-					current_file.put_character (' ')
+					print_comma
 					current_file.put_integer ({UC_UTF8_ROUTINES}.unicode_character_count (l_string))
 					current_file.put_character (')')
 				else
 					current_file.put_string (c_ge_ms8)
 					current_file.put_character ('(')
 					print_utf8_as_escaped_string_8 (l_string)
-					current_file.put_character (',')
-					current_file.put_character (' ')
+					print_comma
 					current_file.put_integer ({UC_UTF8_ROUTINES}.unicode_character_count (l_string))
 					current_file.put_character (')')
 				end
 			end
 			if not l_atomic and in_operand then
 				current_file.put_character (')')
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
+			end
+			if debug_mode then
+				last_non_empty_line := a_string.last_position.line
 			end
 		end
 
@@ -14923,6 +15241,9 @@ feature {NONE} -- Expression generation
 		do
 			l_assignment_target := assignment_target
 			assignment_target := Void
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+			end
 			l_dynamic_type_set := dynamic_type_set (an_expression)
 			if not attached {ET_DYNAMIC_TUPLE_TYPE} l_dynamic_type_set.static_type.primary_type as l_tuple_type then
 					-- Internal error: the dynamic type of `an_expression'
@@ -14954,9 +15275,7 @@ feature {NONE} -- Expression generation
 						print_indentation
 						print_temp_name (l_temp, current_file)
 					end
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 				end
 				current_file.put_string (c_ge_mt)
 				current_file.put_integer (l_tuple_type.id)
@@ -14975,8 +15294,7 @@ feature {NONE} -- Expression generation
 				end
 				current_file.put_character (')')
 				if in_operand then
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 					call_operands.wipe_out
 					if l_temp /= Void then
 						mark_temp_variable_unfrozen (l_temp)
@@ -14987,6 +15305,9 @@ feature {NONE} -- Expression generation
 						end
 					end
 				end
+			end
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.right_symbol.position)
 			end
 		end
 
@@ -15000,6 +15321,9 @@ feature {NONE} -- Expression generation
 			l_index: INTEGER
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (an_expression.position)
+				end
 				operand_stack.force (an_expression)
 			else
 				l_type := current_dynamic_system.dynamic_type (an_expression.type, current_type.base_type)
@@ -15039,6 +15363,9 @@ feature {NONE} -- Expression generation
 					current_file.put_character (')')
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
+			end
 		end
 
 	print_non_void_expression (an_expression: ET_EXPRESSION; a_check_void: BOOLEAN)
@@ -15077,6 +15404,9 @@ feature {NONE} -- Expression generation
 			l_equality_types: ET_DYNAMIC_OBJECT_EQUALITY_TYPES
 			l_assignment_target: like assignment_target
 		do
+			if in_operand and debug_mode then
+				print_position_reached (a_expression.position)
+			end
 			l_left_operand := a_expression.left
 			l_right_operand := a_expression.right
 			l_left_type_set := dynamic_type_set (l_left_operand)
@@ -15098,6 +15428,9 @@ feature {NONE} -- Expression generation
 				free_object_equality_types (l_equality_types)
 			end
 			call_operands.wipe_out
+			if debug_mode then
+				last_non_empty_line := a_expression.last_position.line
+			end
 		end
 
 	print_object_test (an_expression: ET_OBJECT_TEST)
@@ -15126,6 +15459,9 @@ feature {NONE} -- Expression generation
 		do
 			l_assignment_target := assignment_target
 			assignment_target := Void
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+			end
 			l_source := an_expression.expression
 			l_source_type_set := dynamic_type_set (l_source)
 			l_source_type := l_source_type_set.static_type
@@ -15162,9 +15498,7 @@ feature {NONE} -- Expression generation
 					print_indentation
 					print_temp_name (l_temp, current_file)
 				end
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
+				print_assign_to
 			end
 				-- Check type conformance.
 			nb := l_source_type_set.count
@@ -15210,17 +15544,14 @@ feature {NONE} -- Expression generation
 				if l_name /= Void then
 					current_file.put_character ('(')
 					print_object_test_local_name (l_name, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					l_conforming_type_set := new_standalone_type_set (l_source_type)
 					if l_source_type_set.is_never_void then
 						l_conforming_type_set.set_never_void
 					end
 					print_attachment_expression (call_operands.first, l_conforming_type_set, l_target_type)
 					free_standalone_type_set (l_conforming_type_set)
-					current_file.put_character (',')
-					current_file.put_character (' ')
+					print_comma
 				end
 				if nb_non_conforming_types = 0 then
 					-- All types in the source type set conform to the target type.
@@ -15252,8 +15583,7 @@ feature {NONE} -- Expression generation
 			end
 			call_operands.wipe_out
 			if in_operand then
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
 				if l_temp /= Void then
 					mark_temp_variable_unfrozen (l_temp)
 					if l_temp_index /= 0 then
@@ -15262,6 +15592,9 @@ feature {NONE} -- Expression generation
 						l_temp.set_index (l_temp_index)
 					end
 				end
+			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
 			end
 		end
 
@@ -15275,6 +15608,9 @@ feature {NONE} -- Expression generation
 			l_static_type: ET_DYNAMIC_TYPE
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_name.position)
+				end
 				operand_stack.force (a_name)
 			elseif attached call_target_type as l_call_target_type then
 				check in_call_target: in_call_target end
@@ -15297,6 +15633,9 @@ feature {NONE} -- Expression generation
 			else
 				print_object_test_local_name (a_name, current_file)
 			end
+			if debug_mode then
+				last_non_empty_line := a_name.last_position.line
+			end
 		end
 
 	print_octal_integer_constant (a_constant: ET_OCTAL_INTEGER_CONSTANT)
@@ -15316,6 +15655,9 @@ feature {NONE} -- Expression generation
 			l_exception_temp: ET_IDENTIFIER
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (an_expression.position)
+				end
 				operand_stack.force (an_expression)
 			else
 				old_expression_temp_variables.search (an_expression)
@@ -15351,6 +15693,9 @@ feature {NONE} -- Expression generation
 					current_file.put_character (')')
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
+			end
 		end
 
 	print_once_manifest_string (an_expression: ET_ONCE_MANIFEST_STRING)
@@ -15361,11 +15706,18 @@ feature {NONE} -- Expression generation
 			l_dynamic_type: ET_DYNAMIC_PRIMARY_TYPE
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (an_expression.position)
+					print_position_reached (an_expression.manifest_string.position)
+				end
 				operand_stack.force (an_expression)
 			else
 				l_dynamic_type := dynamic_type_set (an_expression).static_type.primary_type
 				inline_constants.force_last (l_dynamic_type, an_expression)
 				print_inline_constant_name (an_expression, current_file)
+			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
 			end
 		end
 
@@ -15395,7 +15747,13 @@ feature {NONE} -- Expression generation
 		require
 			an_expression_not_void: an_expression /= Void
 		do
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+			end
 			an_expression.expression.process (Current)
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.right_parenthesis.position)
+			end
 		end
 
 	print_precursor_expression (an_expression: ET_PRECURSOR_EXPRESSION)
@@ -15572,6 +15930,9 @@ feature {NONE} -- Expression generation
 			in_qualified_call := True
 			l_assignment_target := assignment_target
 			assignment_target := Void
+			if in_operand and debug_mode then
+				print_position_reached (a_call.position)
+			end
 			l_target := a_call.target
 			l_name := a_call.name
 			l_actuals := a_call.arguments
@@ -15699,6 +16060,9 @@ feature {NONE} -- Expression generation
 			end
 			if not l_printed then
 				if in_operand then
+					if debug_mode then
+						print_set_exception_trace_position (a_call.position)
+					end
 					print_indentation
 					if l_assignment_target /= Void then
 						operand_stack.force (l_assignment_target)
@@ -15845,6 +16209,12 @@ feature {NONE} -- Expression generation
 				end
 			end
 			in_qualified_call := l_old_in_qualified_call
+			if debug_mode then
+				if in_operand and attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
+					print_position_reached (l_arguments.right_symbol.position)
+				end
+				last_non_empty_line := a_call.last_position.line
+			end
 			if l_is_separate_call then
 					-- Print the separate call declaration now, otherwise some
 					-- temporary data (temporary dynamic type sets, reused calls,
@@ -15927,18 +16297,18 @@ feature {NONE} -- Expression generation
 			l_dynamic_type: ET_DYNAMIC_PRIMARY_TYPE
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_constant.position)
+				end
 				if in_call_target then
 					in_operand := False
 					l_dynamic_type := dynamic_type_set (a_constant).static_type.primary_type
 					l_temp := new_temp_variable (l_dynamic_type)
 					print_indentation
 					print_temp_name (l_temp, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					print_regular_real_constant (a_constant)
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 					l_temp.set_index (a_constant.index)
 					operand_stack.force (l_temp)
 					in_operand := True
@@ -15955,6 +16325,9 @@ feature {NONE} -- Expression generation
 				current_file.put_string (a_constant.literal)
 				current_file.put_character (')')
 			end
+			if debug_mode then
+				last_non_empty_line := a_constant.last_position.line
+			end
 		end
 
 	print_result (an_expression: ET_RESULT)
@@ -15968,6 +16341,9 @@ feature {NONE} -- Expression generation
 			l_once_index: INTEGER
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (an_expression.position)
+				end
 				operand_stack.force (an_expression)
 			else
 				if attached call_target_type as l_call_target_type then
@@ -16078,6 +16454,9 @@ feature {NONE} -- Expression generation
 					print_result_name (current_file)
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
+			end
 		end
 
 	print_result_address (an_expression: ET_RESULT_ADDRESS)
@@ -16110,6 +16489,10 @@ feature {NONE} -- Expression generation
 			l_dynamic_type_set := dynamic_type_set (an_expression)
 			l_dynamic_type := l_dynamic_type_set.static_type.primary_type
 			l_pointer := (l_dynamic_type = l_pointer_type)
+			if in_operand and debug_mode then
+				print_position_reached (an_expression.position)
+				print_position_reached (an_expression.result_keyword.position)
+			end
 			if not l_pointer then
 					-- $Result is of type TYPED_POINTER.
 				l_temp := new_temp_variable (l_dynamic_type)
@@ -16124,9 +16507,7 @@ feature {NONE} -- Expression generation
 				else
 					print_indentation
 					print_attribute_access (l_queries.first, l_temp, l_dynamic_type, False)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 				end
 			end
 			if l_pointer and in_operand then
@@ -16216,8 +16597,10 @@ feature {NONE} -- Expression generation
 				current_file.put_character (')')
 			end
 			if not l_pointer then
-				current_file.put_character (';')
-				current_file.put_new_line
+				print_semicolon_newline
+			end
+			if in_operand and debug_mode then
+				last_non_empty_line := an_expression.last_position.line
 			end
 		end
 
@@ -16271,7 +16654,7 @@ feature {NONE} -- Expression generation
 				operand_stack.force (an_expression)
 			else
 -- TODO.
-error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
+error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not implemented")
 				current_file.put_string (c_eif_void)
 			end
 		end
@@ -16376,16 +16759,16 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 			l_temp: ET_IDENTIFIER
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_constant.position)
+				end
 				if in_call_target then
 					l_temp := new_temp_variable (dynamic_type_set (a_constant).static_type.primary_type)
 					print_indentation
 					print_temp_name (l_temp, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					current_file.put_string (c_eif_true)
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 					l_temp.set_index (a_constant.index)
 					operand_stack.force (l_temp)
 				else
@@ -16393,6 +16776,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 				end
 			else
 				current_file.put_string (c_eif_true)
+			end
+			if debug_mode then
+				last_non_empty_line := a_constant.last_position.line
 			end
 		end
 
@@ -16443,18 +16829,18 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 			l_dynamic_type: ET_DYNAMIC_PRIMARY_TYPE
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_constant.position)
+				end
 				if in_call_target then
 					in_operand := False
 					l_dynamic_type := dynamic_type_set (a_constant).static_type.primary_type
 					l_temp := new_temp_variable (l_dynamic_type)
 					print_indentation
 					print_temp_name (l_temp, current_file)
-					current_file.put_character (' ')
-					current_file.put_character ('=')
-					current_file.put_character (' ')
+					print_assign_to
 					print_underscored_real_constant (a_constant)
-					current_file.put_character (';')
-					current_file.put_new_line
+					print_semicolon_newline
 					l_temp.set_index (a_constant.index)
 					operand_stack.force (l_temp)
 					in_operand := True
@@ -16477,6 +16863,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 					i := i + 1
 				end
 				current_file.put_character (')')
+			end
+			if debug_mode then
+				last_non_empty_line := a_constant.last_position.line
 			end
 		end
 
@@ -16517,6 +16906,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 			assignment_target := Void
 			l_call_type := dynamic_type_set (a_call).static_type.primary_type
 			if in_operand then
+				if debug_mode then
+					print_position_reached (a_call.position)
+				end
 				operand_stack.force (a_call)
 			elseif a_feature.is_builtin then
 					-- This is a built-in attribute (such as feature 'item' in 'INTEGER_REF').
@@ -16571,6 +16963,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 			else
 				print_attribute_access (a_feature, tokens.current_keyword, current_type, False)
 			end
+			if debug_mode then
+				last_non_empty_line := a_call.last_position.line
+			end
 		end
 
 	print_unqualified_constant_attribute_call_expression (a_call: ET_CALL_EXPRESSION_WITH_ACTUAL_ARGUMENTS; a_feature: ET_DYNAMIC_FEATURE)
@@ -16587,6 +16982,10 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 		do
 			assignment_target := Void
 			if in_operand then
+				if debug_mode then
+					print_set_exception_trace_position (a_call.position)
+					print_position_reached (a_call.position)
+				end
 				if in_call_target then
 					l_call_type := dynamic_type_set (a_call).static_type.primary_type
 					if l_call_type.is_expanded then
@@ -16627,6 +17026,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 					call_operands.wipe_out
 				end
 			end
+			if debug_mode then
+				last_non_empty_line := a_call.last_position.line
+			end
 		end
 
 	print_unqualified_function_call_expression (a_call: ET_CALL_EXPRESSION_WITH_ACTUAL_ARGUMENTS; a_feature: ET_DYNAMIC_FEATURE)
@@ -16655,6 +17057,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 		do
 			l_assignment_target := assignment_target
 			assignment_target := Void
+			if in_operand and debug_mode then
+				print_position_reached (a_call.position)
+			end
 			l_call_type_set := dynamic_type_set (a_call)
 			l_call_type := l_call_type_set.static_type.primary_type
 			if
@@ -16766,6 +17171,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 			end
 			if not l_printed then
 				if in_operand then
+					if debug_mode then
+						print_set_exception_trace_position (a_call.position)
+					end
 					if l_assignment_target /= Void then
 						operand_stack.force (l_assignment_target)
 						print_indentation
@@ -16809,6 +17217,12 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 					print_semicolon_newline
 				end
 			end
+			if debug_mode then
+				if in_operand and attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
+					print_position_reached (l_arguments.right_symbol.position)
+				end
+				last_non_empty_line := a_call.last_position.line
+			end
 			call_operands.wipe_out
 			if l_manifest_tuple_operand /= Void then
 				mark_expressions_unfrozen (l_manifest_tuple_operand)
@@ -16838,9 +17252,15 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 			an_expression_not_void: an_expression /= Void
 		do
 			if in_operand then
+				if debug_mode then
+					print_position_reached (an_expression.position)
+				end
 				operand_stack.force (an_expression)
 			else
 				current_file.put_string (c_eif_void)
+			end
+			if debug_mode then
+				last_non_empty_line := an_expression.last_position.line
 			end
 		end
 
@@ -16935,6 +17355,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression")
 			call_target_type := old_target_type
 			in_procedure_call_target := l_old_in_procedure_call_target
 			in_operand := old_in_operand
+			if debug_mode then
+				last_non_empty_line := a_writable.last_position.line
+			end
 		end
 
 feature {NONE} -- Equality generation
@@ -16965,6 +17388,9 @@ feature {NONE} -- Equality generation
 			l_right_type_set := a_equality_types.right
 			l_boolean_type := dynamic_type_set (a_expression).static_type.primary_type
 			if in_operand then
+				if debug_mode then
+					print_set_exception_trace_position (a_expression.position)
+				end
 				if l_assignment_target /= Void then
 					operand_stack.force (l_assignment_target)
 					print_indentation
@@ -19299,9 +19725,13 @@ feature {NONE} -- Agent generation
 			nb_operands: INTEGER
 			l_operand: ET_EXPRESSION
 			l_operand_type_set: ET_DYNAMIC_TYPE_SET
+			l_argument_operand: ET_AGENT_ARGUMENT_OPERAND
 		do
 			l_assignment_target := assignment_target
 			assignment_target := Void
+			if in_operand and debug_mode then
+				print_position_reached (an_agent.position)
+			end
 			l_dynamic_type_set := dynamic_type_set (an_agent)
 			l_agent_type := l_dynamic_type_set.static_type.primary_type
 			if not an_agent.is_qualified_call then
@@ -19314,9 +19744,12 @@ feature {NONE} -- Agent generation
 			if attached an_agent.arguments as l_arguments then
 				nb := l_arguments.count
 				from i := 1 until i > nb loop
-					if attached {ET_EXPRESSION} l_arguments.actual_argument (i) as l_closed_operand then
+					l_argument_operand := l_arguments.actual_argument (i)
+					if attached {ET_EXPRESSION} l_argument_operand as l_closed_operand then
 						print_attachment_operand (l_closed_operand, dynamic_type_set (l_closed_operand))
 						nb_operands := nb_operands + 1
+					elseif in_operand and debug_mode then
+						print_position_reached (l_argument_operand.position)
 					end
 					i := i + 1
 				end
@@ -19356,6 +19789,12 @@ feature {NONE} -- Agent generation
 			current_file.put_character (')')
 			if in_operand then
 				print_semicolon_newline
+			end
+			if debug_mode then
+				if in_operand and attached {ET_AGENT_ARGUMENT_OPERAND_LIST} an_agent.arguments as l_arguments then
+					print_position_reached (l_arguments.right_parenthesis.position)
+				end
+				last_non_empty_line := an_agent.last_position.line
 			end
 			call_operands.wipe_out
 			if l_temp /= Void then
@@ -19739,6 +20178,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 			l_open_index: INTEGER
 			l_closed_index: INTEGER
 			old_file: KI_TEXT_OUTPUT_STREAM
+			l_position: ET_POSITION
+			l_base_class: ET_CLASS
+			l_seed: INTEGER
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -19835,6 +20277,34 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 					print_escaped_string (tokens.capitalized_procedure_name)
 					current_file.put_character (',')
 					print_escaped_string (tokens.call_name)
+				end
+				if debug_mode then
+					l_base_class := a_agent_type.base_class
+					l_position := tokens.null_position
+					if l_result /= Void then
+						l_seed := current_system.function_item_seed
+						if l_seed /= 0 and then attached l_base_class.seeded_query (l_seed) as l_query then
+							l_base_class := l_query.implementation_class
+							l_position := l_query.implementation_feature.position
+						end
+					else
+						l_seed := current_system.routine_call_seed
+						if l_seed /= 0 and then attached l_base_class.seeded_procedure (l_seed) as l_procedure then
+							l_base_class := l_procedure.implementation_class
+							l_position := l_procedure.implementation_feature.position
+						end
+					end
+					if attached l_base_class.filename as l_filename then
+						print_escaped_string (l_filename)
+					else
+						current_file.put_character ('%"')
+						current_file.put_character ('%"')
+					end
+					current_file.put_character (',')
+					current_file.put_integer (l_position.line)
+					current_file.put_character (',')
+					current_file.put_integer (l_position.column)
+					current_file.put_character (',')
 				end
 				current_file.put_character (',')
 				current_file.put_string (c_ac)
@@ -20404,6 +20874,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 				l_result_type := l_result_type_set.static_type.primary_type
 			end
 			print_internal_feature_body_declaration (an_agent, l_result_type, False)
+			if debug_mode then
+				print_position_reached (an_agent.end_keyword.position)
+			end
 			print_agent_trace_message_call (an_agent, False)
 		end
 
@@ -36652,6 +37125,19 @@ feature {NONE} -- C function generation
 				current_file.put_character ('%"')
 				current_file.put_string ("root's creation")
 				current_file.put_character ('%"')
+				if debug_mode then
+					current_file.put_character (',')
+					if attached l_root_type.base_class.filename as l_filename then
+						print_escaped_string (l_filename)
+					else
+						current_file.put_character ('%"')
+						current_file.put_character ('%"')
+					end
+					current_file.put_character (',')
+					current_file.put_integer (0)
+					current_file.put_character (',')
+					current_file.put_integer (0)
+				end
 				current_file.put_character (',')
 				current_file.put_character ('0')
 				current_file.put_character ('}')
@@ -39531,6 +40017,209 @@ feature {NONE} -- Trace generation
 			current_file.put_character (')')
 			current_file.put_character (';')
 			current_file.put_new_line
+		end
+
+feature {NONE} -- Breakpoint generation
+
+	last_non_empty_line: INTEGER
+			-- Last line which contains possibly breakable code
+
+	breakpoints: DS_HASH_TABLE [DS_ARRAYED_LIST_2 [INTEGER, INTEGER], ET_CLASS]
+			-- Breakpoints found so far, spanning from the beginning of first_line
+			-- (`item_1`) to the beginning of last_line (`item_2`), indexed by classes
+
+	print_position_reached (a_position: ET_POSITION)
+			-- Print to `current_file` code indicating that execution reached
+			-- the position just before `a_position` in `current_file`. 
+			--
+			-- Note that this position is not necessarily mapped to a breakpoint
+			-- because VS Code can only set one breakpoint per line. In that
+			-- case, nothing is printed.
+		require
+			a_position_not_void: a_position /= Void
+		local
+			l_class: ET_CLASS
+			l_first_line: INTEGER
+			l_last_line: INTEGER
+		do
+			l_class := current_feature.static_feature.implementation_class
+			l_first_line := last_non_empty_line + 1
+			l_last_line := a_position.line
+			last_non_empty_line := l_last_line
+			if l_class.filename /= Void and l_last_line >= l_first_line then
+				add_breakpoint (l_class, l_first_line, l_last_line)
+				print_breakpoint_hit (l_class, l_last_line)
+			end
+		end
+
+	add_breakpoint (a_class: ET_CLASS; a_first_line, a_last_line: INTEGER)
+			-- Add a breakpoint in class `a_class`, spanning from the beginning of
+			-- `a_first_line` to the beginning of `last_line`.
+		require
+			a_class_not_void: a_class /= Void
+			a_first_line_not_negative: a_first_line >= 0
+			a_last_line_large_enough: a_last_line >= a_first_line
+		local
+			l_class_breakpoints: DS_ARRAYED_LIST_2 [INTEGER, INTEGER]
+		do
+			l_class_breakpoints := breakpoints.value (a_class)
+			if l_class_breakpoints = Void then
+				create l_class_breakpoints.make (100)
+				breakpoints.force_last (l_class_breakpoints, a_class)
+			end
+			if not l_class_breakpoints.has_2 (a_last_line) then
+				l_class_breakpoints.force_last (a_first_line, a_last_line)
+			end
+		end
+
+	print_breakpoint_hit (a_class: ET_CLASS; a_line: INTEGER)
+			-- Print to `current_file` code indicating that execution reached the
+			-- breakpoint at line `a_line` in class `a_class`. 
+		require
+			a_class_not_void: a_class /= Void
+		do
+			print_indentation
+			current_file.put_string (c_ge_bp)
+			current_file.put_character ('(')
+			current_file.put_string (c_ac)
+			print_comma
+			current_file.put_character ('&')
+			print_debug_breakpoint_name (a_class, a_line, current_file)
+			current_file.put_character (')')
+			print_semicolon_newline
+		end
+
+	print_set_exception_trace_position (a_position: ET_POSITION)
+			-- Print to `current_file` code to set the position within
+			-- the current routine in the exception trace. 
+		require
+			a_position_not_void: a_position /= Void
+		do
+			print_indentation
+			current_file.put_string (c_ge_debug_set_call_position)
+			current_file.put_character ('(')
+			current_file.put_string (c_tc_address)
+			print_comma
+			current_file.put_integer (a_position.line)
+			print_comma
+			current_file.put_integer (a_position.column)
+			current_file.put_character (')')
+			print_semicolon_newline
+		end
+
+	print_breakpoints
+			-- Print breakpoints to `current_file' and their declarations to `header_file'.
+		local
+			l_class: ET_CLASS
+			l_class_breakpoints: DS_ARRAYED_LIST_2 [INTEGER, INTEGER]
+			l_first_line: INTEGER
+			l_last_line: INTEGER
+			i, nb: INTEGER
+			l_counter: INTEGER
+		do
+			l_counter := 0
+			from breakpoints.start until breakpoints.after loop
+				l_class := breakpoints.key_for_iteration
+				l_class_breakpoints := breakpoints.item_for_iteration
+				nb := l_class_breakpoints.count
+				from i := 1 until i > nb loop
+					l_counter := l_counter + 1
+					l_first_line := l_class_breakpoints.item_1 (i)
+					l_last_line := l_class_breakpoints.item_2 (i)
+					header_file.put_string (c_extern)
+					header_file.put_character (' ')
+					header_file.put_string (c_ge_debug_breakpoint)
+					header_file.put_character (' ')
+					print_debug_breakpoint_name (l_class, l_last_line, header_file)
+					header_file.put_character (';')
+					header_file.put_new_line
+					current_file.put_string (c_ge_debug_breakpoint)
+					current_file.put_character (' ')
+					print_debug_breakpoint_name (l_class, l_last_line, current_file)
+					print_assign_to
+					current_file.put_character ('{')
+					current_file.put_integer (l_counter)
+					print_comma
+					current_file.put_integer (l_first_line)
+					print_comma
+					current_file.put_integer (l_last_line)
+					print_comma
+					current_file.put_character ('0')
+					current_file.put_character ('}')
+					print_semicolon_newline
+					i := i + 1
+				end
+				current_file.put_string (c_ge_debug_breakpoint)
+				current_file.put_character ('*')
+				current_file.put_character (' ')
+				current_file.put_string (c_ge_bp)
+				current_file.put_character ('s')
+				current_file.put_integer (l_class.id)
+				current_file.put_character ('[')
+				current_file.put_integer (nb)
+				current_file.put_character (']')
+				print_assign_to
+				current_file.put_character ('{')
+				from i := 1 until i > nb loop
+					l_last_line := l_class_breakpoints.item_2 (i)
+					if i /= 1 then
+						print_comma
+					end
+					current_file.put_character ('&')
+					print_debug_breakpoint_name (l_class, l_last_line, current_file)
+					i := i + 1
+				end
+				current_file.put_character ('}')
+				print_semicolon_newline
+				current_file.put_string (c_ge_debug_file_breakpoints)
+				current_file.put_character (' ')
+				current_file.put_string (c_ge_bp)
+				current_file.put_integer (l_class.id)
+				print_assign_to
+				current_file.put_character ('{')
+				if attached l_class.filename as l_filename then
+					print_escaped_string (l_filename)
+				else
+					current_file.put_character ('%"')
+					current_file.put_character ('%"')
+				end
+				print_comma
+				current_file.put_string (c_ge_bp)
+				current_file.put_character ('s')
+				current_file.put_integer (l_class.id)
+				print_comma
+				current_file.put_integer (nb)
+				current_file.put_character ('}')
+				print_semicolon_newline
+				breakpoints.forth
+			end
+			current_file.put_string (c_uint32_t)
+			current_file.put_character (' ')
+			current_file.put_string (c_ge_debug_breakpoint_count)
+			print_assign_to
+			current_file.put_integer (breakpoints.count)
+			print_semicolon_newline
+			current_file.put_string (c_ge_debug_file_breakpoints)
+			current_file.put_character ('*')
+			current_file.put_character (' ')
+			current_file.put_string (c_ge_debug_breakpoints)
+			current_file.put_character ('[')
+			current_file.put_integer (breakpoints.count)
+			current_file.put_character (']')
+			print_assign_to
+			current_file.put_character ('{')
+			from breakpoints.start until breakpoints.after loop
+				l_class := breakpoints.key_for_iteration
+				if not breakpoints.is_first then
+					print_comma
+				end
+				current_file.put_character ('&')
+				current_file.put_string (c_ge_bp)
+				current_file.put_integer (l_class.id)
+				breakpoints.forth
+			end
+			current_file.put_character ('}')
+			print_semicolon_newline
 		end
 
 feature {NONE} -- Once feature generation
@@ -45443,6 +46132,19 @@ feature {NONE} -- Feature name generation
 			a_file.put_integer (a_constant.id)
 		end
 
+	print_debug_breakpoint_name (a_class: ET_CLASS; a_line: INTEGER; a_file: KI_TEXT_OUTPUT_STREAM)
+			-- Print name of debug breakpoint at line `a_line` in class `a_class` to `a_file'.
+		require
+			a_class_not_void: a_class /= Void
+			a_file_not_void: a_file /= Void
+			a_file_open_write: a_file.is_open_write
+		do
+			a_file.put_string (c_ge_bp)
+			a_file.put_integer (a_class.id)
+			a_file.put_character ('l')
+			a_file.put_integer (a_line)
+		end
+
 	print_call_name_in_comment (a_name: ET_CALL_NAME; a_type: ET_DYNAMIC_PRIMARY_TYPE; a_file: KI_TEXT_OUTPUT_STREAM)
 			-- Print name `a_name' of a call with `a_type' as target static type,
 			-- in a C comment to `a_file'.
@@ -46510,6 +47212,7 @@ feature {NONE} -- Include files
 				elseif a_filename.same_string ("ge_console.h") then
 					l_c_filename := "ge_console.c"
 				elseif a_filename.same_string ("ge_debug.h") then
+					include_runtime_header_file ("ge_exception.h", a_force, a_file)
 					l_c_filename := "ge_debug.c"
 				elseif a_filename.same_string ("ge_deep.h") then
 					include_runtime_header_file ("ge_eiffel.h", a_force, a_file)
@@ -49877,6 +50580,7 @@ feature {NONE} -- Constants
 	c_ge_boolean_field_at: STRING = "GE_boolean_field_at"
 	c_ge_boxed: STRING = "GE_boxed"
 	c_ge_boxed_pointer: STRING = "GE_boxed_pointer"
+	c_ge_bp: STRING = "GE_bp"
 	c_ge_call: STRING = "GE_call"
 	c_ge_calloc: STRING = "GE_calloc"
 	c_ge_calloc_atomic: STRING = "GE_calloc_atomic"
@@ -49901,6 +50605,11 @@ feature {NONE} -- Constants
 	c_ge_context: STRING = "GE_context"
 	c_ge_creation: STRING = "GE_creation"
 	c_ge_current_context: STRING = "GE_current_context"
+	c_ge_debug_breakpoint: STRING = "GE_debug_breakpoint"
+	c_ge_debug_breakpoint_count: STRING = "GE_debug_breakpoint_count"
+	c_ge_debug_breakpoints: STRING = "GE_debug_breakpoints"
+	c_ge_debug_mode: STRING = "GE_DEBUG_MODE"
+	c_ge_debug_set_call_position: STRING = "GE_debug_set_call_position"
 	c_ge_decoded_type: STRING = "GE_decoded_type"
 	c_ge_decrement_scoop_sessions_count: STRING = "GE_decrement_scoop_sessions_count"
 	c_ge_deep: STRING = "GE_deep"
@@ -49928,6 +50637,7 @@ feature {NONE} -- Constants
 	c_ge_field_offset_of_encoded_type: STRING = "GE_field_offset_of_encoded_type"
 	c_ge_field_static_type_of_encoded_type: STRING = "GE_field_static_type_of_encoded_type"
 	c_ge_field_type_kind_of_encoded_type: STRING = "GE_field_type_kind_of_encoded_type"
+	c_ge_debug_file_breakpoints: STRING = "GE_debug_file_breakpoints"
 	c_ge_floor: STRING = "GE_floor"
 	c_ge_free_scoop_synchronization: STRING = "GE_free_scoop_synchronization"
 	c_ge_generating_type_of_encoded_type: STRING = "GE_generating_type_of_encoded_type"
@@ -50542,5 +51252,9 @@ invariant
 		-- Boolean constants.
 	false_constant_not_void: false_constant /= Void
 	true_constant_not_void: true_constant /= Void
+		-- Breakpoints.
+	breakpoints_not_void: breakpoints /= Void
+	no_void_breakpoint: not breakpoints.has_void_item
+	no_void_breakpoint_class: not breakpoints.has_void
 
 end
