@@ -20449,6 +20449,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 					current_file.put_character (',')
 					print_escaped_string (tokens.call_name)
 				end
+				current_file.put_character (',')
 				if debug_mode then
 					l_base_class := a_agent_type.base_class
 					l_position := tokens.null_position
@@ -20477,7 +20478,6 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 					current_file.put_integer (l_position.column)
 					current_file.put_character (',')
 				end
-				current_file.put_character (',')
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
 				current_file.put_string (c_call)
