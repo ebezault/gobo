@@ -37,6 +37,8 @@ extern "C" {
 /* Pipes to communicate with the debug adapter. */
 static FILE* GE_debug_in = NULL;
 static FILE* GE_debug_out = NULL;
+#define GE_DEBUG_IN_FD 4
+#define GE_DEBUG_OUT_FD 3
 
 /*
  * Has the VS Code Eiffel debugger adapter indicated that
@@ -321,33 +323,38 @@ void my_invalid_parameter_handler(const wchar_t* expression,
 /* Initialize debugging facilities. */
 void GE_debug_init()
 {
+	GE_debug_in = NULL;
+	GE_debug_out = NULL;
+	struct stat buf;
+	if (fstat(GE_DEBUG_IN_FD, &buf) == 0 && fstat(GE_DEBUG_OUT_FD, &buf) == 0) {
 #if defined(_MSC_VER)
-    /* Register custom handler. */
-    _invalid_parameter_handler oldHandler, newHandler;
-    newHandler = my_invalid_parameter_handler;
-    oldHandler = _set_invalid_parameter_handler(newHandler);
-    /* Disable the default Windows crash dialog box popups (optional but helpful) */
-    /* _CrtSetReportMode(_CRT_ASSERT, 0); */
+		/* Register custom handler. */
+		_invalid_parameter_handler oldHandler, newHandler;
+		newHandler = my_invalid_parameter_handler;
+		oldHandler = _set_invalid_parameter_handler(newHandler);
+		/* Disable the default Windows crash dialog box popups (optional but helpful) */
+		/* _CrtSetReportMode(_CRT_ASSERT, 0); */
 
-	GE_debug_in = _fdopen(4, "r");
+		GE_debug_in = _fdopen(GE_DEBUG_IN_FD, "r");
 #else
-	GE_debug_in = fdopen(4, "r");
+		GE_debug_in = fdopen(GE_DEBUG_IN_FD, "r");
 #endif
-	if (GE_debug_in) {
+		if (GE_debug_in) {
 #if defined(_MSC_VER)
-		GE_debug_out = _fdopen(3, "w");
+			GE_debug_out = _fdopen(GE_DEBUG_OUT_FD, "w");
 #else
-		GE_debug_out = fdopen(3, "w");
+			GE_debug_out = fdopen(GE_DEBUG_OUT_FD, "w");
 #endif
-		if (!GE_debug_out) {
-			fclose(GE_debug_in);
-			GE_debug_in = NULL;
-			GE_debug_out = NULL;
+			if (!GE_debug_out) {
+				fclose(GE_debug_in);
+				GE_debug_in = NULL;
+				GE_debug_out = NULL;
+			}
 		}
-	}
 #if defined(_MSC_VER)
-	newHandler = _set_invalid_parameter_handler(oldHandler);
+		newHandler = _set_invalid_parameter_handler(oldHandler);
 #endif
+	}
 	if (GE_debug_in && GE_debug_out) {
 		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"started\",\"body\":{}}\n");
 		fflush(GE_debug_out);
