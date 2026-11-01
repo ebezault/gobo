@@ -2402,7 +2402,7 @@ feature {NONE} -- Feature generation
 				current_file.put_string (c_return)
 				current_file.put_character (' ')
 			end
-			if current_type.base_class.invariants_enabled then
+			if current_class.invariants_enabled then
 				current_file.put_string (c_ge_unqualified)
 				current_file.put_character ('(')
 				current_file.put_string (c_ge_current_context)
@@ -2620,6 +2620,9 @@ feature {NONE} -- Feature generation
 			l_print_body: BOOLEAN
 			l_print_footer: BOOLEAN
 			l_position: ET_POSITION
+			l_class_name: STRING
+			l_current_class: ET_CLASS
+			l_current_class_impl: ET_CLASS
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -2795,8 +2798,8 @@ feature {NONE} -- Feature generation
 			end
 			l_need_distinct_inline := l_is_inline and then not a_inline and then
 				(l_has_reference_arguments or (exception_trace_mode or debug_mode or trace_mode) or
-				(current_type.base_class.invariants_enabled and then not current_feature.is_static) or
-				(current_type.base_class.postconditions_enabled and then not current_feature.postconditions.is_empty))
+				(current_class.invariants_enabled and then not current_feature.is_static) or
+				(current_class.postconditions_enabled and then not current_feature.postconditions.is_empty))
 				--
 				-- Declaration of variables.
 				--
@@ -2822,7 +2825,7 @@ feature {NONE} -- Feature generation
 				end
 			end
 			if not a_inline then
-				if current_type.base_class.invariants_enabled and then not current_feature.is_static then
+				if current_class.invariants_enabled and then not current_feature.is_static then
 					print_indentation
 					current_file.put_string (c_uint32_t)
 					current_file.put_character (' ')
@@ -2856,7 +2859,13 @@ feature {NONE} -- Feature generation
 						end
 						current_file.put_character (',')
 					end
-					print_escaped_string (current_type.base_class.upper_name)
+					l_current_class := current_class
+					l_current_class_impl := current_class_impl
+					l_class_name := l_current_class.upper_name
+					if l_current_class /= l_current_class_impl then
+						l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+					end
+					print_escaped_string (l_class_name)
 					current_file.put_character (',')
 					print_escaped_string (a_feature.lower_name)
 					current_file.put_character (',')
@@ -2881,7 +2890,7 @@ feature {NONE} -- Feature generation
 					current_file.put_character (';')
 					current_file.put_new_line
 					if debug_mode then
-						last_non_empty_line := a_feature.implementation_feature.position.line
+						set_last_non_empty_line (a_feature.implementation_feature.position.line)
 					end
 				end
 					-- Variable for 'Result' entity.
@@ -2935,11 +2944,18 @@ feature {NONE} -- Feature generation
 						l_print_body := True
 					end
 				end
-				if current_type.base_class.invariants_enabled and not current_feature.is_static and not a_creation then
+				if current_class.invariants_enabled and not current_feature.is_static and not a_creation then
+					if debug_mode then
+						if attached a_feature.preconditions as l_preconditions then
+							print_set_exception_trace_position (l_preconditions.position)
+						else
+							print_set_exception_trace_position (a_feature.language.position)
+						end
+					end
 					print_all_invariants (True)
 					l_print_body := True
 				end
-				l_preconditions_enabled := current_type.base_class.preconditions_enabled
+				l_preconditions_enabled := current_class.preconditions_enabled
 				if l_preconditions_enabled or l_has_separate_formal_arguments then
 					print_all_preconditions (a_feature, l_preconditions_enabled)
 					l_print_body := True
@@ -2953,7 +2969,7 @@ feature {NONE} -- Feature generation
 					current_file.put_character ('}')
 					current_file.put_new_line
 				end
-				if current_type.base_class.postconditions_enabled then
+				if current_class.postconditions_enabled then
 					print_all_old_expression_declarations (a_feature)
 					l_print_body := True
 				end
@@ -2977,8 +2993,10 @@ feature {NONE} -- Feature generation
 			end
 			if not a_inline and debug_mode then
 				if l_is_inline and then attached a_feature.alias_clause as l_alias_clause then
+					print_position_reached (l_alias_clause.manifest_string.position)
 					print_set_exception_trace_position (l_alias_clause.manifest_string.position)
 				else
+					print_position_reached (a_feature.language.manifest_string.position)
 					print_set_exception_trace_position (a_feature.language.manifest_string.position)
 				end
 			end
@@ -3250,11 +3268,18 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			current_file.put_character ('}')
 			current_file.put_new_line
 			if not a_inline then
-				if current_type.base_class.invariants_enabled and not current_feature.is_static then
+				if current_class.invariants_enabled and not current_feature.is_static then
+					if debug_mode then
+						if attached a_feature.postconditions as l_postconditions then		
+							print_set_exception_trace_position (l_postconditions.position)
+						else
+							print_set_exception_trace_position (a_feature.end_keyword.position)
+						end
+					end
 					print_all_invariants (False)
 					l_print_footer := True
 				end
-				if current_type.base_class.postconditions_enabled then
+				if current_class.postconditions_enabled then
 					print_all_postconditions (a_feature)
 					l_print_footer := True
 				end
@@ -3322,8 +3347,8 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			print_temporary_variable_declarations
 			if
 				not a_inline and then
-				(current_type.base_class.preconditions_enabled or
-				current_type.base_class.postconditions_enabled)
+				(current_class.preconditions_enabled or
+				current_class.postconditions_enabled)
 			then
 				print_object_test_local_declarations
 				print_iteration_cursor_declarations
@@ -7054,6 +7079,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			l_is_once: BOOLEAN
 			l_is_self_initialized_attribute: BOOLEAN
 			l_position: ET_POSITION
+			l_class_name: STRING
+			l_current_class: ET_CLASS
+			l_current_class_impl: ET_CLASS
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -7156,7 +7184,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
-			if current_type.base_class.invariants_enabled and not current_feature.is_static then
+			if current_class.invariants_enabled and not current_feature.is_static then
 				print_indentation
 				current_file.put_string (c_uint32_t)
 				current_file.put_character (' ')
@@ -7176,9 +7204,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				l_is_empty :=
 					not a_creation and then
 					not current_feature.has_separate_argument and then
-					not (current_type.base_class.invariants_enabled and not current_closure.is_static) and then
-					not current_type.base_class.preconditions_enabled and then
-					not current_type.base_class.postconditions_enabled and then
+					not (current_class.invariants_enabled and not current_closure.is_static) and then
+					not current_class.preconditions_enabled and then
+					not current_class.postconditions_enabled and then
 					(not attached a_feature.compound as l_compound or else l_compound.is_empty) and then
 					a_feature.rescue_clause = Void and then
 					not debug_mode
@@ -7198,7 +7226,13 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 						end
 						current_file.put_character (',')
 					end
-					print_escaped_string (current_type.base_class.upper_name)
+					l_current_class := current_class
+					l_current_class_impl := current_class_impl
+					l_class_name := l_current_class.upper_name
+					if l_current_class /= l_current_class_impl then
+						l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+					end
+					print_escaped_string (l_class_name)
 					current_file.put_character (',')
 					print_escaped_string (a_feature.lower_name)
 					current_file.put_character (',')
@@ -7222,7 +7256,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character ('}')
 					print_semicolon_newline
 					if debug_mode then
-						last_non_empty_line := a_feature.implementation_feature.position.line
+						set_last_non_empty_line (a_feature.implementation_feature.position.line)
 					end
 				end
 			end
@@ -7478,11 +7512,22 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_open_formal_argument_scoop_sessions (a_feature)
 				l_print_body := True
 			end
-			if current_type.base_class.invariants_enabled and not current_closure.is_static and not a_creation then
+			if current_class.invariants_enabled and not current_closure.is_static and not a_creation then
+				if debug_mode then
+					if attached a_feature.preconditions as l_preconditions then
+						print_set_exception_trace_position (l_preconditions.position)
+					elseif attached a_feature.locals as l_locals then
+						print_set_exception_trace_position (l_locals.position)
+					elseif attached a_feature.compound as l_compound then
+						print_set_exception_trace_position (l_compound.position)
+					else
+						print_set_exception_trace_position (a_feature.position)
+					end
+				end
 				print_all_invariants (True)
 				l_print_body := True
 			end
-			l_preconditions_enabled := current_type.base_class.preconditions_enabled
+			l_preconditions_enabled := current_class.preconditions_enabled
 			if l_preconditions_enabled or l_has_separate_formal_arguments then
 				print_all_preconditions (a_feature, l_preconditions_enabled)
 				l_print_body := True
@@ -7496,7 +7541,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_character ('}')
 				current_file.put_new_line
 			end
-			if current_type.base_class.postconditions_enabled then
+			if current_class.postconditions_enabled then
 				print_all_old_expression_declarations (a_feature)
 				l_print_body := True
 			end
@@ -7636,11 +7681,20 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_local_variables_initialization (a_feature)
 				print_compound (l_compound)
 			end
-			if current_type.base_class.invariants_enabled and not current_closure.is_static then
+			if current_class.invariants_enabled and not current_closure.is_static then
+				if debug_mode then
+					if attached a_feature.postconditions as l_postconditions then		
+						print_set_exception_trace_position (l_postconditions.position)
+					elseif attached a_feature.rescue_clause as l_rescue_clause then
+						print_set_exception_trace_position (l_rescue_clause.position)
+					else
+						print_set_exception_trace_position (a_feature.end_keyword.position)
+					end
+				end
 				print_all_invariants (False)
 				l_print_footer := True
 			end
-			if current_type.base_class.postconditions_enabled then
+			if current_class.postconditions_enabled then
 				print_all_postconditions (a_feature)
 				l_print_footer := True
 			end
@@ -8177,9 +8231,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 		do
 			if
 				a_feature.has_self_initializing_code or
-				(current_type.base_class.preconditions_enabled and then not current_feature.preconditions.is_empty) or
-				(current_type.base_class.postconditions_enabled and then not current_feature.postconditions.is_empty) or
-				current_type.base_class.invariants_enabled
+				(current_class.preconditions_enabled and then not current_feature.preconditions.is_empty) or
+				(current_class.postconditions_enabled and then not current_feature.postconditions.is_empty) or
+				current_class.invariants_enabled
 			then
 				print_internal_feature (a_feature, False)
 			else
@@ -8234,6 +8288,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			l_index: INTEGER
 			l_print_footer: BOOLEAN
 			l_position: ET_POSITION
+			l_class_name: STRING
+			l_current_class: ET_CLASS
+			l_current_class_impl: ET_CLASS
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -8302,7 +8359,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					--
 					-- Declaration of variables.
 					--
-				if current_type.base_class.invariants_enabled and not current_feature.is_static then
+				if current_class.invariants_enabled and not current_feature.is_static then
 					print_indentation
 					current_file.put_string (c_uint32_t)
 					current_file.put_character (' ')
@@ -8332,7 +8389,13 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 						end
 						current_file.put_character (',')
 					end
-					print_escaped_string (current_type.base_class.upper_name)
+					l_current_class := current_class
+					l_current_class_impl := current_class_impl
+					l_class_name := l_current_class.upper_name
+					if l_current_class /= l_current_class_impl then
+						l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+					end
+					print_escaped_string (l_class_name)
 					current_file.put_character (',')
 					print_escaped_string (a_feature.lower_name)
 					current_file.put_character (',')
@@ -8390,7 +8453,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					-- (implicit 'require True' on immediate declarations
 					-- and 'require else True' on redeclarations).
 					--
-				if current_type.base_class.postconditions_enabled then
+				if current_class.postconditions_enabled then
 					print_all_old_expression_declarations (a_feature)
 					print_body_comment
 				end
@@ -8416,11 +8479,18 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character (';')
 					current_file.put_new_line
 				end
-				if current_type.base_class.invariants_enabled and not current_feature.is_static then
+				if current_class.invariants_enabled and not current_feature.is_static then
+					if debug_mode then
+						if attached a_feature.postconditions as l_postconditions then		
+							print_set_exception_trace_position (l_postconditions.position)
+						else
+							print_set_exception_trace_position (a_feature.position)
+						end
+					end
 					print_all_invariants (False)
 					l_print_footer := True
 				end
-				if current_type.base_class.postconditions_enabled then
+				if current_class.postconditions_enabled then
 					print_all_postconditions (a_feature)
 					l_print_footer := True
 				end
@@ -8458,7 +8528,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				-- Declarations of temporary variables.
 			current_file := current_function_header_buffer
 			print_temporary_variable_declarations
-			if current_type.base_class.postconditions_enabled then
+			if current_class.postconditions_enabled then
 				print_object_test_local_declarations
 				print_iteration_cursor_declarations
 			end
@@ -8477,7 +8547,12 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			old_file: KI_TEXT_OUTPUT_STREAM
 			l_old_index_offset: INTEGER
 			l_invariants: ET_INVARIANTS
+			l_old_invariants: ET_INVARIANTS
 			i, nb: INTEGER
+			l_position: ET_POSITION
+			l_class_name: STRING
+			l_current_class: ET_CLASS
+			l_current_class_impl: ET_CLASS
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -8534,7 +8609,51 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
+			l_current_class := current_class
+				-- Call stack.
+			if exception_trace_mode or debug_mode then
+				print_indentation
+				current_file.put_string (c_ge_call)
+				current_file.put_character (' ')
+				current_file.put_string (c_tc)
+				print_assign_to
+				current_file.put_character ('{')
+				if current_in_exception_trace or debug_mode then
+					current_file.put_string ("(void* volatile)")
+					print_current_name (current_file)
+					current_file.put_character (',')
+				end
+				l_class_name := l_current_class.upper_name
+				print_escaped_string (l_class_name)
+				current_file.put_character (',')
+				print_escaped_string (tokens.invariant_feature_name.lower_name)
+				current_file.put_character (',')
+				if debug_mode then
+					current_file.put_character ('%"')
+					current_file.put_character ('%"')
+					current_file.put_character (',')
+					current_file.put_integer (0)
+					current_file.put_character (',')
+					current_file.put_integer (0)
+					current_file.put_character (',')
+				end
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				current_file.put_character ('}')
+				print_semicolon_newline
+			end
 			current_file := current_function_body_buffer
+				-- Call stack.
+			if exception_trace_mode or debug_mode then
+				print_indentation
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				print_assign_to
+				current_file.put_string (c_tc_address)
+				print_semicolon_newline
+			end
 			l_old_index_offset := index_offset
 			if attached current_feature.invariants as l_all_invariants then
 				nb := l_all_invariants.count
@@ -8543,12 +8662,59 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					from i := 1 until i > nb loop
 						index_offset := l_all_invariants.item_2 (i)
 						l_invariants := l_all_invariants.item_1 (i)
+						l_old_invariants := current_invariants
+						current_invariants := l_invariants
+						if debug_mode then
+							l_current_class_impl := current_class_impl
+							print_indentation
+							current_file.put_string (c_tc)
+							current_file.put_character ('.')
+							current_file.put_string (c_class_name)
+							print_assign_to
+							l_class_name := l_current_class.upper_name
+							if l_current_class /= l_current_class_impl then
+								l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+							end
+							print_escaped_string (l_class_name)
+							print_semicolon_newline
+							print_indentation
+							current_file.put_string (c_tc)
+							current_file.put_character ('.')
+							current_file.put_string (c_filename)
+							print_assign_to
+							if attached l_current_class_impl.filename as l_filename then
+								print_escaped_string (l_filename)
+							else
+								current_file.put_character ('%"')
+								current_file.put_character ('%"')
+							end
+							print_semicolon_newline
+							l_position := l_invariants.implementation_feature.position
+							set_last_non_empty_line (l_position.line - 1)
+							print_position_reached (l_position)
+						end
 						print_assertions (l_invariants, c_ge_ex_cinv)
+						if debug_mode then
+							print_position_reached (l_invariants.implementation_class.end_keyword.position)
+						end
+						current_invariants := l_old_invariants
 						i := i + 1
 					end
 					print_after_assertions
 				end
 				index_offset := l_old_index_offset
+			end
+				-- Call stack.
+			if exception_trace_mode or debug_mode then
+				print_indentation
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_call)
+				print_assign_to
+				current_file.put_string (c_tc)
+				current_file.put_character ('.')
+				current_file.put_string (c_caller)
+				print_semicolon_newline
 			end
 			dedent
 			current_file.put_character ('}')
@@ -8812,7 +8978,7 @@ feature {NONE} -- Instruction generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := an_instruction.last_position.line
+				set_last_non_empty_line (an_instruction.last_position.line)
 			end
 		end
 
@@ -9139,7 +9305,7 @@ feature {NONE} -- Instruction generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := an_instruction.last_position.line
+				set_last_non_empty_line (an_instruction.last_position.line)
 			end
 		end
 
@@ -9160,7 +9326,7 @@ feature {NONE} -- Instruction generation
 			l_then_compound: detachable ET_COMPOUND
 		do
 			l_then_compound := an_instruction.then_compound
-			if l_then_compound /= Void or (current_type.base_class.check_assertions_enabled and then not an_instruction.are_all_true) then
+			if l_then_compound /= Void or (current_class.check_assertions_enabled and then not an_instruction.are_all_true) then
 				if line_generation_mode then
 					print_position (an_instruction.position, current_feature.static_feature.implementation_class)
 				end
@@ -9314,7 +9480,7 @@ feature {NONE} -- Instruction generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := an_instruction.last_position.line
+				set_last_non_empty_line (an_instruction.last_position.line)
 			end
 			if l_is_separate_call then
 					-- Print the separate call declaration now, otherwise some
@@ -10762,7 +10928,7 @@ feature {NONE} -- Instruction generation
 			if attached an_instruction.from_compound as l_from_compound then
 				print_compound (l_from_compound)
 			end
-			if current_type.base_class.loop_assertions_enabled and attached an_instruction.variant_part as l_variant_part then
+			if current_class.loop_assertions_enabled and attached an_instruction.variant_part as l_variant_part then
 				l_var_type := dynamic_type_set (l_variant_part.expression).static_type.primary_type
 				l_temp_var := new_temp_variable (l_var_type)
 				l_temp_old_var := new_temp_variable (l_var_type)
@@ -10782,7 +10948,7 @@ feature {NONE} -- Instruction generation
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
-			if current_type.base_class.loop_assertions_enabled then
+			if current_class.loop_assertions_enabled then
 				print_loop_assertions_and_while_header (an_instruction, l_temp_var, l_temp_old_var)
 			end
 			print_operand (an_instruction.cursor_after_expression)
@@ -10858,7 +11024,7 @@ feature {NONE} -- Instruction generation
 			if attached an_instruction.from_compound as l_from_compound and then not l_from_compound.is_empty then
 				print_compound (l_from_compound)
 			end
-			if current_type.base_class.loop_assertions_enabled and attached an_instruction.variant_part as l_variant_part then
+			if current_class.loop_assertions_enabled and attached an_instruction.variant_part as l_variant_part then
 				l_var_type := dynamic_type_set (l_variant_part.expression).static_type.primary_type
 				l_temp_var := new_temp_variable (l_var_type)
 				l_temp_old_var := new_temp_variable (l_var_type)
@@ -10878,7 +11044,7 @@ feature {NONE} -- Instruction generation
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
-			if current_type.base_class.loop_assertions_enabled then
+			if current_class.loop_assertions_enabled then
 				print_loop_assertions_and_while_header (an_instruction, l_temp_var, l_temp_old_var)
 			end
 			l_expression := an_instruction.until_expression
@@ -10962,7 +11128,7 @@ feature {NONE} -- Instruction generation
 				had_error := has_fatal_error
 				has_fatal_error := False
 				if l_parent_type.is_generic then
-					l_current_class := current_type.base_class
+					l_current_class := current_class
 					l_class_impl := current_feature.static_feature.implementation_class
 					if l_current_class /= l_class_impl then
 							-- Resolve generic parameters in the context of `current_type'.
@@ -11024,7 +11190,7 @@ feature {NONE} -- Instruction generation
 				if attached {ET_ACTUAL_ARGUMENT_LIST} an_instruction.arguments as l_arguments then
 					print_position_reached (l_arguments.right_symbol.position)
 				end
-				last_non_empty_line := an_instruction.last_position.line
+				set_last_non_empty_line (an_instruction.last_position.line)
 			end
 		end
 
@@ -11281,7 +11447,7 @@ feature {NONE} -- Instruction generation
 				if attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
 					print_position_reached (l_arguments.right_symbol.position)
 				end
-				last_non_empty_line := a_call.last_position.line
+				set_last_non_empty_line (a_call.last_position.line)
 			end
 			if l_is_separate_call then
 					-- Print the separate call declaration now, otherwise some
@@ -11458,7 +11624,7 @@ feature {NONE} -- Instruction generation
 				if attached {ET_ACTUAL_ARGUMENT_LIST} a_instruction.arguments as l_arguments then
 					print_position_reached (l_arguments.right_symbol.position)
 				end
-				last_non_empty_line := a_instruction.last_position.line
+				set_last_non_empty_line (a_instruction.last_position.line)
 			end
 		end
 
@@ -11552,7 +11718,7 @@ feature {NONE} -- Instruction generation
 				if attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
 					print_position_reached (l_arguments.right_symbol.position)
 				end
-				last_non_empty_line := a_call.last_position.line
+				set_last_non_empty_line (a_call.last_position.line)
 			end
 		end
 
@@ -12679,6 +12845,7 @@ feature {NONE} -- Expression generation
 			l_call_operand: ET_EXPRESSION
 			l_temp: detachable ET_IDENTIFIER
 			l_assignment_target: like assignment_target
+			l_position: ET_POSITION
 		do
 			l_source_type := a_source_type_set.static_type
 			l_source_primary_type := l_source_type.primary_type
@@ -12774,6 +12941,8 @@ feature {NONE} -- Expression generation
 					l_inlined_call_operand := new_inlined_operand (l_call_operand, l_call_context)
 					l_inlined_call_operand.set_dynamic_type_set (l_twin_type_set)
 					l_twin_feature_name := new_twin_feature_name
+					l_position := a_operand.position
+					l_twin_feature_name.set_position (l_position.line, l_position.column)
 					l_twin_expression := new_qualified_call_expression (l_inlined_call_operand, l_twin_feature_name, Void)
 					l_inlined_twin_operand := new_inlined_operand (l_inlined_call_operand, l_call_context)
 					l_inlined_twin_operand.set_expression (l_twin_expression)
@@ -13295,7 +13464,7 @@ feature {NONE} -- Expression generation
 				current_file.put_character (')')
 			end
 			if debug_mode then
-				last_non_empty_line := a_constant.last_position.line
+				set_last_non_empty_line (a_constant.last_position.line)
 			end
 		end
 
@@ -13515,7 +13684,7 @@ feature {NONE} -- Expression generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 			if l_is_separate_call then
 					-- Print the separate call declaration now, otherwise some
@@ -13538,7 +13707,7 @@ feature {NONE} -- Expression generation
 			elseif current_agent /= Void then
 				agent_target.process (Current)
 			elseif in_operand then
-				if debug_mode then
+				if debug_mode and an_expression /= tokens.current_keyword then
 					print_position_reached (an_expression.position)
 				end
 				operand_stack.force (an_expression)
@@ -13558,8 +13727,8 @@ feature {NONE} -- Expression generation
 				current_file.put_character ('*')
 				print_current_name (current_file)
 			end
-			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+			if debug_mode and an_expression /= tokens.current_keyword then
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -13620,7 +13789,7 @@ feature {NONE} -- Expression generation
 				print_semicolon_newline
 			end
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -13661,7 +13830,7 @@ feature {NONE} -- Expression generation
 			end
 			call_operands.wipe_out
 			if debug_mode then
-				last_non_empty_line := a_expression.last_position.line
+				set_last_non_empty_line (a_expression.last_position.line)
 			end
 		end
 
@@ -13717,7 +13886,7 @@ feature {NONE} -- Expression generation
 			l_feature_address.set_index (an_expression.index)
 			print_feature_address (l_feature_address)
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -13748,7 +13917,7 @@ feature {NONE} -- Expression generation
 				current_file.put_string (c_eif_false)
 			end
 			if debug_mode then
-				last_non_empty_line := a_constant.last_position.line
+				set_last_non_empty_line (a_constant.last_position.line)
 			end
 		end
 
@@ -14003,7 +14172,7 @@ feature {NONE} -- Expression generation
 				print_semicolon_newline
 			end
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -14057,7 +14226,7 @@ feature {NONE} -- Expression generation
 				print_argument_name (a_name, current_file)
 			end
 			if debug_mode then
-				last_non_empty_line := a_name.last_position.line
+				set_last_non_empty_line (a_name.last_position.line)
 			end
 		end
 
@@ -14387,7 +14556,7 @@ feature {NONE} -- Expression generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := a_call.last_position.line
+				set_last_non_empty_line (a_call.last_position.line)
 			end
 		end
 
@@ -14427,7 +14596,7 @@ feature {NONE} -- Expression generation
 				print_inline_separate_argument_name (a_name, current_file)
 			end
 			if debug_mode then
-				last_non_empty_line := a_name.last_position.line
+				set_last_non_empty_line (a_name.last_position.line)
 			end
 		end
 
@@ -14526,7 +14695,7 @@ feature {NONE} -- Expression generation
 				current_file.put_character (')')
 			end
 			if debug_mode then
-				last_non_empty_line := a_constant.last_position.line
+				set_last_non_empty_line (a_constant.last_position.line)
 			end
 		end
 
@@ -14692,7 +14861,7 @@ feature {NONE} -- Expression generation
 				print_iteration_cursor_name (l_name, current_file)
 			end
 			if debug_mode then
-				last_non_empty_line := a_iteration_cursor.last_position.line
+				set_last_non_empty_line (a_iteration_cursor.last_position.line)
 			end
 		end
 
@@ -14749,7 +14918,7 @@ feature {NONE} -- Expression generation
 				print_iteration_cursor_name (a_name, current_file)
 			end
 			if debug_mode then
-				last_non_empty_line := a_name.last_position.line
+				set_last_non_empty_line (a_name.last_position.line)
 			end
 		end
 
@@ -14807,7 +14976,7 @@ feature {NONE} -- Expression generation
 				current_file.put_string (c_eif_false)
 			end
 			print_semicolon_newline
-			if current_type.base_class.loop_assertions_enabled and attached an_expression.variant_part as l_variant_part then
+			if current_class.loop_assertions_enabled and attached an_expression.variant_part as l_variant_part then
 				l_var_type := dynamic_type_set (l_variant_part.expression).static_type.primary_type
 				l_temp_var := new_temp_variable (l_var_type)
 				l_temp_old_var := new_temp_variable (l_var_type)
@@ -14827,7 +14996,7 @@ feature {NONE} -- Expression generation
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
-			if current_type.base_class.loop_assertions_enabled then
+			if current_class.loop_assertions_enabled then
 				print_loop_assertions_and_while_header (an_expression, l_temp_var, l_temp_old_var)
 			end
 			print_operand (an_expression.cursor_after_expression)
@@ -14893,7 +15062,7 @@ feature {NONE} -- Expression generation
 			current_file.put_character ('}')
 			current_file.put_new_line
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 			if l_temp_var /= Void then
 				mark_temp_variable_free (l_temp_var)
@@ -14955,7 +15124,7 @@ feature {NONE} -- Expression generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := a_name.last_position.line
+				set_last_non_empty_line (a_name.last_position.line)
 			end
 		end
 
@@ -15222,7 +15391,7 @@ feature {NONE} -- Expression generation
 				print_semicolon_newline
 			end
 			if debug_mode then
-				last_non_empty_line := a_string.last_position.line
+				set_last_non_empty_line (a_string.last_position.line)
 			end
 		end
 
@@ -15364,7 +15533,7 @@ feature {NONE} -- Expression generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -15429,7 +15598,7 @@ feature {NONE} -- Expression generation
 			end
 			call_operands.wipe_out
 			if debug_mode then
-				last_non_empty_line := a_expression.last_position.line
+				set_last_non_empty_line (a_expression.last_position.line)
 			end
 		end
 
@@ -15594,7 +15763,7 @@ feature {NONE} -- Expression generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -15634,7 +15803,7 @@ feature {NONE} -- Expression generation
 				print_object_test_local_name (a_name, current_file)
 			end
 			if debug_mode then
-				last_non_empty_line := a_name.last_position.line
+				set_last_non_empty_line (a_name.last_position.line)
 			end
 		end
 
@@ -15694,7 +15863,7 @@ feature {NONE} -- Expression generation
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -15717,7 +15886,7 @@ feature {NONE} -- Expression generation
 				print_inline_constant_name (an_expression, current_file)
 			end
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -15785,7 +15954,7 @@ feature {NONE} -- Expression generation
 				had_error := has_fatal_error
 				has_fatal_error := False
 				if l_parent_type.is_generic then
-					l_current_class := current_type.base_class
+					l_current_class := current_class
 					l_class_impl := current_feature.static_feature.implementation_class
 					if l_current_class /= l_class_impl then
 							-- Resolve generic parameters in the context of `current_type'.
@@ -16213,7 +16382,7 @@ feature {NONE} -- Expression generation
 				if in_operand and attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
 					print_position_reached (l_arguments.right_symbol.position)
 				end
-				last_non_empty_line := a_call.last_position.line
+				set_last_non_empty_line (a_call.last_position.line)
 			end
 			if l_is_separate_call then
 					-- Print the separate call declaration now, otherwise some
@@ -16326,7 +16495,7 @@ feature {NONE} -- Expression generation
 				current_file.put_character (')')
 			end
 			if debug_mode then
-				last_non_empty_line := a_constant.last_position.line
+				set_last_non_empty_line (a_constant.last_position.line)
 			end
 		end
 
@@ -16341,7 +16510,7 @@ feature {NONE} -- Expression generation
 			l_once_index: INTEGER
 		do
 			if in_operand then
-				if debug_mode then
+				if debug_mode and an_expression /= tokens.result_keyword then
 					print_position_reached (an_expression.position)
 				end
 				operand_stack.force (an_expression)
@@ -16454,8 +16623,8 @@ feature {NONE} -- Expression generation
 					print_result_name (current_file)
 				end
 			end
-			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+			if debug_mode and an_expression /= tokens.result_keyword then
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -16600,7 +16769,7 @@ feature {NONE} -- Expression generation
 				print_semicolon_newline
 			end
 			if in_operand and debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -16778,7 +16947,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 				current_file.put_string (c_eif_true)
 			end
 			if debug_mode then
-				last_non_empty_line := a_constant.last_position.line
+				set_last_non_empty_line (a_constant.last_position.line)
 			end
 		end
 
@@ -16865,7 +17034,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 				current_file.put_character (')')
 			end
 			if debug_mode then
-				last_non_empty_line := a_constant.last_position.line
+				set_last_non_empty_line (a_constant.last_position.line)
 			end
 		end
 
@@ -16964,7 +17133,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 				print_attribute_access (a_feature, tokens.current_keyword, current_type, False)
 			end
 			if debug_mode then
-				last_non_empty_line := a_call.last_position.line
+				set_last_non_empty_line (a_call.last_position.line)
 			end
 		end
 
@@ -17027,7 +17196,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 				end
 			end
 			if debug_mode then
-				last_non_empty_line := a_call.last_position.line
+				set_last_non_empty_line (a_call.last_position.line)
 			end
 		end
 
@@ -17221,7 +17390,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 				if in_operand and attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
 					print_position_reached (l_arguments.right_symbol.position)
 				end
-				last_non_empty_line := a_call.last_position.line
+				set_last_non_empty_line (a_call.last_position.line)
 			end
 			call_operands.wipe_out
 			if l_manifest_tuple_operand /= Void then
@@ -17260,7 +17429,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 				current_file.put_string (c_eif_void)
 			end
 			if debug_mode then
-				last_non_empty_line := an_expression.last_position.line
+				set_last_non_empty_line (an_expression.last_position.line)
 			end
 		end
 
@@ -17356,7 +17525,9 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 			in_procedure_call_target := l_old_in_procedure_call_target
 			in_operand := old_in_operand
 			if debug_mode then
-				last_non_empty_line := a_writable.last_position.line
+				if a_writable /= tokens.result_keyword and not (attached {ET_IDENTIFIER} a_writable as l_identifier and then l_identifier.is_temporary) then
+					set_last_non_empty_line (a_writable.last_position.line)
+				end
 			end
 		end
 
@@ -19794,7 +19965,7 @@ feature {NONE} -- Agent generation
 				if in_operand and attached {ET_AGENT_ARGUMENT_OPERAND_LIST} an_agent.arguments as l_arguments then
 					print_position_reached (l_arguments.right_parenthesis.position)
 				end
-				last_non_empty_line := an_agent.last_position.line
+				set_last_non_empty_line (an_agent.last_position.line)
 			end
 			call_operands.wipe_out
 			if l_temp /= Void then
@@ -20246,7 +20417,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 				--
 				-- Declaration of variables.
 				--
-			if a_agent.is_inline_agent and current_type.base_class.invariants_enabled then
+			if a_agent.is_inline_agent and current_class.invariants_enabled then
 				print_indentation
 				current_file.put_string (c_uint32_t)
 				current_file.put_character (' ')
@@ -26492,7 +26663,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 					elseif
 						current_type.attribute_count > 0 or else
 						(attached {ET_DYNAMIC_TUPLE_TYPE} current_type as l_tuple_type and then not l_tuple_type.item_type_sets.is_empty) or else
-						not current_type.base_class.is_type_class
+						not current_class.is_type_class
 					then
 						print_indentation_assign_to_result
 						print_declaration_type_cast (l_result_type, current_file)
@@ -27207,7 +27378,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 					-- Internal error: this error should have been reported by ET_BUILTIN_FEATURE_CHECKER.
 				set_fatal_error
 				error_handler.report_giaac_error (generator, "print_builtin_any_standard_copy_body", 1, "wrong number of arguments.")
-			elseif current_type.base_class.is_type_class then
+			elseif current_class.is_type_class then
 				-- Cannot have two instances of class "TYPE" representing the same Eiffel type.
 			elseif attached {ET_DYNAMIC_SPECIAL_TYPE} current_type as l_special_type then
 				l_argument := l_arguments.formal_argument (1).name
@@ -27872,7 +28043,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 			a_feature_not_void: a_feature /= Void
 			valid_feature: current_feature.static_feature = a_feature
 		do
-			if current_type.base_class.is_type_class then
+			if current_class.is_type_class then
 					-- Cannot have two instances of class TYPE representing the same Eiffel type.
 				print_indentation_assign_to_result
 				print_current_name (current_file)
@@ -28057,7 +28228,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 		do
 			if not current_type.has_redefined_copy_routine then
 				print_builtin_any_standard_twin_body (a_feature)
-			elseif current_type.base_class.is_type_class then
+			elseif current_class.is_type_class then
 					-- Cannot have two instances of class TYPE representing the same Eiffel type.
 				print_indentation_assign_to_result
 				print_current_name (current_file)
@@ -34406,7 +34577,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_builtin_any_is_deep_
 			current_file.put_new_line
 			print_indentation
 			if current_type.is_basic then
-				if current_system.real_32_type.same_named_type (current_type.base_type, current_type.base_class, current_type.base_class) then
+				if current_system.real_32_type.same_named_type (current_type.base_type, current_class, current_class) then
 					current_file.put_string ("int l = snprintf(s,40,%"%%g%",*C);")
 				else
 					current_file.put_string ("int l = snprintf(s,40,%"%%.17g%",*C);")
@@ -40024,6 +40195,16 @@ feature {NONE} -- Breakpoint generation
 	last_non_empty_line: INTEGER
 			-- Last line which contains possibly breakable code
 
+	set_last_non_empty_line (a_line: INTEGER)
+			-- Set `last_non_empty_line` to `a_line`.
+		do
+			if a_line > 0 then
+				last_non_empty_line := a_line
+			end
+		ensure
+			last_non_empty_line_set: if a_line > 0 then last_non_empty_line = a_line else last_non_empty_line = old last_non_empty_line end
+		end
+
 	breakpoints: DS_HASH_TABLE [DS_ARRAYED_LIST_2 [INTEGER, INTEGER], ET_CLASS]
 			-- Breakpoints found so far, spanning from the beginning of first_line
 			-- (`item_1`) to the beginning of last_line (`item_2`), indexed by classes
@@ -40042,10 +40223,10 @@ feature {NONE} -- Breakpoint generation
 			l_first_line: INTEGER
 			l_last_line: INTEGER
 		do
-			l_class := current_feature.static_feature.implementation_class
+			l_class := current_class_impl
 			l_first_line := last_non_empty_line + 1
 			l_last_line := a_position.line
-			last_non_empty_line := l_last_line
+			set_last_non_empty_line (l_last_line)
 			if l_class.filename /= Void and l_last_line >= l_first_line then
 				add_breakpoint (l_class, l_first_line, l_last_line)
 				print_breakpoint_hit (l_class, l_last_line)
@@ -41140,6 +41321,11 @@ feature {NONE} -- Assertion generation
 			l_preconditions_use_separate_formal_arguments: BOOLEAN
 			l_next_preconditions_use_separate_formal_arguments: BOOLEAN
 			l_expression_use_separate_formal_arguments: BOOLEAN
+			l_old_last_non_empty_line: INTEGER
+			l_inherited: BOOLEAN
+			l_class_name: STRING
+			l_current_class: ET_CLASS
+			l_current_class_impl: ET_CLASS
 		do
 			l_separate_formal_arguments := separate_formal_arguments
 			if use_scoop then
@@ -41147,7 +41333,7 @@ feature {NONE} -- Assertion generation
 				l_has_separate_formal_arguments := l_separate_formal_arguments.has_non_void_1
 				if not l_has_separate_formal_arguments then
 					-- Done.
-				elseif attached {ET_FEATURE} a_feature as l_feature then
+				elseif attached {ET_FEATURE} a_feature then
 					l_all_preconditions := current_feature.preconditions
 					nb := l_all_preconditions.count
 					from i := 1 until i > nb loop
@@ -41162,7 +41348,7 @@ feature {NONE} -- Assertion generation
 			if a_correctness_enabled or l_all_preconditions_use_separate_formal_arguments then
 				l_old_index_offset := index_offset
 				l_all_preconditions := current_feature.preconditions
-				if attached {ET_FEATURE} a_feature as l_feature then
+				if attached {ET_FEATURE} a_feature then
 					l_count := l_all_preconditions.count
 					if l_count > 0 then
 						index_offset := l_all_preconditions.item_2 (1)
@@ -41173,6 +41359,10 @@ feature {NONE} -- Assertion generation
 					l_count := 1
 				end
 				if l_count > 0 and l_preconditions /= Void then
+					if debug_mode then
+						l_old_last_non_empty_line := last_non_empty_line
+					end
+					l_current_class := current_class
 					print_preconditions_comment
 					print_before_assertions (l_all_preconditions_use_separate_formal_arguments)
 					from k := 1 until k > l_count loop
@@ -41182,6 +41372,42 @@ feature {NONE} -- Assertion generation
 						end
 						l_old_preconditions := current_preconditions
 						current_preconditions := l_preconditions
+						if debug_mode then
+							l_current_class_impl := current_class_impl
+							if l_inherited or l_current_class /= l_current_class_impl then
+								print_indentation
+								current_file.put_string (c_tc)
+								current_file.put_character ('.')
+								current_file.put_string (c_class_name)
+								print_assign_to
+								l_class_name := l_current_class.upper_name
+								if l_current_class /= l_current_class_impl then
+									l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+								end
+								print_escaped_string (l_class_name)
+								print_semicolon_newline
+								print_indentation
+								current_file.put_string (c_tc)
+								current_file.put_character ('.')
+								current_file.put_string (c_filename)
+								print_assign_to
+								if attached l_current_class_impl.filename as l_filename then
+									print_escaped_string (l_filename)
+								else
+									current_file.put_character ('%"')
+									current_file.put_character ('%"')
+								end
+								print_semicolon_newline
+								if l_current_class /= l_current_class_impl then
+									l_inherited := True
+									set_last_non_empty_line (l_preconditions.position.line - 1)
+								elseif l_inherited then
+									l_inherited := False
+									set_last_non_empty_line (l_old_last_non_empty_line)
+								end
+							end
+							print_position_reached (l_preconditions.position)
+						end
 						l_preconditions_use_separate_formal_arguments := False
 						l_next_preconditions_use_separate_formal_arguments := False
 						if l_all_preconditions_use_separate_formal_arguments then
@@ -41265,6 +41491,17 @@ feature {NONE} -- Assertion generation
 												print_semicolon_newline
 											end
 										else
+											if debug_mode then
+												if attached {ET_INTERNAL_FEATURE_CLOSURE} current_closure_impl.implementation_closure as l_closure then
+													if attached l_closure.locals as l_locals then
+														print_position_reached (l_locals.position)
+													elseif attached l_closure.compound as l_compound then
+														print_position_reached (l_compound.position)
+													end
+												elseif attached {ET_EXTERNAL_ROUTINE_CLOSURE} current_closure_impl.implementation_closure as l_closure then
+													print_position_reached (l_closure.language.position)
+												end
+											end
 											print_indentation
 											current_file.put_string (c_goto)
 											current_file.put_character (' ')
@@ -41298,6 +41535,17 @@ feature {NONE} -- Assertion generation
 								end
 								i := i + 1
 							end
+							if debug_mode then
+								if attached {ET_INTERNAL_FEATURE_CLOSURE} current_closure_impl.implementation_closure as l_closure then
+									if attached l_closure.locals as l_locals then
+										print_position_reached (l_locals.position)
+									elseif attached l_closure.compound as l_compound then
+										print_position_reached (l_compound.position)
+									end
+								elseif attached {ET_EXTERNAL_ROUTINE_CLOSURE} current_closure_impl.implementation_closure as l_closure then
+									print_position_reached (l_closure.language.position)
+								end
+							end
 							if
 								k /= l_count and
 								(k + 1 /= l_count or else (not l_all_preconditions.item_1 (k + 1).are_all_true and
@@ -41324,6 +41572,33 @@ feature {NONE} -- Assertion generation
 						current_file.put_character (':')
 						current_file.put_new_line
 					end
+					if debug_mode and l_inherited then
+						l_current_class_impl := current_class_impl
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_class_name)
+						print_assign_to
+						l_class_name := l_current_class.upper_name
+						if l_current_class /= l_current_class_impl then
+							l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+						end
+						print_escaped_string (l_class_name)
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_filename)
+						print_assign_to
+						if attached l_current_class_impl.filename as l_filename then
+							print_escaped_string (l_filename)
+						else
+							current_file.put_character ('%"')
+							current_file.put_character ('%"')
+						end
+						print_semicolon_newline
+						set_last_non_empty_line (l_old_last_non_empty_line)
+					end
 					print_after_assertions
 				end
 				index_offset := l_old_index_offset
@@ -41344,12 +41619,21 @@ feature {NONE} -- Assertion generation
 			l_temp: ET_IDENTIFIER
 			l_old_index_offset: INTEGER
 			l_old_postconditions: ET_POSTCONDITIONS
+			l_old_last_non_empty_line: INTEGER
+			l_class_name: STRING
+			l_current_class: ET_CLASS
+			l_current_class_impl: ET_CLASS
+			l_inherited: BOOLEAN			
 		do
 			if attached {ET_FEATURE} a_feature as l_feature then
 				l_old_index_offset := index_offset
 				l_all_postconditions := current_feature.postconditions
 				nb := l_all_postconditions.count
 				if nb > 0 then
+					if debug_mode then
+						l_old_last_non_empty_line := last_non_empty_line
+					end
+					l_current_class := current_class
 					print_postconditions_comment
 					print_before_assertions (False)
 					from i := 1 until i > nb loop
@@ -41357,9 +41641,79 @@ feature {NONE} -- Assertion generation
 						l_postconditions := l_all_postconditions.item_1 (i)
 						l_old_postconditions := current_postconditions
 						current_postconditions := l_postconditions
+						if debug_mode then
+							l_current_class_impl := current_class_impl
+							if l_inherited or l_current_class /= l_current_class_impl then
+								print_indentation
+								current_file.put_string (c_tc)
+								current_file.put_character ('.')
+								current_file.put_string (c_class_name)
+								print_assign_to
+								l_class_name := l_current_class.upper_name
+								if l_current_class /= l_current_class_impl then
+									l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+								end
+								print_escaped_string (l_class_name)
+								print_semicolon_newline
+								print_indentation
+								current_file.put_string (c_tc)
+								current_file.put_character ('.')
+								current_file.put_string (c_filename)
+								print_assign_to
+								if attached l_current_class_impl.filename as l_filename then
+									print_escaped_string (l_filename)
+								else
+									current_file.put_character ('%"')
+									current_file.put_character ('%"')
+								end
+								print_semicolon_newline
+								if l_current_class /= l_current_class_impl then
+									l_inherited := True
+									set_last_non_empty_line (l_postconditions.position.line - 1)
+								elseif l_inherited then
+									l_inherited := False
+									set_last_non_empty_line (l_old_last_non_empty_line)
+								end
+							end
+							print_position_reached (l_postconditions.position)
+						end
 						print_assertions (l_postconditions, c_ge_ex_post)
+						if debug_mode then
+							if attached {ET_INTERNAL_FEATURE_CLOSURE} current_closure_impl.implementation_closure as l_closure and then attached l_closure.rescue_clause as l_rescue_clause then
+								print_position_reached (l_rescue_clause.position)
+							elseif attached {ET_ROUTINE_CLOSURE} current_closure_impl.implementation_closure as l_closure then
+								print_position_reached (l_closure.end_keyword.position)
+							end
+						end
 						current_postconditions := l_old_postconditions
 						i := i + 1
+					end
+					if debug_mode and l_inherited then
+						l_current_class_impl := current_class_impl
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_class_name)
+						print_assign_to
+						l_class_name := l_current_class.upper_name
+						if l_current_class /= l_current_class_impl then
+							l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+						end
+						print_escaped_string (l_class_name)
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_filename)
+						print_assign_to
+						if attached l_current_class_impl.filename as l_filename then
+							print_escaped_string (l_filename)
+						else
+							current_file.put_character ('%"')
+							current_file.put_character ('%"')
+						end
+						print_semicolon_newline
+						set_last_non_empty_line (l_old_last_non_empty_line)
 					end
 					print_after_assertions
 				end
@@ -41369,7 +41723,17 @@ feature {NONE} -- Assertion generation
 				print_before_assertions (False)
 				l_old_postconditions := current_postconditions
 				current_postconditions := l_postconditions_impl
+				if debug_mode then
+					print_position_reached (l_postconditions_impl.position)
+				end
 				print_assertions (l_postconditions_impl, c_ge_ex_post)
+				if debug_mode then
+					if attached {ET_INTERNAL_FEATURE_CLOSURE} current_closure_impl.implementation_closure as l_closure and then attached l_closure.rescue_clause as l_rescue_clause then
+						print_position_reached (l_rescue_clause.position)
+					elseif attached {ET_ROUTINE_CLOSURE} current_closure_impl.implementation_closure as l_closure then
+						print_position_reached (l_closure.end_keyword.position)
+					end
+				end
 				current_postconditions := l_old_postconditions
 				print_after_assertions
 			end
@@ -41408,6 +41772,11 @@ feature {NONE} -- Assertion generation
 			l_old_index_offset: INTEGER
 			l_old_postconditions: ET_POSTCONDITIONS
 			l_first: BOOLEAN
+			l_old_last_non_empty_line: INTEGER
+			l_inherited: BOOLEAN
+			l_class_name: STRING
+			l_current_class: ET_CLASS
+			l_current_class_impl: ET_CLASS
 		do
 			l_old_expressions := old_expressions
 			l_old_expressions.wipe_out
@@ -41418,31 +41787,107 @@ feature {NONE} -- Assertion generation
 				l_old_index_offset := index_offset
 				l_all_postconditions := current_feature.postconditions
 				nb := l_all_postconditions.count
-				from i := 1 until i > nb loop
-					index_offset := l_all_postconditions.item_2 (i)
-					l_postconditions := l_all_postconditions.item_1 (i)
-					l_old_postconditions := current_postconditions
-					current_postconditions := l_postconditions
-					l_postconditions.add_old_expressions (l_old_expressions, current_type.base_type)
-					if l_first and then not l_old_expressions.is_empty then
-						print_old_expressions_comment
-						l_first := False
+				if nb > 0 then
+					if debug_mode then
+						l_old_last_non_empty_line := last_non_empty_line
 					end
-					print_old_expression_declarations (l_old_expressions)
-					l_old_expressions.wipe_out
-					current_postconditions := l_old_postconditions
-					i := i + 1
+					l_current_class := current_class
+					from i := 1 until i > nb loop
+						index_offset := l_all_postconditions.item_2 (i)
+						l_postconditions := l_all_postconditions.item_1 (i)
+						l_old_postconditions := current_postconditions
+						current_postconditions := l_postconditions
+						l_postconditions.add_old_expressions (l_old_expressions, current_type.base_type)
+						if not l_old_expressions.is_empty then
+							if l_first then
+								print_old_expressions_comment
+								l_first := False
+							end
+							if debug_mode then
+								l_current_class_impl := current_class_impl
+								if l_inherited or l_current_class /= l_current_class_impl then
+									print_indentation
+									current_file.put_string (c_tc)
+									current_file.put_character ('.')
+									current_file.put_string (c_class_name)
+									print_assign_to
+									l_class_name := l_current_class.upper_name
+									if l_current_class /= l_current_class_impl then
+										l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+									end
+									print_escaped_string (l_class_name)
+									print_semicolon_newline
+									print_indentation
+									current_file.put_string (c_tc)
+									current_file.put_character ('.')
+									current_file.put_string (c_filename)
+									print_assign_to
+									if attached l_current_class_impl.filename as l_filename then
+										print_escaped_string (l_filename)
+									else
+										current_file.put_character ('%"')
+										current_file.put_character ('%"')
+									end
+									print_semicolon_newline
+									if l_current_class /= l_current_class_impl then
+										l_inherited := True
+									elseif l_inherited then
+										l_inherited := False
+									end
+								end
+							end
+							print_old_expression_declarations (l_old_expressions)
+							l_old_expressions.wipe_out
+						end
+						current_postconditions := l_old_postconditions
+						i := i + 1
+					end
+					if debug_mode then
+						if l_inherited then
+							l_current_class_impl := current_class_impl
+							print_indentation
+							current_file.put_string (c_tc)
+							current_file.put_character ('.')
+							current_file.put_string (c_class_name)
+							print_assign_to
+							l_class_name := l_current_class.upper_name
+							if l_current_class /= l_current_class_impl then
+								l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+							end
+							print_escaped_string (l_class_name)
+							print_semicolon_newline
+							print_indentation
+							current_file.put_string (c_tc)
+							current_file.put_character ('.')
+							current_file.put_string (c_filename)
+							print_assign_to
+							if attached l_current_class_impl.filename as l_filename then
+								print_escaped_string (l_filename)
+							else
+								current_file.put_character ('%"')
+								current_file.put_character ('%"')
+							end
+							print_semicolon_newline
+						end
+						set_last_non_empty_line (l_old_last_non_empty_line)
+					end
+					index_offset := l_old_index_offset
 				end
-				index_offset := l_old_index_offset
 			elseif attached a_feature.postconditions as l_postconditions_impl and then not l_postconditions_impl.are_all_true then
 				l_old_postconditions := current_postconditions
 				current_postconditions := l_postconditions_impl
 				l_postconditions_impl.add_old_expressions (l_old_expressions, current_type.base_type)
-				if l_old_expressions.is_empty then
+				if not l_old_expressions.is_empty then
+					if debug_mode then
+						l_old_last_non_empty_line := last_non_empty_line
+					end
 					print_old_expressions_comment
+					print_old_expression_declarations (l_old_expressions)
+					if debug_mode then
+						set_last_non_empty_line (l_old_last_non_empty_line)
+					end
+					l_old_expressions.wipe_out
 				end
-				print_old_expression_declarations (l_old_expressions)
-				l_old_expressions.wipe_out
 				current_postconditions := l_old_postconditions
 			end
 		end
@@ -41467,6 +41912,9 @@ feature {NONE} -- Assertion generation
 			nb := a_old_expressions.count
 			from i := 1 until i > nb loop
 				l_old_expression := a_old_expressions.item (i)
+				if debug_mode then
+					set_last_non_empty_line (l_old_expression.position.line - 1)
+				end
 				l_type := dynamic_type_set (l_old_expression).static_type.primary_type
 				l_temp := new_temp_variable (l_type)
 				l_temp.set_index (l_old_expression.index)
@@ -47973,11 +48421,17 @@ feature {ET_AST_NODE} -- Processing
 
 	process_infix_expression (an_expression: ET_INFIX_EXPRESSION)
 			-- Process `an_expression'.
+		local
+			l_position: ET_POSITION
 		do
 			if an_expression.is_false_expression (current_type.base_type, True) then
+				l_position := an_expression.position
+				false_constant.set_position (l_position.line, l_position.column)
 				false_constant.set_index (an_expression.index)
 				print_false_constant (false_constant)
 			elseif an_expression.is_true_expression (current_type.base_type, True) then
+				l_position := an_expression.position
+				true_constant.set_position (l_position.line, l_position.column)
 				true_constant.set_index (an_expression.index)
 				print_true_constant (true_constant)
 			else
@@ -48389,13 +48843,16 @@ feature {NONE} -- Access
 	current_postconditions: detachable ET_POSTCONDITIONS
 			-- Postconditions being processed if any, Void otherwise
 
+	current_invariants: detachable ET_INVARIANTS
+			-- Invariants being processed if any, Void otherwise
+
 	current_type: ET_DYNAMIC_PRIMARY_TYPE
 			-- Type where `current_feature' belongs
 
 	current_universe: ET_UNIVERSE
 			-- Universe where the base class of `current_type' is declared
 		do
-			Result := current_type.base_class.universe
+			Result := current_class.universe
 		ensure
 			current_universe_not_void: Result /= Void
 		end
@@ -48423,7 +48880,7 @@ feature {NONE} -- Access
 		end
 
 	current_closure_impl: ET_CLOSURE
-			-- Closure where the current pre- or postconditions have been written if any,
+			-- Closure where the current pre- or postconditions or invariants have been written if any,
 			-- or inline agent being processed if any, current feature otherwise
 		do
 			if attached current_preconditions as l_preconditions then
@@ -48432,15 +48889,38 @@ feature {NONE} -- Access
 				Result := l_postconditions.implementation_closure
 			elseif attached {ET_INLINE_AGENT} current_agent as l_current_agent then
 				Result := l_current_agent
+			elseif attached current_invariants as l_invariants then
+				Result := l_invariants.implementation_feature
 			else
 				Result := current_feature.static_feature
 			end
 		ensure
-			current_closure_not_void: Result /= Void
+			current_closure_impl_not_void: Result /= Void
 			definition: Result = if attached current_preconditions as l_preconditions then l_preconditions.implementation_closure
 				elseif attached current_postconditions as l_postconditions then l_postconditions.implementation_closure
 				elseif attached {ET_INLINE_AGENT} current_agent as l_current_agent then l_current_agent
+				elseif attached current_invariants as l_invariants then l_invariants.implementation_feature
 				else current_feature.static_feature end
+		end
+
+	current_class: ET_CLASS
+			-- Base class of `current_type`.
+		do
+			Result := current_type.base_class
+		ensure
+			current_class_not_void: Result /= Void
+		end
+
+	current_class_impl: ET_CLASS
+			-- Class where `current_closure_impl` has been written
+		do
+			if attached {ET_STANDALONE_CLOSURE} current_closure_impl.implementation_closure as l_closure then
+				Result := l_closure.implementation_class
+			else
+				Result := current_feature.static_feature.implementation_class
+			end
+		ensure
+			current_class_impl_not_void: Result /= Void
 		end
 
 	current_agent: detachable ET_AGENT
@@ -49508,11 +49988,11 @@ feature {NONE} -- Inspect instructions/expressions
 							-- This is not a constant.
 					else
 						l_seed := l_identifier.seed
-						l_query := current_type.base_class.seeded_query (l_seed)
+						l_query := current_class.seeded_query (l_seed)
 					end
 				elseif attached {ET_UNQUALIFIED_FEATURE_CALL} a_choice_constant as l_unqualified_call and then l_unqualified_call.arguments_count = 0 then
 					l_seed := l_unqualified_call.name.seed
-					l_query := current_type.base_class.seeded_query (l_seed)
+					l_query := current_class.seeded_query (l_seed)
 				elseif attached {ET_STATIC_CALL_EXPRESSION} a_choice_constant as l_static_call then
 					l_target_type := current_dynamic_system.dynamic_primary_type (l_static_call.type, current_type.base_type)
 					if l_static_call.is_once_creation_call then
@@ -49774,6 +50254,7 @@ feature {NONE} -- Identifiers
 		require
 			a_identifier_not_void: a_identifier /= Void
 		do
+			a_identifier.set_position (0, 0)
 			unused_identifiers.force_last (a_identifier)
 		end
 
@@ -50334,7 +50815,7 @@ feature {NONE} -- Implementation
 			l_feature: ET_FEATURE
 		once
 			create {ET_IDENTIFIER} l_name.make ("**dummy**")
-			create {ET_DO_PROCEDURE} l_feature.make (l_name, Void, current_type.base_class)
+			create {ET_DO_PROCEDURE} l_feature.make (l_name, Void, current_class)
 			create Result.make (l_feature, current_type, current_dynamic_system)
 		ensure
 			dummy_feature_not_void: Result /= Void
@@ -50509,6 +50990,7 @@ feature {NONE} -- Constants
 	c_caller: STRING = "caller"
 	c_case: STRING = "case"
 	c_char: STRING = "char"
+	c_class_name: STRING = "class_name"
 	c_condition_variable: STRING = "condition_variable"
 	c_const: STRING = "const"
 	c_continue: STRING = "continue"
@@ -50566,6 +51048,7 @@ feature {NONE} -- Constants
 	c_exception_suffix: STRING = "_exception"
 	c_exception_tag: STRING = "exception_tag"
 	c_extern: STRING = "extern"
+	c_filename: STRING = "filename"
 	c_find_referers: STRING = "find_referers"
 	c_flags: STRING = "flags"
 	c_float: STRING = "float"

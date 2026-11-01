@@ -16,13 +16,15 @@ inherit
 		undefine
 			parenthesis_call
 		redefine
-			reset
+			reset,
+			last_position
 		end
 
 	ET_QUALIFIED_FEATURE_CALL_INSTRUCTION
 		undefine
 			reset,
-			parenthesis_call
+			parenthesis_call,
+			last_position
 		end
 
 	ET_CALL_INSTRUCTION
@@ -34,7 +36,8 @@ inherit
 			has_agent,
 			has_typed_object_test,
 			add_old_expressions,
-			add_formal_arguments
+			add_formal_arguments,
+			last_position
 		end
 
 create
@@ -48,6 +51,17 @@ feature -- Initialization
 		do
 			Precursor {ET_QUALIFIED_REGULAR_FEATURE_CALL}
 			parenthesis_call := Void
+		end
+
+feature -- Access
+
+	last_position: ET_POSITION
+			-- <Precursor>
+		do
+			Result := precursor
+			if Result.is_null then
+				Result := target.last_position
+			end
 		end
 
 feature -- Processing

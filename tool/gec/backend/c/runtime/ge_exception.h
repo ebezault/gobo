@@ -104,10 +104,10 @@ struct GE_call_struct {
 #if defined(GE_USE_CURRENT_IN_EXCEPTION_TRACE) || defined(GE_DEBUG_MODE)
 	void* volatile object; /* Current object */
 #endif
-	const char* volatile class_name;
-	const char* volatile feature_name;
+	char* volatile class_name;
+	char* volatile feature_name;
 #ifdef GE_DEBUG_MODE
-	const char* volatile filename;
+	char* volatile filename;
 	uint32_t volatile line;
 	uint32_t volatile column;
 #endif
