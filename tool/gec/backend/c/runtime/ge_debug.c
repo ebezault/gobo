@@ -326,7 +326,6 @@ void GE_debug_init()
 	GE_debug_in = NULL;
 	GE_debug_out = NULL;
 	struct stat buf;
-	if (fstat(GE_DEBUG_IN_FD, &buf) == 0 && fstat(GE_DEBUG_OUT_FD, &buf) == 0) {
 #if defined(_MSC_VER)
 		/* Register custom handler. */
 		_invalid_parameter_handler oldHandler, newHandler;
@@ -334,7 +333,9 @@ void GE_debug_init()
 		oldHandler = _set_invalid_parameter_handler(newHandler);
 		/* Disable the default Windows crash dialog box popups (optional but helpful) */
 		/* _CrtSetReportMode(_CRT_ASSERT, 0); */
-
+#endif
+	if (fstat(GE_DEBUG_IN_FD, &buf) == 0 && fstat(GE_DEBUG_OUT_FD, &buf) == 0) {
+#if defined(_MSC_VER)
 		GE_debug_in = _fdopen(GE_DEBUG_IN_FD, "r");
 #else
 		GE_debug_in = fdopen(GE_DEBUG_IN_FD, "r");
