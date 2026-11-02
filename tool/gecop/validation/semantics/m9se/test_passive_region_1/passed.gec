@@ -18,7 +18,8 @@ ISE_EXCEPTION_MANAGER
                     raise                  
 <XXXXXXXXXXXXXXXX>                         Routine failure.              Fail
 -------------------------------------------------------------------------------
-DEVELOPER_EXCEPTION raise                                               
+DEVELOPER_EXCEPTION (from EXCEPTION)
+                    raise                  
 <XXXXXXXXXXXXXXXX>                         Routine failure.              Fail
 -------------------------------------------------------------------------------
 EXCEPTIONS          raise                                               
