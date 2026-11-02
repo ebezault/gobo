@@ -1336,8 +1336,12 @@ static void* GE_thread_routine(void* arg)
 	GE_context* l_context = (GE_context*)arg; /* Keep alive while the thread is running. */
 	GE_thread_context* l_thread_context = l_context->thread;
 	GE_thread_context* l_parent_thread_context = l_thread_context->parent_context;
-#ifdef GE_USE_CURRENT_IN_EXCEPTION_TRACE
+#if defined(GE_USE_CURRENT_IN_EXCEPTION_TRACE) || defined(GE_DEBUG_MODE)
+#if defined(GE_DEBUG_MODE)
+	GE_call tc = {l_thread_context->current,"","thread's creation","",0,0,0};
+#else
 	GE_call tc = {l_thread_context->current,"","thread's creation",0};
+#endif
 #else
 	GE_call tc = {"","thread's creation",0};
 #endif

@@ -11221,7 +11221,7 @@ feature {NONE} -- Instruction generation
 			if line_generation_mode then
 				print_position (a_call.position, current_feature.static_feature.implementation_class)
 			end
-			if debug_mode then
+			if debug_mode and a_call /= separate_call_instruction then
 				print_position_reached (a_call.position)
 			end
 			l_old_in_qualified_call := in_qualified_call
@@ -11284,7 +11284,7 @@ feature {NONE} -- Instruction generation
 				nb := nb + 1
 				fill_call_operands (nb)
 			end
-			if debug_mode then
+			if debug_mode and a_call /= separate_call_instruction then
 				print_set_exception_trace_position (a_call.position)
 			end
 			if use_scoop and a_call /= separate_call_instruction and l_target_type.is_separate then
@@ -11443,7 +11443,7 @@ feature {NONE} -- Instruction generation
 			end
 			call_operands.wipe_out
 			in_qualified_call := l_old_in_qualified_call
-			if debug_mode then
+			if debug_mode and a_call /= separate_call_instruction then
 				if attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
 					print_position_reached (l_arguments.right_symbol.position)
 				end
@@ -16099,7 +16099,7 @@ feature {NONE} -- Expression generation
 			in_qualified_call := True
 			l_assignment_target := assignment_target
 			assignment_target := Void
-			if in_operand and debug_mode then
+			if in_operand and debug_mode and a_call /= separate_call_expression then
 				print_position_reached (a_call.position)
 			end
 			l_target := a_call.target
@@ -16229,7 +16229,7 @@ feature {NONE} -- Expression generation
 			end
 			if not l_printed then
 				if in_operand then
-					if debug_mode then
+					if debug_mode and a_call /= separate_call_expression then
 						print_set_exception_trace_position (a_call.position)
 					end
 					print_indentation
@@ -16378,7 +16378,7 @@ feature {NONE} -- Expression generation
 				end
 			end
 			in_qualified_call := l_old_in_qualified_call
-			if debug_mode then
+			if debug_mode and a_call /= separate_call_expression then
 				if in_operand and attached {ET_ACTUAL_ARGUMENT_LIST} a_call.arguments as l_arguments then
 					print_position_reached (l_arguments.right_symbol.position)
 				end
