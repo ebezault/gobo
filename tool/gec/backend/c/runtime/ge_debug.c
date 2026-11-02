@@ -25,6 +25,9 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 
 #if defined(_MSC_VER)
 #include <crtdbg.h>  // Required for _set_invalid_parameter_handler
@@ -37,8 +40,8 @@ extern "C" {
 /* Pipes to communicate with the debug adapter. */
 static FILE* GE_debug_in = NULL;
 static FILE* GE_debug_out = NULL;
-#define GE_DEBUG_IN_FD 4
-#define GE_DEBUG_OUT_FD 3
+#define GOBO_DEBUG_PIPE_IN "GOBO_DEBUG_PIPE_IN"
+#define GOBO_DEBUG_PIPE_OUT "GOBO_DEBUG_PIPE_OUT"
 
 /*
  * Has the VS Code Eiffel debugger adapter indicated that
@@ -320,12 +323,36 @@ void my_invalid_parameter_handler(const wchar_t* expression,
 }
 #endif
 
+/* Get pipe file descriptor from environment variable `name`. */
+static int get_env_fd(const char *name, int *fd)
+{
+	const char *value = getenv(name);
+	char *end;
+	long n;
+
+	if (value == NULL || *value == '\0') {
+		return 0;
+	}
+	errno = 0;
+	n = strtol(value, &end, 10);
+	if (errno == ERANGE || *end != '\0' || end == value ||
+		n < 0 || n > INT_MAX) {
+		return 0;
+	}
+	*fd = (int) n;
+	return 1;
+}
+
 /* Initialize debugging facilities. */
 void GE_debug_init()
 {
-	GE_debug_in = NULL;
-	GE_debug_out = NULL;
-	struct stat buf;
+	int debug_pipe_in;
+	int debug_pipe_out;
+
+	if (get_env_fd(GOBO_DEBUG_PIPE_IN, &debug_pipe_in) && get_env_fd(GOBO_DEBUG_PIPE_OUT, &debug_pipe_out)) {
+		GE_debug_in = NULL;
+		GE_debug_out = NULL;
+		struct stat buf;
 #if defined(_MSC_VER)
 		/* Register custom handler. */
 		_invalid_parameter_handler oldHandler, newHandler;
@@ -334,33 +361,34 @@ void GE_debug_init()
 		/* Disable the default Windows crash dialog box popups (optional but helpful) */
 		/* _CrtSetReportMode(_CRT_ASSERT, 0); */
 #endif
-	if (fstat(GE_DEBUG_IN_FD, &buf) == 0 && fstat(GE_DEBUG_OUT_FD, &buf) == 0) {
+		if (fstat(debug_pipe_in, &buf) == 0 && fstat(debug_pipe_out, &buf) == 0) {
 #if defined(_MSC_VER)
-		GE_debug_in = _fdopen(GE_DEBUG_IN_FD, "r");
+			GE_debug_in = _fdopen(debug_pipe_in, "r");
 #else
-		GE_debug_in = fdopen(GE_DEBUG_IN_FD, "r");
+			GE_debug_in = fdopen(debug_pipe_in, "r");
 #endif
-		if (GE_debug_in) {
+			if (GE_debug_in) {
 #if defined(_MSC_VER)
-			GE_debug_out = _fdopen(GE_DEBUG_OUT_FD, "w");
+				GE_debug_out = _fdopen(debug_pipe_out, "w");
 #else
-			GE_debug_out = fdopen(GE_DEBUG_OUT_FD, "w");
+				GE_debug_out = fdopen(debug_pipe_out, "w");
 #endif
-			if (!GE_debug_out) {
-				fclose(GE_debug_in);
-				GE_debug_in = NULL;
-				GE_debug_out = NULL;
+				if (!GE_debug_out) {
+					fclose(GE_debug_in);
+					GE_debug_in = NULL;
+					GE_debug_out = NULL;
+				}
 			}
-		}
 #if defined(_MSC_VER)
-		newHandler = _set_invalid_parameter_handler(oldHandler);
+			newHandler = _set_invalid_parameter_handler(oldHandler);
 #endif
-	}
-	if (GE_debug_in && GE_debug_out) {
-		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"started\",\"body\":{}}\n");
-		fflush(GE_debug_out);
-		while (!GE_debug_configuration_done) {
-			GE_debug_receive();
+		}
+		if (GE_debug_in && GE_debug_out) {
+			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"started\",\"body\":{}}\n");
+			fflush(GE_debug_out);
+			while (!GE_debug_configuration_done) {
+				GE_debug_receive();
+			}
 		}
 	}
 }
