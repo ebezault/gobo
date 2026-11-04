@@ -20,6 +20,10 @@
 #include "ge_debug.h"
 #endif
 
+#ifndef GE_THREAD_H
+#include "ge_thread.h"
+#endif
+
 #ifndef GE_GC_H
 #include "ge_gc.h"
 #endif
@@ -192,7 +196,7 @@ static char* GE_debug_get_string(FILE* file)
  * Receive a request from VS Code Eiffel debugger adapter
  * and process it.
  */
-static void GE_debug_receive()
+static void GE_debug_receive_request()
 {
 	char* type;
 	char* id;
@@ -310,6 +314,15 @@ GE_debug_receive_done:
 	fflush(GE_debug_out);
 }
 
+/*
+ * Receive requests from VS Code Eiffel debugger adapter
+ * and process them.
+ */
+static void GE_debug_receive_requests() {
+
+}
+
+
 #if defined(_MSC_VER)
 /* Handler to avoid a crash when calling `_fdopen` with an invalid file descriptor. */
 void my_invalid_parameter_handler(const wchar_t* expression,
@@ -387,9 +400,10 @@ void GE_debug_init()
 			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"started\",\"body\":{}}\n");
 			fflush(GE_debug_out);
 			while (!GE_debug_configuration_done) {
-				GE_debug_receive();
+				GE_debug_receive_request();
 			}
 		}
+		GE_debug_thread_create_with_attr(&GE_debug_receive_requests, 0);
 	}
 }
 
@@ -407,7 +421,7 @@ void GE_debug_hit_breakpoint(GE_context* ac, GE_debug_breakpoint* breakpoint)
 		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"stopped\",\"body\":{\"reason\":\"breakpoint\",\"threadId\":1,\"allThreadsStopped\":true}}\n");
 		fflush(GE_debug_out);
 		while (!GE_debug_continue) {
-			GE_debug_receive();
+			GE_debug_receive_request();
 		}
 		GE_debug_continue = 0;
 	}	

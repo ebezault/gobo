@@ -47709,12 +47709,16 @@ feature {NONE} -- Include files
 					include_runtime_header_file ("ge_eiffel.h", a_force, a_file)
 					l_c_filename := "ge_string.c"
 				elseif a_filename.same_string ("ge_thread.h") then
-					include_runtime_header_file ("ge_eiffel.h", a_force, a_file)
-					include_runtime_header_file ("ge_thread_types.h", a_force, a_file)
-					include_runtime_header_file ("ge_exception.h", a_force, a_file)
+					if use_threads or debug_mode then
+						include_runtime_header_file ("ge_eiffel.h", a_force, a_file)
+						include_runtime_header_file ("ge_thread_types.h", a_force, a_file)
+						include_runtime_header_file ("ge_exception.h", a_force, a_file)
+					end
 					l_c_filename := "ge_thread.c"
 				elseif a_filename.same_string ("ge_thread_types.h") then
-					include_runtime_header_file ("ge_eiffel.h", a_force, a_file)
+					if use_threads or debug_mode then
+						include_runtime_header_file ("ge_eiffel.h", a_force, a_file)
+					end
 				elseif a_filename.same_string ("ge_time.h") then
 					include_runtime_header_file ("eif_config.h", a_force, a_file)
 				elseif a_filename.same_string ("ge_types.h") then
@@ -47814,6 +47818,7 @@ feature {NONE} -- Include files
 					end
 				elseif a_filename.same_string ("ge_debug.c") then
 					include_runtime_header_file ("ge_debug.h", False, a_header_file)
+					include_runtime_header_file ("ge_thread.h", False, a_header_file)
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
 				elseif a_filename.same_string ("ge_deep.c") then
 					include_runtime_header_file ("ge_deep.h", False, a_header_file)
@@ -47874,12 +47879,16 @@ feature {NONE} -- Include files
 					include_runtime_header_file ("ge_native_string.h", False, a_header_file)
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
 				elseif a_filename.same_string ("ge_thread.c") then
-					include_runtime_header_file ("ge_thread.h", False, a_header_file)
-					include_runtime_header_file ("ge_gc.h", False, a_header_file)
-					include_runtime_header_file ("ge_once.h", False, a_header_file)
-					include_runtime_header_file ("ge_time.h", False, a_header_file)
-					if use_scoop then
-						include_runtime_header_file ("ge_scoop.h", False, a_header_file)
+					if use_threads or debug_mode then
+						include_runtime_header_file ("ge_thread.h", False, a_header_file)
+						include_runtime_header_file ("ge_gc.h", False, a_header_file)
+						include_runtime_header_file ("ge_time.h", False, a_header_file)
+					end
+					if use_threads then
+						include_runtime_header_file ("ge_once.h", False, a_header_file)
+						if use_scoop then
+							include_runtime_header_file ("ge_scoop.h", False, a_header_file)
+						end
 					end
 				elseif a_filename.same_string ("ge_types.c") then
 					include_runtime_header_file ("ge_types.h", False, a_header_file)

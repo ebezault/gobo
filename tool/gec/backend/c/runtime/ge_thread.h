@@ -4,7 +4,7 @@
 		"C functions used to implement class THREAD and related threading facilities"
 
 	system: "Gobo Eiffel Compiler"
-	copyright: "Copyright (c) 2016-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2016-2026, Eric Bezault and others"
 	license: "MIT License"
 */
 
@@ -14,7 +14,7 @@
 #pragma once
 #endif
 
-#ifdef GE_USE_THREADS
+#if defined(GE_USE_THREADS) || defined(GE_DEBUG_MODE)
 
 #ifndef GE_EIFFEL_H
 #include "ge_eiffel.h"
@@ -26,13 +26,17 @@
 #include "ge_exception.h"
 #endif
 
+#ifdef GE_USE_POSIX_THREADS
+#include <unistd.h>
+#endif
+
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef GE_USE_POSIX_THREADS
-#include <unistd.h>
-#endif
+#if defined(GE_USE_THREADS) || defined(GE_DEBUG_MODE)
 
 #ifdef GE_USE_POSIX_THREADS
 #	define EIF_TSD_VAL_TYPE        void*
@@ -69,6 +73,9 @@ extern "C" {
 #define EIF_DEFAULT_THR_PRIORITY		127L
 #define EIF_ABOVE_NORMAL_THR_PRIORITY	154L
 #define EIF_MAX_THR_PRIORITY			255L
+
+#endif
+#ifdef GE_USE_THREADS
 
 /*
  * Mutexes used to protect the calls to once-per-process features.
@@ -242,6 +249,9 @@ extern void GE_thread_join_all(void);
  */
 extern void GE_thread_exit(void);
 
+#endif
+#if defined(GE_USE_THREADS) || defined(GE_DEBUG_MODE)
+
 /*
  * Default thread priority level.
  */
@@ -341,6 +351,9 @@ extern EIF_INTEGER GE_condition_variable_wait_with_timeout(EIF_POINTER a_conditi
  */
 extern void GE_condition_variable_destroy(EIF_POINTER a_condition_variable);
 
+#endif
+#ifdef GE_USE_THREADS
+
 /*
  * Create a new read-write lock.
  */
@@ -366,9 +379,16 @@ extern void GE_read_write_lock_unlock(EIF_POINTER a_read_write_lock);
  */
 extern void GE_read_write_lock_destroy(EIF_POINTER a_read_write_lock);
 
+#endif
+#ifdef GE_DEBUG_MODE
+/*
+ * Create a new thread with attributes `attr' to handle the sessions of passive regions.
+ */
+extern void GE_debug_thread_create_with_attr(void (*routine)(void), EIF_THR_ATTR_TYPE* attr);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif
 #endif

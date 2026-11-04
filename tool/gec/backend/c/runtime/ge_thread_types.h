@@ -4,7 +4,7 @@
 		"C types used to implement class THREAD and related threading facilities"
 
 	system: "Gobo Eiffel Compiler"
-	copyright: "Copyright (c) 2017-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2017-2026, Eric Bezault and others"
 	license: "MIT License"
 */
 
@@ -14,7 +14,7 @@
 #pragma once
 #endif
 
-#ifdef GE_USE_THREADS
+#if defined(GE_USE_THREADS) || defined(GE_DEBUG_MODE)
 
 #define EIF_THREADS
 #ifdef GE_USE_POSIX_THREADS

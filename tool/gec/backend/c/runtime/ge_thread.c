@@ -4,7 +4,7 @@
 		"C functions used to implement class THREAD and related threading facilities"
 
 	system: "Gobo Eiffel Compiler"
-	copyright: "Copyright (c) 2016-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2016-2026, Eric Bezault and others"
 	license: "MIT License"
 */
 
@@ -14,7 +14,7 @@
 #pragma once
 #endif
 
-#ifdef GE_USE_THREADS
+#if defined(GE_USE_THREADS) || defined(GE_DEBUG_MODE)
 
 #ifndef GE_THREAD_H
 #include "ge_thread.h"
@@ -22,11 +22,19 @@
 #ifndef GE_GC_H
 #include "ge_gc.h"
 #endif
-#ifndef GE_ONCE_H
-#include "ge_once.h"
-#endif
 #ifndef GE_TIME_H
 #include "ge_time.h"
+#endif
+
+#ifdef GE_USE_POSIX_THREADS
+#include <limits.h>
+#endif
+
+#endif
+#ifdef GE_USE_THREADS
+
+#ifndef GE_ONCE_H
+#include "ge_once.h"
 #endif
 
 #ifdef GE_USE_SCOOP
@@ -35,13 +43,13 @@
 #endif
 #endif
 
-#ifdef GE_USE_POSIX_THREADS
-#include <limits.h>
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifdef GE_USE_THREADS
 
 /*
  * Numbers of once-per-thread features.
@@ -278,6 +286,9 @@ EIF_POINTER GE_once_per_object_data_mutex;
 
 /* Key to access Thread Specific Data. */
 static EIF_TSD_TYPE GE_thread_context_key;
+
+#endif
+#if defined(GE_USE_THREADS) || defined(GE_DEBUG_MODE)
 
 #define GE_THREAD_OK 1
 #define GE_THREAD_BUSY 2
@@ -1004,6 +1015,9 @@ void GE_condition_variable_destroy(EIF_POINTER a_condition_variable)
 {
 	GE_unprotected_condition_variable_destroy(a_condition_variable);
 }
+
+#endif
+#ifdef GE_USE_THREADS
 
 /*
  * Create a new read-write lock.
@@ -1816,6 +1830,9 @@ void GE_thread_exit(void)
 	}
 }
 
+#endif
+#if defined(GE_USE_THREADS) || defined(GE_DEBUG_MODE)
+
 /*
  * Default thread priority level.
  */
@@ -1840,9 +1857,73 @@ EIF_INTEGER GE_thread_max_priority(void)
 	return EIF_MAX_THR_PRIORITY;
 }
 
+#endif
+#ifdef GE_DEBUG_MODE
+/*
+ * Routine to be called from the new thread for handling debugger.
+ */
+#ifdef EIF_WINDOWS
+static unsigned __stdcall GE_debug_thread_routine(void* arg)
+#else
+static void* GE_debug_thread_routine(void* arg)
+#endif
+{
+	void (*routine)(void) = (void (*)(void))arg;
+	(*routine)();
+#ifdef EIF_WINDOWS
+	return 0;
+#else
+	return NULL;
+#endif
+}
+
+/*
+ * Create a new thread with attributes `attr' to handle the sessions of passive regions.
+ */
+void GE_debug_thread_create_with_attr(void (*routine)(void), EIF_THR_ATTR_TYPE* attr)
+{
+	unsigned int l_attr_stack_size = 0;
+	unsigned int l_attr_priority = GE_thread_default_priority();
+
+	if (attr) {
+		l_attr_stack_size = attr->stack_size;
+		l_attr_priority = attr->priority;
+	}
+#ifdef GE_USE_POSIX_THREADS
+	{
+		pthread_attr_t l_attr;
+		EIF_THR_TYPE l_thread_id;
+
+		if (pthread_attr_init(&l_attr) == 0) {
+				/* Initialize the stack size if more than the minimum. */
+			if (l_attr_stack_size >= PTHREAD_STACK_MIN) {
+				pthread_attr_setstacksize(&l_attr, l_attr_stack_size);
+			}
+			if (l_attr_priority != EIF_DEFAULT_THR_PRIORITY) {
+				struct sched_param l_param;
+				GE_memset(&l_param, 0, sizeof(struct sched_param));
+				l_param.sched_priority = l_attr_priority;
+				pthread_attr_setschedpolicy(&l_attr, SCHED_OTHER);
+				pthread_attr_setschedparam(&l_attr, &l_param);
+			}
+				/* We always create threads detached. */
+			pthread_attr_setdetachstate(&l_attr, PTHREAD_CREATE_DETACHED);
+			SIGBLOCK;
+			pthread_create(&l_thread_id, &l_attr, GE_debug_thread_routine, (void*)(*routine));
+			SIGRESUME;
+			pthread_attr_destroy(&l_attr);
+		}
+	}
+#elif defined EIF_WINDOWS
+	SIGBLOCK;
+	(EIF_THR_TYPE)_beginthreadex(NULL, (unsigned int)l_attr_stack_size, GE_debug_thread_routine, (void*)(*routine), 0, NULL);
+	SIGRESUME;
+#endif
+}
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif
 #endif
