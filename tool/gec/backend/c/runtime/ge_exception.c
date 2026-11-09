@@ -441,7 +441,23 @@ GE_context* GE_new_context(int is_scoop_processor)
 	l_context->exception_trace_enabled = '\1';
 	l_context->storable_discard_pointer_values = '\1';
 	l_context->pre_ecma_mapping_status = 1;
+#ifdef GE_DEBUG_MODE
+	l_context->debug_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
+	l_context->debug_condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
+#endif
 	return l_context;
+}
+
+/*
+ * Free memory allocated by `a_context'.
+ */
+void GE_free_context(GE_context* a_context)
+{
+#ifdef GE_DEBUG_MODE
+	GE_mutex_destroy(a_context->debug_mutex);
+	GE_condition_variable_destroy(a_context->debug_condition_variable);
+#endif
+	GE_free(a_context);
 }
 
 /*

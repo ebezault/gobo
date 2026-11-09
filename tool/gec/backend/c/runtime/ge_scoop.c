@@ -29,6 +29,12 @@
 #include "ge_once.h"
 #endif
 
+#ifdef GE_DEBUG_MODE
+#ifndef GE_DEBUG_H
+#include "ge_debug.h"
+#endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1088,12 +1094,21 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 	GE_scoop_synchronization* l_synchronization = a_call->synchronization;
 	char l_already_synchronized = 0;
 	GE_rescue r;
+#ifdef GE_DEBUG_MODE
+	GE_context* l_next_thread = 0;
+#endif
 
 	l_caller = a_call->caller;
 	l_callee = a_session->callee;
 	if (a_call->execute && a_context) {
 		if (!l_callee->is_dirty) {
+#ifdef GE_DEBUG_MODE
+			GE_mutex_lock((EIF_POINTER)a_context->debug_mutex);
+#endif
 			l_old_context = *a_context;
+#ifdef GE_DEBUG_MODE
+			GE_mutex_unlock((EIF_POINTER)a_context->debug_mutex);
+#endif
 			if (l_is_synchronous) {
 				GE_scoop_region_pass_locks(l_caller, l_callee);
 				l_caller_context = l_caller->context;
@@ -1103,12 +1118,23 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 			a_context->last_rescue = &r;
 			if (GE_setjmp(r.jb) != 0) {
 				a_context->last_rescue = &r;
+#ifdef GE_DEBUG_MODE
+				GE_debug_set_blocking(a_context, 1);
+#endif
 				GE_scoop_session_set_eiffel_called(a_session, '\1');
 				if (l_is_synchronous) {
 					/* The exception will be propagated to the caller region. */
 					GE_append_to_exception_trace_buffer(&l_caller_context->last_exception_trace, a_context->last_exception_trace.area);
 					GE_append_to_exception_trace_buffer(&l_caller_context->exception_trace_buffer, a_context->exception_trace_buffer.area);
+#ifdef GE_DEBUG_MODE
+					GE_mutex_lock((EIF_POINTER)a_context->debug_mutex);
+					l_next_thread = a_context->next_thread;
+#endif
 					*a_context = l_old_context;
+#ifdef GE_DEBUG_MODE
+					a_context->next_thread = l_next_thread;
+					GE_mutex_unlock((EIF_POINTER)a_context->debug_mutex);
+#endif
 					GE_wipe_out_exception_trace_buffer(&a_context->last_exception_trace);
 					GE_wipe_out_exception_trace_buffer(&a_context->exception_trace_buffer);
 					GE_scoop_region_release_locks(l_caller, l_callee);
@@ -1125,16 +1151,38 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 					a_context->last_rescue = r.previous;
 					GE_jump_to_last_rescue(a_context);
 #endif
+#ifdef GE_DEBUG_MODE
+					GE_mutex_lock((EIF_POINTER)a_context->debug_mutex);
+					l_next_thread = a_context->next_thread;
+#endif
 					*a_context = l_old_context;
+#ifdef GE_DEBUG_MODE
+					a_context->next_thread = l_next_thread;
+					GE_mutex_unlock((EIF_POINTER)a_context->debug_mutex);
+#endif
 					GE_wipe_out_exception_trace_buffer(&a_context->last_exception_trace);
 					GE_wipe_out_exception_trace_buffer(&a_context->exception_trace_buffer);
 				}
 				a_context->last_rescue = r.previous;
 				return;
 			}
+#ifdef GE_DEBUG_MODE
+			GE_debug_set_blocking(a_context, 0);
+#endif
 			a_call->execute(a_context, a_session, a_call);
+#ifdef GE_DEBUG_MODE
+			GE_debug_set_blocking(a_context, 1);
+#endif
 			a_context->last_rescue = r.previous;
+#ifdef GE_DEBUG_MODE
+			GE_mutex_lock((EIF_POINTER)a_context->debug_mutex);
+			l_next_thread = a_context->next_thread;
+#endif
 			*a_context = l_old_context;
+#ifdef GE_DEBUG_MODE
+			a_context->next_thread = l_next_thread;
+			GE_mutex_unlock((EIF_POINTER)a_context->debug_mutex);
+#endif
 			if (l_is_synchronous) {
 				GE_scoop_region_release_locks(l_caller, l_callee);
 			}
@@ -1528,7 +1576,7 @@ static void GE_unprotected_scoop_passive_region_wakeup(GE_scoop_region* a_region
 /* 
  * Initialization of SCOOP.
  */
-void GE_init_scoop()
+void GE_init_scoop(GE_context* a_context)
 {
 	GE_unprotected_scoop_sessions_count = 0;
 	GE_scoop_sessions_count_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
@@ -1537,6 +1585,7 @@ void GE_init_scoop()
 	GE_unprotected_scoop_last_region_id = 0;
 	GE_scoop_last_region_id_mutex = (EIF_MUTEX_TYPE*)GE_mutex_create();
 #endif
+	a_context->region = GE_new_scoop_region(a_context, 0);
 }
 
 #ifdef __cplusplus

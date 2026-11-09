@@ -800,7 +800,7 @@ feature {NONE} -- Compilation script generation
 				elseif {PLATFORM}.is_unix then
 					l_c_config_parser.define_value ("True", c_eif_linux)
 				end
-				if not finalize_mode then
+				if not finalize_mode or debug_mode then
 					l_c_config_parser.define_value ("True", "EIF_WORKBENCH")
 				end
 				if use_boehm_gc then
@@ -809,7 +809,7 @@ feature {NONE} -- Compilation script generation
 				if console_application_mode then
 					l_c_config_parser.define_value ("True", "EIF_CONSOLE")
 				end
-				if use_threads then
+				if use_threads or debug_mode then
 					l_c_config_parser.define_value ("True", c_ge_use_threads)
 				end
 				if use_scoop then
@@ -2620,9 +2620,11 @@ feature {NONE} -- Feature generation
 			l_print_body: BOOLEAN
 			l_print_footer: BOOLEAN
 			l_position: ET_POSITION
+			l_beginning_of_line: ET_COMPRESSED_POSITION
 			l_class_name: STRING
 			l_current_class: ET_CLASS
 			l_current_class_impl: ET_CLASS
+			l_is_blocking: BOOLEAN
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -2993,11 +2995,16 @@ feature {NONE} -- Feature generation
 			end
 			if not a_inline and debug_mode then
 				if l_is_inline and then attached a_feature.alias_clause as l_alias_clause then
-					print_position_reached (l_alias_clause.manifest_string.position)
-					print_set_exception_trace_position (l_alias_clause.manifest_string.position)
+					l_position := l_alias_clause.manifest_string.position
 				else
-					print_position_reached (a_feature.language.manifest_string.position)
-					print_set_exception_trace_position (a_feature.language.manifest_string.position)
+					l_position := a_feature.language.manifest_string.position
+				end
+				print_position_reached (l_position)
+				create l_beginning_of_line.make (l_position.line, 1)
+				print_set_exception_trace_position (l_beginning_of_line)
+				if external_blocking_regexp.recognizes (l_language_string) then
+					l_is_blocking := True
+					print_set_blocking_execution (True)
 				end
 			end
 				-- Put the body of the feature in a block so that there
@@ -3268,6 +3275,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			current_file.put_character ('}')
 			current_file.put_new_line
 			if not a_inline then
+				if debug_mode and l_is_blocking then
+					print_set_blocking_execution (False)
+				end
 				if current_class.invariants_enabled and not current_feature.is_static then
 					if debug_mode then
 						if attached a_feature.postconditions as l_postconditions then		
@@ -8552,7 +8562,6 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			l_position: ET_POSITION
 			l_class_name: STRING
 			l_current_class: ET_CLASS
-			l_current_class_impl: ET_CLASS
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -8665,30 +8674,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 						l_old_invariants := current_invariants
 						current_invariants := l_invariants
 						if debug_mode then
-							l_current_class_impl := current_class_impl
-							print_indentation
-							current_file.put_string (c_tc)
-							current_file.put_character ('.')
-							current_file.put_string (c_class_name)
-							print_assign_to
-							l_class_name := l_current_class.upper_name
-							if l_current_class /= l_current_class_impl then
-								l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
-							end
-							print_escaped_string (l_class_name)
-							print_semicolon_newline
-							print_indentation
-							current_file.put_string (c_tc)
-							current_file.put_character ('.')
-							current_file.put_string (c_filename)
-							print_assign_to
-							if attached l_current_class_impl.filename as l_filename then
-								print_escaped_string (l_filename)
-							else
-								current_file.put_character ('%"')
-								current_file.put_character ('%"')
-							end
-							print_semicolon_newline
+							print_set_exception_trace_location
 							l_position := l_invariants.implementation_feature.position
 							set_last_non_empty_line (l_position.line - 1)
 							print_position_reached (l_position)
@@ -37433,18 +37419,7 @@ feature {NONE} -- C function generation
 					print_indentation
 					current_file.put_string (c_ge_init_scoop)
 					current_file.put_character ('(')
-					current_file.put_character (')')
-					print_semicolon_newline
-					print_indentation
 					current_file.put_string (c_ac)
-					current_file.put_string (c_arrow)
-					current_file.put_string (c_region)
-					print_assign_to
-					current_file.put_string (c_ge_new_scoop_region)
-					current_file.put_character ('(')
-					current_file.put_string (c_ac)
-					print_comma
-					current_file.put_character ('0')
 					current_file.put_character (')')
 					print_semicolon_newline
 				else
@@ -37459,7 +37434,12 @@ feature {NONE} -- C function generation
 				current_file.put_line ("GE_init_const();")
 				if debug_mode then
 					print_indentation
-					current_file.put_line ("GE_debug_init();")
+					current_file.put_string (c_ge_debug_init)
+					current_file.put_character ('(')
+					current_file.put_string (c_ac)
+					current_file.put_character (')')
+					print_semicolon_newline
+					print_indentation
 				end
 				if trace_mode then
 						-- We need to make sure that a DOS console is available (for
@@ -37506,6 +37486,9 @@ feature {NONE} -- C function generation
 					end
 				end
 				reset_temp_variables
+				if debug_mode then
+					print_set_blocking_execution (True)
+				end
 				if use_scoop then
 					print_indentation
 					current_file.put_string (c_ge_decrement_scoop_sessions_count)
@@ -40279,11 +40262,61 @@ feature {NONE} -- Breakpoint generation
 			print_indentation
 			current_file.put_string (c_ge_debug_set_call_position)
 			current_file.put_character ('(')
+			current_file.put_string (c_ac)
+			print_comma
 			current_file.put_string (c_tc_address)
 			print_comma
 			current_file.put_integer (a_position.line)
 			print_comma
 			current_file.put_integer (a_position.column)
+			current_file.put_character (')')
+			print_semicolon_newline
+		end
+
+	print_set_exception_trace_location
+			-- Print to `current_file` code to set the class_name/filename
+			-- of the current routine in the exception trace.
+		local
+			l_current_class: like current_class
+			l_current_class_impl: like current_class_impl
+			l_class_name: STRING
+		do
+			l_current_class := current_class
+			l_current_class_impl := current_class_impl
+			l_class_name := l_current_class.upper_name
+			if l_current_class /= l_current_class_impl then
+				l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
+			end
+			print_indentation
+			current_file.put_string (c_ge_debug_set_call_location)
+			current_file.put_character ('(')
+			current_file.put_string (c_ac)
+			print_comma
+			current_file.put_string (c_tc_address)
+			print_comma
+			print_escaped_string (l_class_name)
+			print_comma
+			if attached l_current_class_impl.filename as l_filename then
+				print_escaped_string (l_filename)
+			else
+				current_file.put_character ('%"')
+				current_file.put_character ('%"')
+			end
+			current_file.put_character (')')
+			print_semicolon_newline
+		end
+
+	print_set_blocking_execution (b: BOOLEAN)
+			-- Print to `current_file` code to indicate that the debugger should
+			-- not wait for this thread of execution to reach a breakpoint when
+			-- stopping all threads?
+		do
+			print_indentation
+			current_file.put_string (c_ge_debug_set_blocking)
+			current_file.put_character ('(')
+			current_file.put_string (c_ac)
+			print_comma
+			current_file.put_character (if b then '1' else '0' end)
 			current_file.put_character (')')
 			print_semicolon_newline
 		end
@@ -41323,7 +41356,6 @@ feature {NONE} -- Assertion generation
 			l_expression_use_separate_formal_arguments: BOOLEAN
 			l_old_last_non_empty_line: INTEGER
 			l_inherited: BOOLEAN
-			l_class_name: STRING
 			l_current_class: ET_CLASS
 			l_current_class_impl: ET_CLASS
 		do
@@ -41375,29 +41407,7 @@ feature {NONE} -- Assertion generation
 						if debug_mode then
 							l_current_class_impl := current_class_impl
 							if l_inherited or l_current_class /= l_current_class_impl then
-								print_indentation
-								current_file.put_string (c_tc)
-								current_file.put_character ('.')
-								current_file.put_string (c_class_name)
-								print_assign_to
-								l_class_name := l_current_class.upper_name
-								if l_current_class /= l_current_class_impl then
-									l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
-								end
-								print_escaped_string (l_class_name)
-								print_semicolon_newline
-								print_indentation
-								current_file.put_string (c_tc)
-								current_file.put_character ('.')
-								current_file.put_string (c_filename)
-								print_assign_to
-								if attached l_current_class_impl.filename as l_filename then
-									print_escaped_string (l_filename)
-								else
-									current_file.put_character ('%"')
-									current_file.put_character ('%"')
-								end
-								print_semicolon_newline
+								print_set_exception_trace_location
 								if l_current_class /= l_current_class_impl then
 									l_inherited := True
 									set_last_non_empty_line (l_preconditions.position.line - 1)
@@ -41573,30 +41583,7 @@ feature {NONE} -- Assertion generation
 						current_file.put_new_line
 					end
 					if debug_mode and l_inherited then
-						l_current_class_impl := current_class_impl
-						print_indentation
-						current_file.put_string (c_tc)
-						current_file.put_character ('.')
-						current_file.put_string (c_class_name)
-						print_assign_to
-						l_class_name := l_current_class.upper_name
-						if l_current_class /= l_current_class_impl then
-							l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
-						end
-						print_escaped_string (l_class_name)
-						print_semicolon_newline
-						print_indentation
-						current_file.put_string (c_tc)
-						current_file.put_character ('.')
-						current_file.put_string (c_filename)
-						print_assign_to
-						if attached l_current_class_impl.filename as l_filename then
-							print_escaped_string (l_filename)
-						else
-							current_file.put_character ('%"')
-							current_file.put_character ('%"')
-						end
-						print_semicolon_newline
+						print_set_exception_trace_location
 						set_last_non_empty_line (l_old_last_non_empty_line)
 					end
 					print_after_assertions
@@ -41620,7 +41607,6 @@ feature {NONE} -- Assertion generation
 			l_old_index_offset: INTEGER
 			l_old_postconditions: ET_POSTCONDITIONS
 			l_old_last_non_empty_line: INTEGER
-			l_class_name: STRING
 			l_current_class: ET_CLASS
 			l_current_class_impl: ET_CLASS
 			l_inherited: BOOLEAN			
@@ -41644,29 +41630,7 @@ feature {NONE} -- Assertion generation
 						if debug_mode then
 							l_current_class_impl := current_class_impl
 							if l_inherited or l_current_class /= l_current_class_impl then
-								print_indentation
-								current_file.put_string (c_tc)
-								current_file.put_character ('.')
-								current_file.put_string (c_class_name)
-								print_assign_to
-								l_class_name := l_current_class.upper_name
-								if l_current_class /= l_current_class_impl then
-									l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
-								end
-								print_escaped_string (l_class_name)
-								print_semicolon_newline
-								print_indentation
-								current_file.put_string (c_tc)
-								current_file.put_character ('.')
-								current_file.put_string (c_filename)
-								print_assign_to
-								if attached l_current_class_impl.filename as l_filename then
-									print_escaped_string (l_filename)
-								else
-									current_file.put_character ('%"')
-									current_file.put_character ('%"')
-								end
-								print_semicolon_newline
+								print_set_exception_trace_location
 								if l_current_class /= l_current_class_impl then
 									l_inherited := True
 									set_last_non_empty_line (l_postconditions.position.line - 1)
@@ -41689,30 +41653,7 @@ feature {NONE} -- Assertion generation
 						i := i + 1
 					end
 					if debug_mode and l_inherited then
-						l_current_class_impl := current_class_impl
-						print_indentation
-						current_file.put_string (c_tc)
-						current_file.put_character ('.')
-						current_file.put_string (c_class_name)
-						print_assign_to
-						l_class_name := l_current_class.upper_name
-						if l_current_class /= l_current_class_impl then
-							l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
-						end
-						print_escaped_string (l_class_name)
-						print_semicolon_newline
-						print_indentation
-						current_file.put_string (c_tc)
-						current_file.put_character ('.')
-						current_file.put_string (c_filename)
-						print_assign_to
-						if attached l_current_class_impl.filename as l_filename then
-							print_escaped_string (l_filename)
-						else
-							current_file.put_character ('%"')
-							current_file.put_character ('%"')
-						end
-						print_semicolon_newline
+						print_set_exception_trace_location
 						set_last_non_empty_line (l_old_last_non_empty_line)
 					end
 					print_after_assertions
@@ -41774,7 +41715,6 @@ feature {NONE} -- Assertion generation
 			l_first: BOOLEAN
 			l_old_last_non_empty_line: INTEGER
 			l_inherited: BOOLEAN
-			l_class_name: STRING
 			l_current_class: ET_CLASS
 			l_current_class_impl: ET_CLASS
 		do
@@ -41806,29 +41746,7 @@ feature {NONE} -- Assertion generation
 							if debug_mode then
 								l_current_class_impl := current_class_impl
 								if l_inherited or l_current_class /= l_current_class_impl then
-									print_indentation
-									current_file.put_string (c_tc)
-									current_file.put_character ('.')
-									current_file.put_string (c_class_name)
-									print_assign_to
-									l_class_name := l_current_class.upper_name
-									if l_current_class /= l_current_class_impl then
-										l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
-									end
-									print_escaped_string (l_class_name)
-									print_semicolon_newline
-									print_indentation
-									current_file.put_string (c_tc)
-									current_file.put_character ('.')
-									current_file.put_string (c_filename)
-									print_assign_to
-									if attached l_current_class_impl.filename as l_filename then
-										print_escaped_string (l_filename)
-									else
-										current_file.put_character ('%"')
-										current_file.put_character ('%"')
-									end
-									print_semicolon_newline
+									print_set_exception_trace_location
 									if l_current_class /= l_current_class_impl then
 										l_inherited := True
 									elseif l_inherited then
@@ -41844,30 +41762,7 @@ feature {NONE} -- Assertion generation
 					end
 					if debug_mode then
 						if l_inherited then
-							l_current_class_impl := current_class_impl
-							print_indentation
-							current_file.put_string (c_tc)
-							current_file.put_character ('.')
-							current_file.put_string (c_class_name)
-							print_assign_to
-							l_class_name := l_current_class.upper_name
-							if l_current_class /= l_current_class_impl then
-								l_class_name := l_class_name + " (from " + l_current_class_impl.upper_name + ")"
-							end
-							print_escaped_string (l_class_name)
-							print_semicolon_newline
-							print_indentation
-							current_file.put_string (c_tc)
-							current_file.put_character ('.')
-							current_file.put_string (c_filename)
-							print_assign_to
-							if attached l_current_class_impl.filename as l_filename then
-								print_escaped_string (l_filename)
-							else
-								current_file.put_character ('%"')
-								current_file.put_character ('%"')
-							end
-							print_semicolon_newline
+							print_set_exception_trace_location
 						end
 						set_last_non_empty_line (l_old_last_non_empty_line)
 					end
@@ -47668,7 +47563,7 @@ feature {NONE} -- Include files
 				elseif a_filename.same_string ("ge_exception.h") then
 					include_runtime_header_file ("ge_eiffel.h", a_force, a_file)
 					include_runtime_header_file ("ge_once.h", a_force, a_file)
-					if use_threads then
+					if use_threads or debug_mode then
 						include_runtime_header_file ("ge_thread_types.h", a_force, a_file)
 					end
 					l_c_filename := "ge_exception.c"
@@ -47862,6 +47757,9 @@ feature {NONE} -- Include files
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
 					include_runtime_header_file ("ge_thread.h", False, a_header_file)
 					include_runtime_header_file ("ge_once.h", False, a_header_file)
+					if debug_mode then
+						include_runtime_header_file ("ge_debug.h", False, a_header_file)
+					end
 				elseif a_filename.same_string ("ge_signal.c") then
 					include_runtime_header_file ("ge_signal.h", False, a_header_file)
 					include_runtime_header_file ("ge_exception.h", False, a_header_file)
@@ -47889,6 +47787,9 @@ feature {NONE} -- Include files
 						if use_scoop then
 							include_runtime_header_file ("ge_scoop.h", False, a_header_file)
 						end
+					end
+					if use_threads and debug_mode then
+						include_runtime_header_file ("ge_debug.h", False, a_header_file)
 					end
 				elseif a_filename.same_string ("ge_types.c") then
 					include_runtime_header_file ("ge_types.h", False, a_header_file)
@@ -50920,6 +50821,11 @@ feature {NONE} -- External regexp
 			-- \3: signature arguments
 			-- \5: signature result
 
+	external_blocking_regexp: RX_PCRE_REGULAR_EXPRESSION
+			-- Regexp: C[++] blocking ... | blocking dllwin ...
+			-- Regexp for "blocking" external routines
+			-- (The Debugger does not wait for these routines to complete when a pause is requested.)
+
 	make_external_regexps
 			-- Create external regular expressions.
 		do
@@ -50962,6 +50868,9 @@ feature {NONE} -- External regexp
 				-- Regexp: C "[" dllwin32 <dll_file> "]" ["(" {<type> "," ...}* ")"] [":" <type>]
 			create old_external_dllwin32_regexp.make
 			old_external_dllwin32_regexp.compile ("[ \t\r\n]*[Cc][ \t\r\n]*\[[ \t\r\n]*dllwin32[ \t\r\n]*([^]]+)\][ \t\r\n]*(\(([^)]*)\))?[ \t\r\n]*(:[ \t\r\n]*((.|\n)+))?")
+				-- Regexp: C[++] blocking ... | blocking dllwin ...
+			create external_blocking_regexp.make
+			external_blocking_regexp.compile ("[ \t\r\n]*([Cc](\+\+)?[ \t\r\n]+blocking|blocking[ \t\r\n]+[Dd][Ll][Ll][Ww][Ii][Nn])([ \t\r\n]|$)(.|\n)*")
 		ensure
 			external_c_regexp_not_void: external_c_regexp /= Void
 			external_c_regexp_compiled: external_c_regexp.is_compiled
@@ -50985,6 +50894,8 @@ feature {NONE} -- External regexp
 			external_dllwin_regexp_compiled: external_dllwin_regexp.is_compiled
 			old_external_dllwin32_regexp_not_void: old_external_dllwin32_regexp /= Void
 			old_external_dllwin32_regexp_compiled: old_external_dllwin32_regexp.is_compiled
+			external_blocking_regexp_not_void: external_blocking_regexp /= Void
+			external_blocking_regexp_compiled: external_blocking_regexp.is_compiled
 		end
 
 feature {NONE} -- Constants
@@ -50999,7 +50910,6 @@ feature {NONE} -- Constants
 	c_caller: STRING = "caller"
 	c_case: STRING = "case"
 	c_char: STRING = "char"
-	c_class_name: STRING = "class_name"
 	c_condition_variable: STRING = "condition_variable"
 	c_const: STRING = "const"
 	c_continue: STRING = "continue"
@@ -51057,7 +50967,6 @@ feature {NONE} -- Constants
 	c_exception_suffix: STRING = "_exception"
 	c_exception_tag: STRING = "exception_tag"
 	c_extern: STRING = "extern"
-	c_filename: STRING = "filename"
 	c_find_referers: STRING = "find_referers"
 	c_flags: STRING = "flags"
 	c_float: STRING = "float"
@@ -51101,6 +51010,8 @@ feature {NONE} -- Constants
 	c_ge_debug_breakpoint_count: STRING = "GE_debug_breakpoint_count"
 	c_ge_debug_breakpoints: STRING = "GE_debug_breakpoints"
 	c_ge_debug_mode: STRING = "GE_DEBUG_MODE"
+	c_ge_debug_set_blocking: STRING = "GE_debug_set_blocking"
+	c_ge_debug_set_call_location: STRING = "GE_debug_set_call_location"
 	c_ge_debug_set_call_position: STRING = "GE_debug_set_call_position"
 	c_ge_decoded_type: STRING = "GE_decoded_type"
 	c_ge_decrement_scoop_sessions_count: STRING = "GE_decrement_scoop_sessions_count"
@@ -51130,6 +51041,7 @@ feature {NONE} -- Constants
 	c_ge_field_static_type_of_encoded_type: STRING = "GE_field_static_type_of_encoded_type"
 	c_ge_field_type_kind_of_encoded_type: STRING = "GE_field_type_kind_of_encoded_type"
 	c_ge_debug_file_breakpoints: STRING = "GE_debug_file_breakpoints"
+	c_ge_debug_init: STRING = "GE_debug_init"
 	c_ge_floor: STRING = "GE_floor"
 	c_ge_free_scoop_synchronization: STRING = "GE_free_scoop_synchronization"
 	c_ge_generating_type_of_encoded_type: STRING = "GE_generating_type_of_encoded_type"
@@ -51717,6 +51629,8 @@ invariant
 	external_dllwin_regexp_compiled: external_dllwin_regexp.is_compiled
 	old_external_dllwin32_regexp_not_void: old_external_dllwin32_regexp /= Void
 	old_external_dllwin32_regexp_compiled: old_external_dllwin32_regexp.is_compiled
+	external_blocking_regexp_not_void: external_blocking_regexp /= Void
+	external_blocking_regexp_compiled: external_blocking_regexp.is_compiled
 		--
 	split_threshold_positive: split_threshold > 0
 	system_name_not_void: system_name /= Void

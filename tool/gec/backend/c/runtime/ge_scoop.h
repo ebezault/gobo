@@ -527,7 +527,7 @@ extern void GE_scoop_processor_run(GE_context* a_context);
 /* 
  * Initialization of SCOOP.
  */
-extern void GE_init_scoop(void);
+extern void GE_init_scoop(GE_context* a_context);
 
 #ifdef __cplusplus
 }

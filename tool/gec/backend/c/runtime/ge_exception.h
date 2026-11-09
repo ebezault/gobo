@@ -20,7 +20,7 @@
 #ifndef GE_ONCE_H
 #include "ge_once.h"
 #endif
-#ifdef GE_USE_THREADS
+#if defined(GE_USE_THREADS) || defined(GE_DEBUG_MODE)
 #ifndef GE_THREAD_TYPES_H
 #include "ge_thread_types.h"
 #endif
@@ -153,6 +153,14 @@ struct GE_context_struct {
 	GE_scoop_region* volatile region; /* SCOOP region whose processor is executing the current code */
 	char volatile is_region_alive;
 #endif
+#ifdef GE_DEBUG_MODE
+	EIF_MUTEX_TYPE* volatile debug_mutex;
+	EIF_COND_TYPE* volatile debug_condition_variable;
+	int volatile is_blocking; /* Should the debugger not wait for this thread to reach a breakpoint when stopping all threads? */
+	int volatile is_stopped; /* As the execution of this thread been stopped by the debugger? */
+	uint32_t debug_thread_id; /* Thread id used by the debugger. */
+	GE_context* volatile next_thread; /* Next Eiffel thread known by the debugger. */
+#endif
 };
 #define TC GE_context
 
@@ -160,6 +168,11 @@ struct GE_context_struct {
  * New execution context.
  */
 extern GE_context* GE_new_context(int is_scoop_processor);
+
+/*
+ * Free memory allocated by `a_context'.
+ */
+extern void GE_free_context(GE_context* a_context);
 
 /*
  * Execution context of main thread.

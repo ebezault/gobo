@@ -43,6 +43,12 @@
 #endif
 #endif
 
+#ifdef GE_DEBUG_MODE
+#ifndef GE_DEBUG_H
+#include "ge_debug.h"
+#endif
+#endif
+
 #endif
 
 #ifdef __cplusplus
@@ -1350,17 +1356,27 @@ static void* GE_thread_routine(void* arg)
 	GE_context* l_context = (GE_context*)arg; /* Keep alive while the thread is running. */
 	GE_thread_context* l_thread_context = l_context->thread;
 	GE_thread_context* l_parent_thread_context = l_thread_context->parent_context;
+	char* l_root_name = "thread's creation";
+#ifdef GE_USE_SCOOP
+	if (l_thread_context->is_scoop_processor) {
+		l_root_name = "separate call";
+	}
+#endif
 #if defined(GE_USE_CURRENT_IN_EXCEPTION_TRACE) || defined(GE_DEBUG_MODE)
 #if defined(GE_DEBUG_MODE)
-	GE_call tc = {l_thread_context->current,"","thread's creation","",0,0,0};
+	GE_call tc = {(void* volatile)l_thread_context->current,"",l_root_name,"separate call",0,0,0};
 #else
-	GE_call tc = {l_thread_context->current,"","thread's creation",0};
+	GE_call tc = {(void* volatile)l_thread_context->current,"",l_root_name,0};
 #endif
 #else
-	GE_call tc = {"","thread's creation",0};
+	GE_call tc = {"",l_root_name,0};
 #endif
 
 	l_context->call = &tc;
+#ifdef GE_DEBUG_MODE
+	GE_debug_register_thread(l_context);
+	GE_debug_set_blocking(l_context, 1);
+#endif
 	GE_unprotected_mutex_lock((EIF_POINTER)l_parent_thread_context->children_mutex);
 	/* Wait for the parent thread to set the thread id. */
 #ifdef GE_USE_SCOOP
@@ -1375,13 +1391,18 @@ static void* GE_thread_routine(void* arg)
 	SIGRESUME;
 #ifdef GE_USE_SCOOP
 	if (l_thread_context->is_scoop_processor) {
-			tc.feature_name = "separate call";
-			GE_scoop_processor_run(l_context);
+		GE_scoop_processor_run(l_context);
 	} else
 #endif
 	if (l_thread_context->current && l_thread_context->routine) {
+#ifdef GE_DEBUG_MODE
+		GE_debug_set_blocking(l_context, 0);
+#endif
 		l_thread_context->routine(l_thread_context->current, 0);
 	}
+#ifdef GE_DEBUG_MODE
+		GE_debug_set_blocking(l_context, 1);
+#endif
 	GE_thread_exit();
 #ifdef EIF_WINDOWS
 	return 0;
@@ -1568,7 +1589,7 @@ void GE_thread_create_with_attr(EIF_REFERENCE current, void (*routine)(EIF_REFER
 #endif
 			GE_free_exception(l_context);
 			GE_free(l_thread_context);
-			GE_free(l_context);
+			GE_free_context(l_context);
 			GE_raise_with_message(GE_EX_EXT, "Cannot create thread");
 #if defined GE_USE_POSIX_THREADS || defined EIF_WINDOWS
 		}
@@ -1753,10 +1774,19 @@ void GE_thread_exit(void)
 		l_thread_context->thread_exiting = 1;
 		if (l_thread_context->current) {
 			if (l_thread_context->set_terminated) {
+#ifdef GE_DEBUG_MODE
+				GE_debug_set_blocking(l_context, 0);
+#endif
 				l_thread_context->set_terminated(l_thread_context->current, EIF_TRUE);
+#ifdef GE_DEBUG_MODE
+				GE_debug_set_blocking(l_context, 1);
+#endif
 			}
 			l_thread_context->current = EIF_VOID;
 		}
+#ifdef GE_DEBUG_MODE
+		GE_debug_remove_thread(l_context);
+#endif
 		l_parent_thread_context = l_thread_context->parent_context;
 		if (l_parent_thread_context) {
 			SIGBLOCK;
@@ -1821,7 +1851,7 @@ void GE_thread_exit(void)
 		if (l_free_thread_context) {
 			GE_free(l_thread_context);
 		}
-		GE_free(l_context);
+		GE_free_context(l_context);
 #ifdef GE_USE_POSIX_THREADS
 		pthread_exit(NULL);
 #elif defined EIF_WINDOWS
