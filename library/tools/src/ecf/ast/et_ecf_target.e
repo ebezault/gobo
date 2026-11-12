@@ -510,6 +510,11 @@ feature -- Basic operations
 		local
 			l_value: detachable STRING
 		do
+				-- "finalize".
+			l_value := settings.value ({ET_ECF_SETTING_NAMES}.finalize_setting_name)
+			if l_value /= Void and then l_value.is_boolean then
+				a_system.set_finalize_mode (l_value.to_boolean)
+			end
 				-- "console_application".
 			l_value := settings.value ({ET_ECF_SETTING_NAMES}.console_application_setting_name)
 			if l_value /= Void and then l_value.is_boolean then
@@ -537,11 +542,10 @@ feature -- Basic operations
 			l_value := settings.value ({ET_ECF_SETTING_NAMES}.exception_trace_setting_name)
 			if l_value = Void then
 					-- The default value for `exception_trace` depends on whether we are in finalize mode or not:
-					--   * finalize: False
+					--   * finalize: False unless some assertions are monitored at the target level.
 					--   * otherwise: True
-				l_value := settings.value ({ET_ECF_SETTING_NAMES}.finalize_setting_name)
-				if l_value /= Void and then l_value.is_boolean then
-					a_system.set_exception_trace_mode (not l_value.to_boolean)
+				if a_system.finalize_mode then
+					a_system.set_exception_trace_mode (options.has_assertion_monitored)
 				else
 					a_system.set_exception_trace_mode (True)
 				end

@@ -28,6 +28,20 @@
 
 #include <setjmp.h>
 
+#if defined(__BIONIC__) && !defined(GE_USE_SIGNAL)
+/* On Android use `_setjmp` and `_longjmp` which are the non-sig version.
+ * Otherwise there is a system call which makes the app too slow.
+ * (On Android, `setjmp` and `longjmp` which are the sig version.)
+ * The cost:
+ * A signal handler that jumps into a rescue leaves that signal blocked, so a
+ * second crash of the same kind ends the process, which Android reports as an
+ * ordinary crash.
+ */
+#define GE_jmp_buf jmp_buf
+#define GE_setjmp(x) _setjmp(*(GE_jmp_buf*)&(x))
+#define GE_longjmp(x,y) _longjmp(*(GE_jmp_buf*)&(x),(y))
+
+#elif defined(_SIGSET_H_types) && !defined(__STRICT_ANSI__) && defined(GE_USE_SIGNAL)
 /*
  * On Linux glibc systems, we need to use sig* versions of jmp_buf,
  * setjmp and longjmp to preserve the signal handling context.
@@ -35,10 +49,10 @@
  * been defined in /usr/include/setjmp.h.
  * NOTE: ANSI only recognizes the non-sig versions.
  */
-#if (defined(_SIGSET_H_types) && !defined(__STRICT_ANSI__))
 #define GE_jmp_buf sigjmp_buf
 #define GE_setjmp(x) sigsetjmp(*(GE_jmp_buf*)&(x),1)
 #define GE_longjmp(x,y) siglongjmp(*(GE_jmp_buf*)&(x),(y))
+
 #else
 #define GE_jmp_buf jmp_buf
 #define GE_setjmp(x) setjmp(*(GE_jmp_buf*)&(x))
@@ -130,10 +144,11 @@ struct GE_rescue_struct {
 typedef volatile struct GE_context_struct GE_context;
 struct GE_context_struct {
 	GE_call* volatile call; /* Call stack */
-	uint32_t volatile in_assertion; /* Is an assertion evaluated? */
+	uint8_t volatile in_assertion; /* Is an assertion evaluated? */
 	GE_rescue* volatile last_rescue; /* Context of last feature entered containing a rescue clause */
 	uint32_t volatile in_rescue; /* Number of rescue clauses currently being executed */
-	uint32_t volatile in_qualified_call; /* Is the current call a qualified call? 1 means that it is a regular call, 2 means that it is a creation call. */
+	uint8_t volatile in_qualified_call; /* Is the current call a qualified call? 1 means that it is a regular call, 2 means that it is a creation call. */
+	uint8_t volatile preconditions_enabled; /* Should preconditions be checked? (`supplier_precondition` assertion mode)*/
 	EIF_REFERENCE volatile exception_manager; /* Exception manager */
 	char volatile raising_exception; /* Is an exception currently being raised? */
 	char volatile exception_trace_enabled; /* Should exception trace be displayed? */

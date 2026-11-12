@@ -2,6 +2,35 @@
 
 ## Version xx.xx.xx - xxxx
 
+### gec
+
+* Downgraded Zig toolchain to version 0.16.0 because the
+  caching mechanism is broken in version 0.17.0.
+* The default value for `exception_trace` in ECF files is
+  `True` unless no assertions are monitored at the target
+  level in finalize mode.
+* Fixed implementation of unique attribute synonyms which
+  should have their own values.
+* Implemented routines `collection_on`, `collection_off` and
+  `collecting` in class `MEMORY`.
+* Use C flag `-O2` by default when using `gcc` as backend C compiler.
+* Fixed bug where `check` assertions were not checked even when
+  turned on in the ECF file.
+* Fixed bug where loop `variant` assertions were not correctly
+  checked (decreasing after each iteration) even when turned on
+  in the ECF file.
+* Implemented support for `supplier_precondition` assertion
+  monitoring.
+* Do not call `setjmp/longjmp` anymore when checking assertions.
+* Do not propagate anymore assertion options (nor any other options)
+  from ECF targets to the libraries they use (interoperability with
+  ISE Eiffel).
+* In finalize mode, inline routines from basic types and do not
+  check their assertions (interoperability with ISE Eiffel).
+* Raise a postcondition violation when a postcondition is the
+  'False' entity, even when postcondition assertions are not
+  monitored (interoperability with ISE Eiffel).
+
 ### gelsp
 
 * Added option to ignore validity errors in classes which
@@ -13,6 +42,29 @@
 * Stop reporting validity errors in a class whose file has
   just been deleted.
 * Added option to ignore unused local variable warnings.
+* Made sure that filenames are treated case-insensitive
+  on Windows.
+
+### Gobo Eiffel Tools Library
+
+* Validity rule `VYCP-4` is too strict to accept some existing classes
+  in ISE's libraries. ISE Eiffel and Gobo Eiffel (as of 26.11 and after)
+  both accept a relaxed version where the two conversion types can have
+  the same base class, provided that they are not the same type and they
+  are part of two *Conversion_procedure*s with the same feature name `fn`.
+  There is no ambiguity in that case.
+* Validity rule `VYCQ-4` is too strict to accept some existing classes
+  in ISE's libraries. ISE Eiffel and Gobo Eiffel (as of 26.11 and after)
+  both accept a relaxed version where the two conversion types can have
+  the same base class, provided that they are not the same type and they
+  are part of two *Conversion_query*s with the same feature name `fn`.
+  There is no ambiguity in that case.
+
+### Miscellaneous
+
+* Nightly and release builds are compiled on older versions of operating
+  systems (the oldest available on Github build runners) so that they can
+  run on old computers.
 
 ## Version 26.10.18 - 18 October 2026
 
