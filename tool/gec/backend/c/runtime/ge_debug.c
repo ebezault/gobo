@@ -537,7 +537,7 @@ static void GE_debug_write_printable_character(const uint32_t c)
 {
 	if (c >= '(' && c <= '~') {
 		fputc((char)c, GE_debug_out);
-	} else if (c > 127 && !GE_debug_is_printable_cp(c)) {
+	} else if (c > 0xFFFF || (c > 127 && !GE_debug_is_printable_cp(c))) {
 		fprintf(GE_debug_out, "%%/%d/", c);
 	} else if (c > 127) {
 		fprintf(GE_debug_out, "\\u%04X", c);
