@@ -202,7 +202,9 @@ void GE_debug_remove_thread(GE_context* a_thread)
 			GE_unprotected_debug_check_and_send_all_stopped(a_thread);
 		}
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-		GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+		while (a_thread->is_stopped) {
+			GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+		}
 		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 	}
@@ -1624,7 +1626,9 @@ void GE_debug_hit_breakpoint(GE_context* a_thread, GE_debug_breakpoint* a_breakp
 			GE_unprotected_debug_check_and_send_all_stopped(a_thread);
 		}
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-		GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+		while (a_thread->is_stopped) {
+			GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+		}
 		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 	} else {
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
@@ -1656,7 +1660,9 @@ void GE_debug_set_blocking(GE_context* a_thread, int a_value)
 				GE_unprotected_debug_check_and_send_all_stopped(a_thread);
 			}
 			GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-			GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+			while (a_thread->is_stopped) {
+				GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+			}
 			GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 		} else {
 			GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);

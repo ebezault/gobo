@@ -1401,7 +1401,7 @@ static void* GE_thread_routine(void* arg)
 		l_thread_context->routine(l_thread_context->current, 0);
 	}
 #ifdef GE_DEBUG_MODE
-		GE_debug_set_blocking(l_context, 1);
+	GE_debug_set_blocking(l_context, 1);
 #endif
 	GE_thread_exit();
 #ifdef EIF_WINDOWS
