@@ -1555,16 +1555,7 @@ static int GE_unprotected_debug_stoppable_breakpoint(GE_context* a_thread, GE_de
 	}
 	if (GE_debug_step_in_thread_id > 0 && GE_debug_step_level > 0) {
 		if (a_thread->debug_thread_id == GE_debug_step_in_thread_id) {
-			GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
-			l_call = a_thread->call;
-			while (l_call && count <= GE_debug_step_level) {
-				count++;
-				l_call = l_call->caller;
-			}
-			GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
-			if (count > GE_debug_step_level) {
-				return 1;
-			}
+			return 1;
 		}
 		return 0;
 	}
