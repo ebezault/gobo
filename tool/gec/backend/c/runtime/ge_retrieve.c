@@ -1217,7 +1217,7 @@ static void GE_storable_in_read_regular_subobject(GE_storable_in_buffer* a_buffe
 		l_object = l_new(GE_current_context(), EIF_TRUE);
 		a_object->object = l_object;
 		if ((l_type_info->flags & GE_TYPE_FLAG_EXPANDED) && !(l_type_info->flags & GE_TYPE_FLAG_BASIC_MASK)) {
-			/* This is a boxed expanded object. */
+			/* This is a boxed user-defined expanded object. */
 			l_physical_offset = l_type_info->attributes[l_type_info->attribute_count]->offset;
 		}
 	}

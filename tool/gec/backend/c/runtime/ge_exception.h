@@ -110,6 +110,17 @@ typedef volatile struct {
 	uint32_t volatile capacity;
 } GE_exception_trace_buffer;
 
+#ifdef GE_DEBUG_MODE
+/*
+ * Information about values of variables.
+ */
+typedef volatile struct {
+	char* volatile name;
+	EIF_TYPE_INDEX volatile type_id; /* Type id, 0 implies a reference type. */
+	void* volatile address; /* Where to find the value. */
+} GE_debug_variable;
+#endif
+
 /*
  * Information about the feature being executed.
  */
@@ -124,6 +135,10 @@ struct GE_call_struct {
 	char* volatile filename;
 	uint32_t volatile line;
 	uint32_t volatile column;
+	GE_debug_variable** volatile arguments;
+	uint32_t volatile argument_count;
+	GE_debug_variable** volatile locals;
+	uint32_t volatile local_count;
 #endif
 	GE_call* volatile caller; /* previous feature in the call chain */
 };

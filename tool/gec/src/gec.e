@@ -322,6 +322,9 @@ feature {NONE} -- Processing
 				if is_gelint or l_thread_count > 1 or l_system_processor.benchmark_shown or l_system_processor.nested_benchmark_shown then
 					l_system.set_full_class_checking (True)
 				end
+				if is_debug then
+					l_system.use_all_attributes
+				end
 				l_system.set_catcall_error_mode (catcall_error_mode)
 				l_system.set_catcall_warning_mode (catcall_warning_mode)
 				l_system.set_new_instance_types (new_instance_types)

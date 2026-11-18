@@ -120,6 +120,9 @@ inherit
 	ET_SHARED_IDENTIFIER_TESTER
 		export {NONE} all end
 
+	ET_SHARED_IDENTIFIER_SORTER
+		export {NONE} all end
+
 	ET_SHARED_DYNAMIC_PRIMARY_TYPE_COMPARATOR_BY_ID
 		export {NONE} all end
 
@@ -1738,6 +1741,12 @@ feature {NONE} -- C code Generation
 					header_file.put_string (c_define)
 					header_file.put_character (' ')
 					header_file.put_line (c_ge_debug_mode)
+					type_info_name_used := True
+					type_info_attributes_used := True
+					type_info_attribute_name_used := True
+					type_info_attribute_type_id_used := True
+					type_info_attribute_offset_used := True
+					type_info_attribute_size_used := True
 					l_newline_needed_in_header_file := True
 				end
 				if use_boehm_gc then
@@ -2620,6 +2629,7 @@ feature {NONE} -- Feature generation
 			l_current_class: ET_CLASS
 			l_current_class_impl: ET_CLASS
 			l_is_blocking: BOOLEAN
+			nb_debug_argument_variables: INTEGER
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -2879,6 +2889,16 @@ feature {NONE} -- Feature generation
 						current_file.put_character (',')
 						current_file.put_integer (l_position.column)
 						current_file.put_character (',')
+							-- Argument values for the debugger.
+						current_file.put_character ('0')
+						current_file.put_character (',')
+						current_file.put_character ('0')
+						current_file.put_character (',')
+							-- Local values for the debugger.
+						current_file.put_character ('0')
+						current_file.put_character (',')
+						current_file.put_character ('0')
+						current_file.put_character (',')
 					end
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -2914,6 +2934,158 @@ feature {NONE} -- Feature generation
 				--
 			current_file := current_function_body_buffer
 			if not a_inline then
+					-- Debug information.
+				if debug_mode then
+					if not current_feature.is_static then
+						print_indentation
+						current_file.put_string (c_ge_debug_variable)
+						current_file.put_character (' ')
+						current_file.put_character ('d')
+						print_current_name (current_file)
+						print_assign_to
+						current_file.put_character ('{')
+						print_escaped_string (tokens.current_keyword.text)
+						current_file.put_character (',')
+						current_file.put_integer (current_type.id)
+						current_file.put_character (',')
+						current_file.put_string ("(void* volatile)")
+						if not current_type.is_expanded then
+							current_file.put_character ('&')
+						end
+						print_current_name (current_file)
+						current_file.put_character ('}')
+						print_semicolon_newline
+						nb_debug_argument_variables := nb_debug_argument_variables + 1
+					end
+					if l_arguments /= Void and nb_args > 0 then
+						from i := 1 until i > nb_args loop
+							l_argument_type_set := argument_type_set (i)
+							l_argument_type := l_argument_type_set.static_type.primary_type
+							l_name := l_arguments.formal_argument (i).name
+							print_indentation
+							current_file.put_string (c_ge_debug_variable)
+							current_file.put_character (' ')
+							current_file.put_character ('d')
+							print_argument_name (l_name, current_file)
+							print_assign_to
+							current_file.put_character ('{')
+							print_escaped_string (l_name.lower_name)
+							current_file.put_character (',')
+							current_file.put_integer (l_argument_type.id)
+							current_file.put_character (',')
+							current_file.put_string ("(void* volatile)")
+							current_file.put_character ('&')
+							print_argument_name (l_name, current_file)
+							current_file.put_character ('}')
+							print_semicolon_newline
+							i := i + 1
+						end
+						nb_debug_argument_variables := nb_debug_argument_variables + nb_args
+					end
+					if nb_debug_argument_variables > 0 then
+						print_indentation
+						current_file.put_string (c_ge_debug_variable)
+						current_file.put_character ('*')
+						current_file.put_character (' ')
+						current_file.put_character ('d')
+						current_file.put_character ('v')
+						current_file.put_character ('a')
+						current_file.put_character ('[')
+						current_file.put_integer (nb_debug_argument_variables)
+						current_file.put_character (']')
+						print_assign_to
+						current_file.put_character ('{')
+						if not current_feature.is_static then
+							current_file.put_character ('&')
+							current_file.put_character ('d')
+							print_current_name (current_file)
+							if nb_args > 0 then
+								current_file.put_character (',')
+							end
+						end
+						if l_arguments /= Void and nb_args > 0 then
+							from i := 1 until i > nb_args loop
+								l_name := l_arguments.formal_argument (i).name
+								if i > 1 then
+									current_file.put_character (',')
+								end
+								current_file.put_character ('&')
+								current_file.put_character ('d')
+								print_argument_name (l_name, current_file)
+								i := i + 1
+							end
+						end
+						current_file.put_character ('}')
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_argument_count)
+						print_assign_to
+						current_file.put_integer (nb_debug_argument_variables)
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_arguments)
+						print_assign_to
+						current_file.put_character ('d')
+						current_file.put_character ('v')
+						current_file.put_character ('a')
+						print_semicolon_newline
+					end
+					if l_result_type /= Void then
+						print_indentation
+						current_file.put_string (c_ge_debug_variable)
+						current_file.put_character (' ')
+						current_file.put_character ('d')
+						print_result_name (current_file)
+						print_assign_to
+						current_file.put_character ('{')
+						print_escaped_string (tokens.result_keyword.text)
+						current_file.put_character (',')
+						current_file.put_integer (l_result_type.id)
+						current_file.put_character (',')
+						current_file.put_string ("(void* volatile)")
+						current_file.put_character ('&')
+						print_result_name (current_file)
+						current_file.put_character ('}')
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_ge_debug_variable)
+						current_file.put_character ('*')
+						current_file.put_character (' ')
+						current_file.put_character ('d')
+						current_file.put_character ('v')
+						current_file.put_character ('l')
+						current_file.put_character ('[')
+						current_file.put_character ('1')
+						current_file.put_character (']')
+						print_assign_to
+						current_file.put_character ('{')
+						current_file.put_character ('&')
+						current_file.put_character ('d')
+						print_result_name (current_file)
+						current_file.put_character ('}')
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_local_count)
+						print_assign_to
+						current_file.put_character ('1')
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_locals)
+						print_assign_to
+						current_file.put_character ('d')
+						current_file.put_character ('v')
+						current_file.put_character ('l')
+						print_semicolon_newline
+					end
+				end
 					-- Call stack.
 				if exception_trace_mode or debug_mode then
 					print_indentation
@@ -7099,6 +7271,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			l_class_name: STRING
 			l_current_class: ET_CLASS
 			l_current_class_impl: ET_CLASS
+			nb_debug_argument_variables: INTEGER			
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -7267,6 +7440,16 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 						current_file.put_character (',')
 						current_file.put_integer (l_position.column)
 						current_file.put_character (',')
+							-- Argument values for the debugger.
+						current_file.put_character ('0')
+						current_file.put_character (',')
+						current_file.put_character ('0')
+						current_file.put_character (',')
+							-- Local values for the debugger.
+						current_file.put_character ('0')
+						current_file.put_character (',')
+						current_file.put_character ('0')
+						current_file.put_character (',')
 					end
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -7283,6 +7466,107 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				-- Print body to `current_file'.
 				--
 			current_file := current_function_body_buffer
+				-- Debug information.
+			if debug_mode then
+				if not current_feature.is_static then
+					print_indentation
+					current_file.put_string (c_ge_debug_variable)
+					current_file.put_character (' ')
+					current_file.put_character ('d')
+					print_current_name (current_file)
+					print_assign_to
+					current_file.put_character ('{')
+					print_escaped_string (tokens.current_keyword.text)
+					current_file.put_character (',')
+					current_file.put_integer (current_type.id)
+					current_file.put_character (',')
+					current_file.put_string ("(void* volatile)")
+					if not current_type.is_expanded then
+						current_file.put_character ('&')
+					end
+					print_current_name (current_file)
+					current_file.put_character ('}')
+					print_semicolon_newline
+					nb_debug_argument_variables := nb_debug_argument_variables + 1
+				end
+				if l_arguments /= Void and nb_args > 0 then
+					from i := 1 until i > nb_args loop
+						l_argument_type_set := argument_type_set (i)
+						l_argument_type := l_argument_type_set.static_type.primary_type
+						l_name := l_arguments.formal_argument (i).name
+						print_indentation
+						current_file.put_string (c_ge_debug_variable)
+						current_file.put_character (' ')
+						current_file.put_character ('d')
+						print_argument_name (l_name, current_file)
+						print_assign_to
+						current_file.put_character ('{')
+						print_escaped_string (l_name.lower_name)
+						current_file.put_character (',')
+						current_file.put_integer (l_argument_type.id)
+						current_file.put_character (',')
+						current_file.put_string ("(void* volatile)")
+						current_file.put_character ('&')
+						print_argument_name (l_name, current_file)
+						current_file.put_character ('}')
+						print_semicolon_newline
+						i := i + 1
+					end
+					nb_debug_argument_variables := nb_debug_argument_variables + nb_args
+				end
+				if nb_debug_argument_variables > 0 then
+					print_indentation
+					current_file.put_string (c_ge_debug_variable)
+					current_file.put_character ('*')
+					current_file.put_character (' ')
+					current_file.put_character ('d')
+					current_file.put_character ('v')
+					current_file.put_character ('a')
+					current_file.put_character ('[')
+					current_file.put_integer (nb_debug_argument_variables)
+					current_file.put_character (']')
+					print_assign_to
+					current_file.put_character ('{')
+					if not current_feature.is_static then
+						current_file.put_character ('&')
+						current_file.put_character ('d')
+						print_current_name (current_file)
+						if nb_args > 0 then
+							current_file.put_character (',')
+						end
+					end
+					if l_arguments /= Void and nb_args > 0 then
+						from i := 1 until i > nb_args loop
+							l_name := l_arguments.formal_argument (i).name
+							if i > 1 then
+								current_file.put_character (',')
+							end
+							current_file.put_character ('&')
+							current_file.put_character ('d')
+							print_argument_name (l_name, current_file)
+							i := i + 1
+						end
+					end
+					current_file.put_character ('}')
+					print_semicolon_newline
+					print_indentation
+					current_file.put_string (c_tc)
+					current_file.put_character ('.')
+					current_file.put_string (c_argument_count)
+					print_assign_to
+					current_file.put_integer (nb_debug_argument_variables)
+					print_semicolon_newline
+					print_indentation
+					current_file.put_string (c_tc)
+					current_file.put_character ('.')
+					current_file.put_string (c_arguments)
+					print_assign_to
+					current_file.put_character ('d')
+					current_file.put_character ('v')
+					current_file.put_character ('a')
+					print_semicolon_newline
+				end
+			end
 				-- Call stack.
 			if (exception_trace_mode or debug_mode) and then not l_is_empty then
 				print_indentation
@@ -7454,6 +7738,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			l_preconditions_enabled: BOOLEAN
 			l_print_body: BOOLEAN
 			l_print_footer: BOOLEAN
+			nb_debug_local_variables: INTEGER
+			nb_locals: INTEGER
+			l_local_names: DS_ARRAYED_LIST [ET_IDENTIFIER]
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -7521,6 +7808,108 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				-- Instructions.
 				--
 			current_file := current_function_body_buffer
+					-- Debug information.
+			if debug_mode then
+				if a_result_type /= Void then
+					print_indentation
+					current_file.put_string (c_ge_debug_variable)
+					current_file.put_character (' ')
+					current_file.put_character ('d')
+					print_result_name (current_file)
+					print_assign_to
+					current_file.put_character ('{')
+					print_escaped_string (tokens.result_keyword.text)
+					current_file.put_character (',')
+					current_file.put_integer (a_result_type.id)
+					current_file.put_character (',')
+					current_file.put_string ("(void* volatile)")
+					current_file.put_character ('&')
+					print_result_name (current_file)
+					current_file.put_character ('}')
+					print_semicolon_newline
+					nb_debug_local_variables := nb_debug_local_variables + 1
+				end
+				if attached a_feature.locals as l_locals then
+					nb_locals := l_locals.count
+					create l_local_names.make (nb_locals)
+					from i := 1 until i > nb_locals loop
+						l_name := l_locals.local_variable (i).name
+						l_local_type_set := dynamic_type_set (l_name)
+						l_local_type := l_local_type_set.static_type.primary_type
+						print_indentation
+						current_file.put_string (c_ge_debug_variable)
+						current_file.put_character (' ')
+						current_file.put_character ('d')
+						print_local_name (l_name, current_file)
+						print_assign_to
+						current_file.put_character ('{')
+						print_escaped_string (l_name.lower_name)
+						current_file.put_character (',')
+						current_file.put_integer (l_local_type.id)
+						current_file.put_character (',')
+						current_file.put_string ("(void* volatile)")
+						current_file.put_character ('&')
+						print_local_name (l_name, current_file)
+						current_file.put_character ('}')
+						print_semicolon_newline
+						l_local_names.put_last (l_name)
+						i := i + 1
+					end
+					nb_debug_local_variables := nb_debug_local_variables + nb_locals
+					l_local_names.sort (identifier_sorter)
+				end
+				if nb_debug_local_variables > 0 then
+					print_indentation
+					current_file.put_string (c_ge_debug_variable)
+					current_file.put_character ('*')
+					current_file.put_character (' ')
+					current_file.put_character ('d')
+					current_file.put_character ('v')
+					current_file.put_character ('l')
+					current_file.put_character ('[')
+					current_file.put_integer (nb_debug_local_variables)
+					current_file.put_character (']')
+					print_assign_to
+					current_file.put_character ('{')
+					if a_result_type /= Void then
+						current_file.put_character ('&')
+						current_file.put_character ('d')
+						print_result_name (current_file)
+						if nb_locals > 0 then
+							current_file.put_character (',')
+						end
+					end
+					if l_local_names /= Void then
+						from i := 1 until i > nb_locals loop
+							if i /= 1 then
+								current_file.put_character (',')
+							end
+							current_file.put_character ('&')
+							current_file.put_character ('d')
+							print_local_name (l_local_names.item (i), current_file)
+							i := i + 1
+						end
+					end
+					current_file.put_character ('}')
+					print_semicolon_newline
+					print_indentation
+					current_file.put_string (c_tc)
+					current_file.put_character ('.')
+					current_file.put_string (c_local_count)
+					print_assign_to
+					current_file.put_integer (nb_debug_local_variables)
+					print_semicolon_newline
+					print_indentation
+					current_file.put_string (c_tc)
+					current_file.put_character ('.')
+					current_file.put_string (c_locals)
+					print_assign_to
+					current_file.put_character ('d')
+					current_file.put_character ('v')
+					current_file.put_character ('l')
+					print_semicolon_newline
+				end
+			end
 			if l_has_separate_formal_arguments then
 				print_indentation
 				current_file.put_string (c_while)
@@ -8364,29 +8753,27 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_context_type_declaration (current_file)
 				current_file.put_character (' ')
 				current_file.put_string (c_ac)
-				if not current_feature.is_static then
-					header_file.put_character (',')
-					header_file.put_character (' ')
-					current_file.put_character (',')
-					current_file.put_character (' ')
-					print_type_declaration (current_type, header_file)
-					print_type_declaration (current_type, current_file)
-					if current_type.is_expanded then
-						if current_type.is_basic then
-								-- Note that non-basic expanded types are already declared as volatile.
-							header_file.put_character (' ')
-							header_file.put_string (c_volatile)
-							current_file.put_character (' ')
-							current_file.put_string (c_volatile)
-						end
-						header_file.put_character ('*')
-						current_file.put_character ('*')
+				header_file.put_character (',')
+				header_file.put_character (' ')
+				current_file.put_character (',')
+				current_file.put_character (' ')
+				print_type_declaration (current_type, header_file)
+				print_type_declaration (current_type, current_file)
+				if current_type.is_expanded then
+					if current_type.is_basic then
+							-- Note that non-basic expanded types are already declared as volatile.
+						header_file.put_character (' ')
+						header_file.put_string (c_volatile)
+						current_file.put_character (' ')
+						current_file.put_string (c_volatile)
 					end
-					header_file.put_character (' ')
-					current_file.put_character (' ')
-					print_current_name (header_file)
-					print_current_name (current_file)
+					header_file.put_character ('*')
+					current_file.put_character ('*')
 				end
+				header_file.put_character (' ')
+				current_file.put_character (' ')
+				print_current_name (header_file)
+				print_current_name (current_file)
 				header_file.put_character (')')
 				current_file.put_character (')')
 				header_file.put_character (';')
@@ -8401,7 +8788,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					--
 					-- Declaration of variables.
 					--
-				if current_class.invariants_enabled and not current_feature.is_static then
+				if current_class.invariants_enabled then
 					print_indentation
 					current_file.put_string (c_uint8_t)
 					current_file.put_character (' ')
@@ -8410,6 +8797,44 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
 					current_file.put_string (c_in_qualified_call)
+					print_semicolon_newline
+				end
+					-- Debug information.
+				if debug_mode then
+					print_indentation
+					current_file.put_string (c_ge_debug_variable)
+					current_file.put_character (' ')
+					current_file.put_character ('d')
+					print_current_name (current_file)
+					print_assign_to
+					current_file.put_character ('{')
+					print_escaped_string (tokens.current_keyword.text)
+					current_file.put_character (',')
+					current_file.put_integer (current_type.id)
+					current_file.put_character (',')
+					current_file.put_string ("(void* volatile)")
+					if current_type.is_expanded then
+						current_file.put_character ('&')
+					end
+					print_current_name (current_file)
+					current_file.put_character ('}')
+					print_semicolon_newline
+					print_indentation
+					current_file.put_string (c_ge_debug_variable)
+					current_file.put_character ('*')
+					current_file.put_character (' ')
+					current_file.put_character ('d')
+					current_file.put_character ('v')
+					current_file.put_character ('a')
+					current_file.put_character ('[')
+					current_file.put_character ('1')
+					current_file.put_character (']')
+					print_assign_to
+					current_file.put_character ('{')
+					current_file.put_character ('&')
+					current_file.put_character ('d')
+					print_current_name (current_file)
+					current_file.put_character ('}')
 					print_semicolon_newline
 				end
 					-- Variable for exception trace.
@@ -8423,12 +8848,8 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character (' ')
 					current_file.put_character ('{')
 					if current_in_exception_trace or debug_mode then
-						if current_feature.is_static then
-							current_file.put_character ('0')
-						else
-							current_file.put_string ("(void* volatile)")
-							print_current_name (current_file)
-						end
+						current_file.put_string ("(void* volatile)")
+						print_current_name (current_file)
 						current_file.put_character (',')
 					end
 					l_current_class := current_class
@@ -8453,6 +8874,18 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 						current_file.put_integer (l_position.line)
 						current_file.put_character (',')
 						current_file.put_integer (l_position.column)
+						current_file.put_character (',')
+							-- Argument values for the debugger.
+						current_file.put_character ('d')
+						current_file.put_character ('v')
+						current_file.put_character ('a')
+						current_file.put_character (',')
+						current_file.put_character ('1')
+						current_file.put_character (',')
+							-- Local values for the debugger.
+						current_file.put_character ('0')
+						current_file.put_character (',')
+						current_file.put_character ('0')
 						current_file.put_character (',')
 					end
 					current_file.put_string (c_ac)
@@ -8481,6 +8914,60 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					-- Instructions.
 					--
 				current_file := current_function_body_buffer
+					-- Debug information.
+				if debug_mode then
+					if l_result_type /= Void then
+						print_indentation
+						current_file.put_string (c_ge_debug_variable)
+						current_file.put_character (' ')
+						current_file.put_character ('d')
+						print_result_name (current_file)
+						print_assign_to
+						current_file.put_character ('{')
+						print_escaped_string (tokens.result_keyword.text)
+						current_file.put_character (',')
+						current_file.put_integer (l_result_type.id)
+						current_file.put_character (',')
+						current_file.put_string ("(void* volatile)")
+						current_file.put_character ('&')
+						print_result_name (current_file)
+						current_file.put_character ('}')
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_ge_debug_variable)
+						current_file.put_character ('*')
+						current_file.put_character (' ')
+						current_file.put_character ('d')
+						current_file.put_character ('v')
+						current_file.put_character ('l')
+						current_file.put_character ('[')
+						current_file.put_character ('1')
+						current_file.put_character (']')
+						print_assign_to
+						current_file.put_character ('{')
+						current_file.put_character ('&')
+						current_file.put_character ('d')
+						print_result_name (current_file)
+						current_file.put_character ('}')
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_local_count)
+						print_assign_to
+						current_file.put_character ('1')
+						print_semicolon_newline
+						print_indentation
+						current_file.put_string (c_tc)
+						current_file.put_character ('.')
+						current_file.put_string (c_locals)
+						print_assign_to
+						current_file.put_character ('d')
+						current_file.put_character ('v')
+						current_file.put_character ('l')
+						print_semicolon_newline
+					end
+				end
 					-- Call stack.
 				if exception_trace_mode or debug_mode then
 					print_indentation
@@ -8526,7 +9013,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character (';')
 					current_file.put_new_line
 				end
-				if current_class.invariants_enabled and not current_feature.is_static then
+				if current_class.invariants_enabled then
 					if debug_mode then
 						if attached a_feature.postconditions as l_postconditions then		
 							print_set_exception_trace_position (l_postconditions.position)
@@ -8663,6 +9150,44 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			current_file.put_new_line
 			indent
 			l_current_class := current_class
+				-- Debug information.
+			if debug_mode then
+				print_indentation
+				current_file.put_string (c_ge_debug_variable)
+				current_file.put_character (' ')
+				current_file.put_character ('d')
+				print_current_name (current_file)
+				print_assign_to
+				current_file.put_character ('{')
+				print_escaped_string (tokens.current_keyword.text)
+				current_file.put_character (',')
+				current_file.put_integer (current_type.id)
+				current_file.put_character (',')
+				current_file.put_string ("(void* volatile)")
+				if current_type.is_expanded then
+					current_file.put_character ('&')
+				end
+				print_current_name (current_file)
+				current_file.put_character ('}')
+				print_semicolon_newline
+				print_indentation
+				current_file.put_string (c_ge_debug_variable)
+				current_file.put_character ('*')
+				current_file.put_character (' ')
+				current_file.put_character ('d')
+				current_file.put_character ('v')
+				current_file.put_character ('a')
+				current_file.put_character ('[')
+				current_file.put_character ('1')
+				current_file.put_character (']')
+				print_assign_to
+				current_file.put_character ('{')
+				current_file.put_character ('&')
+				current_file.put_character ('d')
+				print_current_name (current_file)
+				current_file.put_character ('}')
+				print_semicolon_newline
+			end
 				-- Call stack.
 			if exception_trace_mode or debug_mode then
 				print_indentation
@@ -8688,6 +9213,18 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_integer (0)
 					current_file.put_character (',')
 					current_file.put_integer (0)
+					current_file.put_character (',')
+						-- Argument values for the debugger.
+					current_file.put_character ('d')
+					current_file.put_character ('v')
+					current_file.put_character ('a')
+					current_file.put_character (',')
+					current_file.put_character ('1')
+					current_file.put_character (',')
+						-- Local values for the debugger.
+					current_file.put_character ('0')
+					current_file.put_character (',')
+					current_file.put_character ('0')
 					current_file.put_character (',')
 				end
 				current_file.put_string (c_ac)
@@ -20507,6 +21044,16 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 					current_file.put_integer (l_position.line)
 					current_file.put_character (',')
 					current_file.put_integer (l_position.column)
+					current_file.put_character (',')
+						-- Argument values for the debugger.
+					current_file.put_character ('0')
+					current_file.put_character (',')
+					current_file.put_character ('0')
+					current_file.put_character (',')
+						-- Local values for the debugger.
+					current_file.put_character ('0')
+					current_file.put_character (',')
+					current_file.put_character ('0')
 					current_file.put_character (',')
 				end
 				current_file.put_string (c_ac)
@@ -37329,8 +37876,8 @@ feature {NONE} -- C function generation
 				current_file.put_character ('%"')
 				current_file.put_string ("root's creation")
 				current_file.put_character ('%"')
+				current_file.put_character (',')
 				if debug_mode then
-					current_file.put_character (',')
 					if attached l_root_type.base_class.filename as l_filename then
 						print_escaped_string (l_filename)
 					else
@@ -37341,8 +37888,18 @@ feature {NONE} -- C function generation
 					current_file.put_integer (0)
 					current_file.put_character (',')
 					current_file.put_integer (0)
+					current_file.put_character (',')
+						-- Argument values for the debugger.
+					current_file.put_character ('0')
+					current_file.put_character (',')
+					current_file.put_character ('0')
+					current_file.put_character (',')
+						-- Local values for the debugger.
+					current_file.put_character ('0')
+					current_file.put_character (',')
+					current_file.put_character ('0')
+					current_file.put_character (',')
 				end
-				current_file.put_character (',')
 				current_file.put_character ('0')
 				current_file.put_character ('}')
 				current_file.put_character (';')
@@ -50967,8 +51524,9 @@ feature {NONE} -- Constants
 
 	c_ac: STRING = "ac"
 	c_and_then: STRING = "&&"
+	c_argument_count: STRING = "argument_count"
+	c_arguments: STRING = "arguments"
 	c_arrow: STRING = "->"
-	c_attributes: STRING = "attributes"
 	c_break: STRING = "break"
 	c_call: STRING = "call"
 	c_callee: STRING = "callee"
@@ -51078,6 +51636,7 @@ feature {NONE} -- Constants
 	c_ge_debug_set_blocking: STRING = "GE_debug_set_blocking"
 	c_ge_debug_set_call_location: STRING = "GE_debug_set_call_location"
 	c_ge_debug_set_call_position: STRING = "GE_debug_set_call_position"
+	c_ge_debug_variable: STRING = "GE_debug_variable"
 	c_ge_decoded_type: STRING = "GE_decoded_type"
 	c_ge_decrement_scoop_sessions_count: STRING = "GE_decrement_scoop_sessions_count"
 	c_ge_deep: STRING = "GE_deep"
@@ -51403,6 +51962,8 @@ feature {NONE} -- Constants
 	c_is_special: STRING = "is_special"
 	c_last_rescue: STRING = "last_rescue"
 	c_line: STRING = "#line"
+	c_local_count: STRING = "local_count"
+	c_locals: STRING = "locals"
 	c_memcmp: STRING = "memcmp"
 	c_mutex: STRING = "mutex"
 	c_mutex_suffix: STRING = "_mutex"

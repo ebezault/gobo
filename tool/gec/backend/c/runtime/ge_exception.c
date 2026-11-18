@@ -288,7 +288,7 @@ static void GE_print_object_location_reason_effect(GE_exception_trace_buffer* a_
 
 		/* Print object address with 16 digits to be ready when pointers
 		 * will be on 64 bits on all platform. */
-	sprintf(buffer, "<%016" EIF_POINTER_DISPLAY ">  ", (unsigned long)(uintptr_t)a_object_addr);
+	sprintf(buffer, "<%016" EIF_POINTER_DISPLAY ">  ", (uintptr_t)a_object_addr);
 	GE_append_to_exception_trace_buffer(a_trace, buffer);
 
 	if (l_location_count > 22) {
@@ -333,21 +333,21 @@ static void GE_print_exception_trace(GE_context* a_context, long a_code, const c
 	char* l_root_feature = "root's creation";
 	const char* l_class_name;
 	const char* l_feature_name;
-	unsigned long l_thread_id = 0;
+	uintptr_t l_thread_id = 0;
 	char* l_thread_name = "";
-	unsigned long l_region_id = 0;
+	uintptr_t l_region_id = 0;
 
 #ifdef GE_USE_THREADS
 	if (a_context == GE_main_context) {
 			/* Main thread. */
 		l_thread_name = "Root thread";
 	} else {
-		l_thread_id = (unsigned long)(uint64_t)a_context->thread->thread_id;
+		l_thread_id = (uintptr_t)a_context->thread->thread_id;
 		l_thread_name = "Child thread";
 	}
 #endif	
 #ifdef GE_USE_SCOOP
-	l_region_id = (unsigned long)(uint64_t)a_context->region;
+	l_region_id = (uintptr_t)a_context->region;
 	sprintf(buffer, "%s\n", "******************************** SCOOP exception ******************************");
 	GE_append_to_exception_trace_buffer(a_trace, buffer);
 	sprintf(buffer,"%-10.10s 0x%016" EIF_POINTER_DISPLAY " %-12.12s 0x%" EIF_POINTER_DISPLAY " %s\n", "In region", l_region_id, "(region id)", l_thread_id, "(thread id)");

@@ -105,12 +105,12 @@ typedef volatile struct {
 /*
  * Attribute.
  */
-#ifdef GE_USE_ATTRIBUTES
+#if defined(GE_USE_ATTRIBUTES) || defined(GE_DEBUG_MODE)
 typedef volatile struct {
-#ifdef GE_USE_ATTRIBUTE_NAME
+#if defined(GE_USE_ATTRIBUTE_NAME) || defined(GE_DEBUG_MODE)
 	const char* volatile name; /* Attribute name */
 #endif
-#ifdef GE_USE_ATTRIBUTE_TYPE_ID
+#if defined(GE_USE_ATTRIBUTE_TYPE_ID) || defined(GE_DEBUG_MODE)
 	EIF_ENCODED_TYPE volatile type_id; /* Static type id */
 #endif
 #ifdef GE_USE_ATTRIBUTE_STORABLE_TYPE_ID
@@ -121,10 +121,10 @@ typedef volatile struct {
 	EIF_TYPE_INDEX* volatile dynamic_type_set; /* Dynamic type set */
 	uint32_t volatile dynamic_type_count; /* Number of types in `dynamic_type_set` */
 #endif
-#ifdef GE_USE_ATTRIBUTE_OFFSET
+#if defined(GE_USE_ATTRIBUTE_OFFSET) || defined(GE_DEBUG_MODE)
 	uint32_t volatile offset; /* Address offset in object */
 #endif
-#ifdef GE_USE_ATTRIBUTE_SIZE
+#if defined(GE_USE_ATTRIBUTE_SIZE) || defined(GE_DEBUG_MODE)
 	uint32_t volatile size; /* Size of attribute in object */
 #endif
 } GE_attribute;
@@ -139,7 +139,7 @@ typedef volatile struct {
 #ifdef GE_USE_TYPE_GENERATOR
 	const char* volatile generator; /* Generator class name */
 #endif
-#ifdef GE_USE_TYPE_NAME
+#if defined(GE_USE_TYPE_NAME) || defined(GE_DEBUG_MODE)
 	const char* volatile name; /* Full type name */
 #endif
 #ifdef GE_USE_TYPE_GENERIC_PARAMETERS
@@ -150,7 +150,7 @@ typedef volatile struct {
 	GE_ancestor** volatile ancestors;
 	uint32_t volatile ancestor_count;
 #endif
-#ifdef GE_USE_ATTRIBUTES
+#if defined(GE_USE_ATTRIBUTES) || defined(GE_DEBUG_MODE)
 	GE_attribute** volatile attributes;
 	uint32_t volatile attribute_count;
 #endif
