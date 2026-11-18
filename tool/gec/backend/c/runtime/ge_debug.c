@@ -588,6 +588,9 @@ static void GE_debug_write_printable_character(const uint32_t c)
  */
 static void GE_debug_write_variable(GE_debug_variable* a_variable)
 {
+	uint32_t attribute_count;
+	uint32_t item_count = 0;
+
 	fprintf(GE_debug_out, "{\"name\":\"%s\",\"value\":", a_variable->name);
 	EIF_TYPE_INDEX l_type_id = a_variable->type_id;
 	if (l_type_id == 0 || !(GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_EXPANDED)) {
@@ -601,13 +604,20 @@ static void GE_debug_write_variable(GE_debug_variable* a_variable)
 			char* l_type_name = (char*)GE_type_infos[l_object_type_id].name;
 			if (l_type_name[0] == '!') l_type_name++;
 			fprintf(GE_debug_out, "\"<0x%" EIF_POINTER_DISPLAY ">\",\"type\":\"%s\",\"variablesReference\":", (uintptr_t)l_value, l_type_name);
-			if (GE_type_infos[l_object_type_id].attribute_count > 0) {
-				fprintf(GE_debug_out, "{\"kind\":\"attributes\",\"id\":\"0x%016" EIF_POINTER_DISPLAY "\",\"typeId\":%d},\"namedVariables\":%d", (uintptr_t)l_value, l_type_id, GE_type_infos[l_value->id].attribute_count);
-				if (GE_type_infos[l_value->id].flags & GE_TYPE_FLAG_SPECIAL) {
-					fprintf(GE_debug_out, ",\"indexedVariables\":%d}", *(EIF_INTEGER*)((char*)l_value + GE_type_infos[l_value->id].attributes[1]->offset));
-				} else {
-					fputc('}', GE_debug_out);
+			attribute_count = GE_type_infos[l_object_type_id].attribute_count;
+			if (GE_type_infos[l_value->id].flags & GE_TYPE_FLAG_SPECIAL) {
+				item_count = *(EIF_INTEGER*)((char*)l_value + GE_type_infos[l_value->id].attributes[1]->offset);
+				attribute_count--;
+			}
+			if (attribute_count > 0 || item_count > 0) {
+				fprintf(GE_debug_out, "{\"kind\":\"attributes\",\"id\":\"0x%016" EIF_POINTER_DISPLAY "\",\"typeId\":%d}", (uintptr_t)l_value, l_type_id);
+				if (attribute_count > 0) {
+					fprintf(GE_debug_out, ",\"namedVariables\":%d", attribute_count);
 				}
+				if (item_count > 0) {
+					fprintf(GE_debug_out, ",\"indexedVariables\":%d", item_count);
+				}
+				fputc('}', GE_debug_out);
 			} else {
 				fprintf(GE_debug_out, "0}");
 			}
@@ -986,8 +996,9 @@ static void GE_unprotected_debug_write_attribute_variables_body(void* object, EI
 				l_physical_offset = GE_type_infos[l_type_id].attributes[GE_type_infos[l_type_id].attribute_count]->offset;
 			}
 		}
+		uint32_t attribute_count = 0;
 		if(strcmp(filter, "named") == 0 || strcmp(filter, "all") == 0) {
-			uint32_t attribute_count = GE_type_infos[l_type_id].attribute_count;
+			attribute_count = GE_type_infos[l_type_id].attribute_count;
 			if (GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_SPECIAL) {
 				attribute_count--;
 			}
@@ -1011,7 +1022,7 @@ static void GE_unprotected_debug_write_attribute_variables_body(void* object, EI
 				uint32_t volatile l_item_offset = l_item_attribute->offset;
 				EIF_TYPE_INDEX l_item_type_id = GE_decoded_type(l_item_attribute->type_id).id;
 				uint16_t volatile l_item_flags = GE_type_infos[l_item_type_id].flags;
-				uint32_t item_start = (nb > 0 ? 0 : start);
+				uint32_t item_start = (start < attribute_count ? 0 : start - attribute_count);
 				for (i = item_start; i < item_count; i++) {
 					GE_debug_variable l_variable;
 					char l_item_name[100];
