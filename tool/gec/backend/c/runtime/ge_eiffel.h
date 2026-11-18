@@ -329,7 +329,11 @@ typedef EIF_NATIVE_CHAR* EIF_FILENAME;
 #define EIF_TEST(x) ((x) ? EIF_TRUE : EIF_FALSE)
 
 #define EIF_IS_WORKBENCH EIF_FALSE
+#ifdef EIF_WINDOWS
 #define EIF_POINTER_DISPLAY "llX"
+#else
+#define EIF_POINTER_DISPLAY "lX"
+#endif
 
 /* For INTEGER and NATURAL manifest constants */
 #define GE_int8(x) x
