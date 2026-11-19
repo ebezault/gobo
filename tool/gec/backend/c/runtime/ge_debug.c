@@ -28,6 +28,10 @@
 #include "ge_gc.h"
 #endif
 
+#ifndef GE_TYPES_H
+#include "ge_types.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>

@@ -48337,6 +48337,7 @@ feature {NONE} -- Include files
 					include_runtime_header_file ("ge_debug.h", False, a_header_file)
 					include_runtime_header_file ("ge_thread.h", False, a_header_file)
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
+					include_runtime_header_file ("ge_types.h", False, a_header_file)
 				elseif a_filename.same_string ("ge_deep.c") then
 					include_runtime_header_file ("ge_deep.h", False, a_header_file)
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
