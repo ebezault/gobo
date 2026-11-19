@@ -1248,6 +1248,7 @@ static void GE_debug_receive_request()
 	if (!command) {
 		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'command' missing in request.\"}\n", id);
+		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
 		fflush(GE_debug_out);
 		GE_unprotected_debug_continue_all();
 		GE_debug_out = NULL;
