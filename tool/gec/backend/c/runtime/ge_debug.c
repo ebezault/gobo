@@ -598,7 +598,7 @@ static void GE_debug_write_printable_character(const uint32_t c)
 			fprintf(GE_debug_out, "%%'");
 			break;
 		case '\"':
-			fprintf(GE_debug_out, "%%\"");
+			fprintf(GE_debug_out, "%%\\\"");
 			break;
 		case '\\':
 			fprintf(GE_debug_out, "\\\\");
