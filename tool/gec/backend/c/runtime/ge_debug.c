@@ -677,7 +677,7 @@ static void GE_debug_write_variable(GE_debug_variable* a_variable)
 		fprintf(GE_debug_out, "\"%d\",\"type\":\"INTEGER_32\",\"variablesReference\":0}", l_value);
 	} else if ((GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_BASIC_MASK) == GE_TYPE_FLAG_INTEGER_64) {
 		EIF_INTEGER_64 l_value = *(EIF_INTEGER_64*)a_variable->address;
-		fprintf(GE_debug_out, "\"%lld\",\"type\":\"INTEGER_64\",\"variablesReference\":0}", l_value);
+		fprintf(GE_debug_out, "\"%" PRId64 "\",\"type\":\"INTEGER_64\",\"variablesReference\":0}", l_value);
 	} else if ((GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_BASIC_MASK) == GE_TYPE_FLAG_NATURAL_8) {
 		EIF_NATURAL_8 l_value = *(EIF_NATURAL_8*)a_variable->address;
 		fprintf(GE_debug_out, "\"%u\",\"type\":\"NATURAL_8\",\"variablesReference\":0}", l_value);
@@ -689,7 +689,7 @@ static void GE_debug_write_variable(GE_debug_variable* a_variable)
 		fprintf(GE_debug_out, "\"%u\",\"type\":\"NATURAL_32\",\"variablesReference\":0}", l_value);
 	} else if ((GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_BASIC_MASK) == GE_TYPE_FLAG_NATURAL_64) {
 		EIF_NATURAL_64 l_value = *(EIF_NATURAL_64*)a_variable->address;
-		fprintf(GE_debug_out, "\"%llu\",\"type\":\"NATURAL_64\",\"variablesReference\":0}", l_value);
+		fprintf(GE_debug_out, "\"%" PRIu64 "\",\"type\":\"NATURAL_64\",\"variablesReference\":0}", l_value);
 	} else if ((GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_BASIC_MASK) == GE_TYPE_FLAG_REAL_32) {
 		EIF_REAL_32 l_value = *(EIF_REAL_32*)a_variable->address;
 		fprintf(GE_debug_out, "\"%g\",\"type\":\"REAL_32\",\"variablesReference\":0}", l_value);
@@ -1146,7 +1146,10 @@ static char* GE_debug_get_string(GE_debug_read_status* status)
 	size_t count;
 	size_t total = 0;
 	char* buf;
+
+	*status = GE_DEBUG_READ_ERROR;
 	if (!GE_debug_in) {
+		*status = GE_DEBUG_READ_ERROR;
 		return 0;
 	}
 	b1 = fgetc(GE_debug_in);
@@ -1215,25 +1218,21 @@ static void GE_debug_receive_request()
 	}
 	id = GE_debug_get_string(&status);
 	if (!id) {
-		if (status != GE_DEBUG_READ_EOF) {
-			GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
-			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'id' is missing in request\"}\n");
-			fflush(GE_debug_out);
-			GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-			free(type);
-		}
+		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'id' is missing in request\"}\n");
+		fflush(GE_debug_out);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		free(type);
 		return;
 	}
 	command = GE_debug_get_string(&status);
 	if (!command) {
-		if (status != GE_DEBUG_READ_EOF) {
-			GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
-			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'command' missing in request.\"}\n", id);
-			fflush(GE_debug_out);
-			GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-			free(type);
-			free(id);
-		}
+		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'command' missing in request.\"}\n", id);
+		fflush(GE_debug_out);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		free(type);
+		free(id);
 		return;
 	} 
 	GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
