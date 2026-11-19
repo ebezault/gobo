@@ -509,18 +509,18 @@ static void GE_debug_write_escaped_string(const char* s)
 			break;
 		case '\n':
 			fputc('\\', GE_debug_out);
-			fputc('\n', GE_debug_out);
+			fputc('n', GE_debug_out);
 			break;
 		case '\r':
 			fputc('\\', GE_debug_out);
-			fputc('\r', GE_debug_out);
+			fputc('r', GE_debug_out);
 			break;
 		case '\t':
 			fputc('\\', GE_debug_out);
-			fputc('\t', GE_debug_out);
+			fputc('t', GE_debug_out);
 			break;
 		default:
-			if (c < 0x001F) {
+			if ((unsigned char)c <= 0x1F) {
 				fprintf(GE_debug_out, "\\u%04X", c);
 			} else {
 				fputc(c, GE_debug_out);
@@ -557,7 +557,7 @@ static int GE_debug_is_printable_cp(uint32_t c)
  */
 static void GE_debug_write_printable_character(const uint32_t c)
 {
-	if (c >= '(' && c <= '~') {
+	if (c >= '(' && c <= '~' && c != '\\') {
 		fputc((char)c, GE_debug_out);
 	} else if (c > 0xFFFF || (c > 127 && !GE_debug_is_printable_cp(c))) {
 		fprintf(GE_debug_out, "%%/%u/", c);
@@ -597,6 +597,9 @@ static void GE_debug_write_printable_character(const uint32_t c)
 			break;
 		case '\"':
 			fprintf(GE_debug_out, "%%\"");
+			break;
+		case '\\':
+			fprintf(GE_debug_out, "\\\\");
 			break;
 		default:
 			fprintf(GE_debug_out, "%%/%u/", c);
