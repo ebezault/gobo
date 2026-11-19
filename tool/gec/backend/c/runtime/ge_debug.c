@@ -1202,6 +1202,7 @@ static void GE_debug_receive_request()
 	char* id;
 	char* command;
 	GE_debug_read_status status;
+	int l_disconnected = 0;
 
 	if (!GE_debug_in || !GE_debug_out) {
 		return;
@@ -1434,22 +1435,26 @@ static void GE_debug_receive_request()
 		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		if (sscanf(str, "%u", &start) != 1) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
 			free(str);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		free(str);
 		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		if (sscanf(str, "%u", &count) != 1) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
 			free(str);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		free(str);
@@ -1498,22 +1503,26 @@ static void GE_debug_receive_request()
 		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		if (sscanf(str, "%u", &start) != 1) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
 			free(str);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		free(str);
 		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		if (sscanf(str, "%u", &count) != 1) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
 			free(str);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		free(str);
@@ -1562,22 +1571,26 @@ static void GE_debug_receive_request()
 		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		if (sscanf(str, "%u", &start) != 1) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
 			free(str);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		free(str);
 		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		if (sscanf(str, "%u", &count) != 1) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
 			free(str);
+			free(filter);
 			goto GE_debug_receive_done;
 		}
 		free(str);
@@ -1651,6 +1664,12 @@ static void GE_debug_receive_request()
 		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":true,\"body\":{}}\n", id);
 		GE_unprotected_debug_step_out(thread_id);
 
+	} else if(strcmp(command, "disconnect") == 0) {
+		/* Handle 'disconnect'. */
+		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":true,\"body\":{}}\n", id);
+		GE_unprotected_debug_continue_all();
+		l_disconnected = 1;
+	
 	} else {
 		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"request '%s' not supported.\"}\n", id, command);
 	}
@@ -1659,6 +1678,14 @@ GE_debug_receive_done:
 	free(id);
 	free(command);
 	fflush(GE_debug_out);
+	if (l_disconnected) {
+		GE_debug_out = NULL;
+		GE_debug_in = NULL;
+	} else if (!GE_debug_in) {
+		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
+		fflush(GE_debug_out);
+		GE_debug_out = NULL;
+	}
 	GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 }
 
