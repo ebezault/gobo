@@ -1212,8 +1212,11 @@ static void GE_debug_receive_request()
 		if (status != GE_DEBUG_READ_EOF) {
 			GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'type' is missing in request\"}\n");
+			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
 			fflush(GE_debug_out);
 			GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+			GE_debug_out = NULL;
+			GE_debug_in = NULL;
 		}
 		return;
 	}
@@ -1221,8 +1224,11 @@ static void GE_debug_receive_request()
 	if (!id) {
 		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'id' is missing in request\"}\n");
+		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
 		fflush(GE_debug_out);
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		GE_debug_out = NULL;
+		GE_debug_in = NULL;
 		free(type);
 		return;
 	}
@@ -1230,8 +1236,11 @@ static void GE_debug_receive_request()
 	if (!command) {
 		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'command' missing in request.\"}\n", id);
+		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
 		fflush(GE_debug_out);
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		GE_debug_out = NULL;
+		GE_debug_in = NULL;
 		free(type);
 		free(id);
 		return;
