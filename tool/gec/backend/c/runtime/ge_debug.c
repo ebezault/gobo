@@ -1009,7 +1009,7 @@ static void GE_unprotected_debug_write_attribute_variables_body(void* object, EI
 			for (i = start; i < attribute_count; i++) {
 				GE_attribute* l_attribute = GE_type_infos[l_type_id].attributes[i];
 				GE_debug_variable l_variable = {(char*)l_attribute->name, GE_decoded_type(l_attribute->type_id).id, (void*)GE_field_address_at(l_attribute->offset, object, l_physical_offset)};
-				if (i > start) {
+				if (nb > 0) {
 					fputc(',', GE_debug_out);
 				}
 				GE_debug_write_variable(&l_variable);
@@ -1082,7 +1082,7 @@ static void GE_unprotected_debug_write_attribute_variables_body(void* object, EI
 						GE_debug_variable l_temp_variable = {l_item_name, l_item_type_id, (void*)GE_field_address_at(l_item_offset + i * l_item_size, object, l_physical_offset)};
 						l_variable = l_temp_variable;
 					}
-					if (i > item_start) {
+					if (nb > 0) {
 						fputc(',', GE_debug_out);
 					}
 					GE_debug_write_variable(&l_variable);
@@ -1241,6 +1241,9 @@ static void GE_debug_receive_request()
 		free(str);
 		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":true,\"body\":{\"breakpoints\":[", id);
 		for (i = 0; i < bp_count; i++) {
+			if (i != 0) {
+				fprintf(GE_debug_out, ",");
+			}
 			str = GE_debug_get_string();
 			if (!str) {
 				fprintf(GE_debug_out, "{\"verified\":false,\"message\":\"breakpoint line number missing in request.\"}");
@@ -1252,9 +1255,6 @@ static void GE_debug_receive_request()
 				continue;
 			}
 			free(str);
-			if (i != 0) {
-				fprintf(GE_debug_out, ",");
-			}
 			if (breakpoints) {
 				GE_debug_breakpoint* bp = GE_debug_breakpoint_at_line(bp_line, breakpoints);
 				if (bp) {
@@ -1282,6 +1282,10 @@ static void GE_debug_receive_request()
 		uint32_t start_frame;
 		uint32_t levels;
 		str = GE_debug_get_string();
+		if (!str) {
+			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request '%s'.\"}\n", id, command);
+			goto GE_debug_receive_done;
+		}
 		if (sscanf(str, "%d", &thread_id) != 1) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request '%s'.\"}\n", id, command);
 			free(str);
