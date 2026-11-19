@@ -1529,7 +1529,7 @@ static void GE_debug_receive_request()
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"type id missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
 		}
-		if (sscanf(str, "%hd", &type_id) != 1) {
+		if (sscanf(str, "%hu", &type_id) != 1) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"type id missing in request 'variables'.\"}\n", id);
 			free(str);
 			goto GE_debug_receive_done;
@@ -1712,15 +1712,15 @@ void GE_debug_init(GE_context* a_thread)
 #endif
 		if (fstat(debug_pipe_in, &buf) == 0 && fstat(debug_pipe_out, &buf) == 0) {
 #if defined(_MSC_VER)
-			GE_debug_in = _fdopen(debug_pipe_in, "r");
+			GE_debug_in = _fdopen(debug_pipe_in, "rb");
 #else
-			GE_debug_in = fdopen(debug_pipe_in, "r");
+			GE_debug_in = fdopen(debug_pipe_in, "rb");
 #endif
 			if (GE_debug_in) {
 #if defined(_MSC_VER)
-				GE_debug_out = _fdopen(debug_pipe_out, "w");
+				GE_debug_out = _fdopen(debug_pipe_out, "wb");
 #else
-				GE_debug_out = fdopen(debug_pipe_out, "w");
+				GE_debug_out = fdopen(debug_pipe_out, "wb");
 #endif
 				if (!GE_debug_out) {
 					fclose(GE_debug_in);
