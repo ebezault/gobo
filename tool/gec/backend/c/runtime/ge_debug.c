@@ -1122,6 +1122,13 @@ static void GE_unprotected_debug_write_attribute_variables_body(void* object, EI
 	fprintf(GE_debug_out, "]}");
 }
 
+typedef enum {
+	GE_DEBUG_READ_OK,
+	GE_DEBUG_READ_EOF,
+	GE_DEBUG_READ_ERROR,
+	GE_DEBUG_READ_MEMORY_ERROR
+} GE_debug_read_status;
+
 /*
  * Read two bytes from `GE_debug_in` corresponding to the big endian
  * encoded size of the string, and then read that string and
@@ -1131,7 +1138,7 @@ static void GE_unprotected_debug_write_attribute_variables_body(void* object, EI
  *
  * Thread-safe.
  */
-static char* GE_debug_get_string()
+static char* GE_debug_get_string(GE_debug_read_status* status)
 {
 	int b1;
 	int b2;
@@ -1144,11 +1151,13 @@ static char* GE_debug_get_string()
 	}
 	b1 = fgetc(GE_debug_in);
 	if (b1 == EOF) {
+		*status = feof(GE_debug_in) ? GE_DEBUG_READ_EOF : GE_DEBUG_READ_ERROR;
 		GE_debug_in = NULL;
 		return 0;
 	}
 	b2 = fgetc(GE_debug_in);
 	if (b2 == EOF) {
+		*status = GE_DEBUG_READ_ERROR;
 		GE_debug_in = NULL;
 		return 0;
 	}
@@ -1159,6 +1168,7 @@ static char* GE_debug_get_string()
 	 */
 	buf = (char*)malloc(size + 1);
 	if (!buf) {
+		*status = GE_DEBUG_READ_MEMORY_ERROR;
 		GE_debug_in = NULL;
 		return 0;
 	}
@@ -1166,12 +1176,14 @@ static char* GE_debug_get_string()
 		count = fread(buf + total, 1, size - total, GE_debug_in);
 		if (count <= 0) {
 			free(buf);
+			*status = GE_DEBUG_READ_ERROR;
 			GE_debug_in = NULL;
 			return 0;
 		}
 		total += count;
 	}
 	buf[size] = 0;
+	*status = GE_DEBUG_READ_OK;
 	return buf;
 }
 
@@ -1186,34 +1198,42 @@ static void GE_debug_receive_request()
 	char* type;
 	char* id;
 	char* command;
+	GE_debug_read_status status;
+
 	if (!GE_debug_in || !GE_debug_out) {
 		return;
 	}
-	type = GE_debug_get_string();
+	type = GE_debug_get_string(&status);
 	if (!type) {
-		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
-		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'type' is missing in request\"}\n");
-		fflush(GE_debug_out);
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		if (status != GE_DEBUG_READ_EOF) {
+			GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'type' is missing in request\"}\n");
+			fflush(GE_debug_out);
+			GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		}
 		return;
 	}
-	id = GE_debug_get_string();
+	id = GE_debug_get_string(&status);
 	if (!id) {
-		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
-		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'id' is missing in request\"}\n");
-		fflush(GE_debug_out);
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-		free(type);
+		if (status != GE_DEBUG_READ_EOF) {
+			GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'id' is missing in request\"}\n");
+			fflush(GE_debug_out);
+			GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+			free(type);
+		}
 		return;
 	}
-	command = GE_debug_get_string();
+	command = GE_debug_get_string(&status);
 	if (!command) {
-		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
-		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'command' missing in request.\"}\n", id);
-		fflush(GE_debug_out);
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-		free(type);
-		free(id);
+		if (status != GE_DEBUG_READ_EOF) {
+			GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'command' missing in request.\"}\n", id);
+			fflush(GE_debug_out);
+			GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+			free(type);
+			free(id);
+		}
 		return;
 	} 
 	GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
@@ -1222,7 +1242,7 @@ static void GE_debug_receive_request()
 		/* Handle 'initialize'. */
 		char* protocol_version;
 		GE_debug_configuration_done = 0;
-		protocol_version = GE_debug_get_string();
+		protocol_version = GE_debug_get_string(&status);
 		if (!protocol_version) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'protocolVersion' missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1243,7 +1263,7 @@ static void GE_debug_receive_request()
 		uint32_t i;
 		uint32_t bp_line;
 		GE_debug_file_breakpoints* breakpoints;
-		source_path = GE_debug_get_string();
+		source_path = GE_debug_get_string(&status);
 		if (!source_path) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'sourcePath' missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1253,7 +1273,7 @@ static void GE_debug_receive_request()
 		if (breakpoints) {
 			GE_unprotected_debug_disable_all_file_breakpoints(breakpoints);
 		}
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"breakpoint count missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1269,7 +1289,7 @@ static void GE_debug_receive_request()
 			if (i != 0) {
 				fprintf(GE_debug_out, ",");
 			}
-			str = GE_debug_get_string();
+			str = GE_debug_get_string(&status);
 			if (!str) {
 				fprintf(GE_debug_out, "{\"verified\":false,\"message\":\"breakpoint line number missing in request.\"}");
 				continue;
@@ -1306,7 +1326,7 @@ static void GE_debug_receive_request()
 		uint32_t thread_id;
 		uint32_t start_frame;
 		uint32_t levels;
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1317,7 +1337,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start frame missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1328,7 +1348,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"levels missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1349,7 +1369,7 @@ static void GE_debug_receive_request()
 		uint32_t thread_id;
 		uintptr_t frame_id;
 		GE_call* l_frame;
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1360,7 +1380,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"frame id missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1385,7 +1405,7 @@ static void GE_debug_receive_request()
 		char* filter;
 		uint32_t start;
 		uint32_t count;
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1396,7 +1416,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"frame id missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1407,12 +1427,12 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		filter = GE_debug_get_string();
+		filter = GE_debug_get_string(&status);
 		if (!filter) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"filter missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
 		}
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1423,7 +1443,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1449,7 +1469,7 @@ static void GE_debug_receive_request()
 		char* filter;
 		uint32_t start;
 		uint32_t count;
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1460,7 +1480,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"frame id missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1471,12 +1491,12 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		filter = GE_debug_get_string();
+		filter = GE_debug_get_string(&status);
 		if (!filter) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"filter missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
 		}
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1487,7 +1507,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1513,7 +1533,7 @@ static void GE_debug_receive_request()
 		uint32_t start;
 		uint32_t count;
 		EIF_TYPE_INDEX type_id;
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"object address missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1524,7 +1544,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"type id missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1535,12 +1555,12 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		filter = GE_debug_get_string();
+		filter = GE_debug_get_string(&status);
 		if (!filter) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"filter missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
 		}
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"start missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1551,7 +1571,7 @@ static void GE_debug_receive_request()
 			goto GE_debug_receive_done;
 		}
 		free(str);
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"count missing in request 'variables'.\"}\n", id);
 			goto GE_debug_receive_done;
@@ -1582,7 +1602,7 @@ static void GE_debug_receive_request()
 		/* Handle 'next'. */
 		char* str;
 		uint32_t thread_id;
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1600,7 +1620,7 @@ static void GE_debug_receive_request()
 		/* Handle 'stepIn'. */
 		char* str;
 		uint32_t thread_id;
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
@@ -1618,7 +1638,7 @@ static void GE_debug_receive_request()
 		/* Handle 'stepOut'. */
 		char* str;
 		uint32_t thread_id;
-		str = GE_debug_get_string();
+		str = GE_debug_get_string(&status);
 		if (!str) {
 			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"thread id missing in request '%s'.\"}\n", id, command);
 			goto GE_debug_receive_done;
