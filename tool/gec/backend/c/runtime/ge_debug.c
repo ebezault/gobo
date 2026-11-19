@@ -486,7 +486,9 @@ static void GE_unprotected_debug_step_out(uint32_t thread_id)
 /*
  * Write escaped version of `s` to `GE_debug_out`.
  * 
- * Thread-safe.
+ * Not thread-safe.
+ * Need to be protected by:
+ * - `GE_debug_mutex`.
  */
 static void GE_debug_write_escaped_string(const char* s)
 {
@@ -553,7 +555,9 @@ static int GE_debug_is_printable_cp(uint32_t c)
 /*
  * Write printable version of `c` to `GE_debug_out`.
  * 
- * Thread-safe.
+ * Not thread-safe.
+ * Need to be protected by:
+ * - `GE_debug_mutex`.
  */
 static void GE_debug_write_printable_character(const uint32_t c)
 {
@@ -609,9 +613,11 @@ static void GE_debug_write_printable_character(const uint32_t c)
 /*
  * Write `a_variable` to `GE_debug_out`.
  * 
- * Thread-safe.
+ * Not thread-safe.
+ * Need to be protected by:
+ * - `GE_debug_mutex`.
  */
-static void GE_debug_write_variable(GE_debug_variable* a_variable)
+static void GE_unprotected_debug_write_variable(GE_debug_variable* a_variable)
 {
 	uint32_t attribute_count;
 	uint32_t item_count = 0;
@@ -933,7 +939,7 @@ static void GE_unprotected_debug_write_argument_variables_body(uint32_t thread_i
 			if (i > start) {
 				fputc(',', GE_debug_out);
 			}
-			GE_debug_write_variable(a_frame->arguments[i]);
+			GE_unprotected_debug_write_variable(a_frame->arguments[i]);
 			nb++;
 			if (count > 0 && nb >= count) {
 				break;
@@ -988,7 +994,7 @@ static void GE_unprotected_debug_write_local_variables_body(uint32_t thread_id, 
 			if (i > start) {
 				fputc(',', GE_debug_out);
 			}
-			GE_debug_write_variable(a_frame->locals[i]);
+			GE_unprotected_debug_write_variable(a_frame->locals[i]);
 			nb++;
 			if (count > 0 && nb >= count) {
 				break;
@@ -1037,7 +1043,7 @@ static void GE_unprotected_debug_write_attribute_variables_body(void* object, EI
 				if (nb > 0) {
 					fputc(',', GE_debug_out);
 				}
-				GE_debug_write_variable(&l_variable);
+				GE_unprotected_debug_write_variable(&l_variable);
 				nb++;
 				if (count > 0 && nb >= count) {
 					break;
@@ -1110,7 +1116,7 @@ static void GE_unprotected_debug_write_attribute_variables_body(void* object, EI
 					if (nb > 0) {
 						fputc(',', GE_debug_out);
 					}
-					GE_debug_write_variable(&l_variable);
+					GE_unprotected_debug_write_variable(&l_variable);
 					nb++;
 					if (count > 0 && nb >= count) {
 						break;
@@ -1137,6 +1143,9 @@ typedef enum {
  * Return 0 if an error occured when reading from `GE_debug_in`.
  *
  * Thread-safe.
+ * Note that the current thread is the only thread which
+ * can modify the value of `GE_debug_in` and which can
+ * access it. No need to protect it with a mutex.
  */
 static char* GE_debug_get_string(GE_debug_read_status* status)
 {
@@ -1201,48 +1210,51 @@ static void GE_debug_receive_request()
 	char* type;
 	char* id;
 	char* command;
-	GE_debug_read_status status;
+	GE_debug_read_status status = GE_DEBUG_READ_OK;
 	int l_disconnected = 0;
 
 	if (!GE_debug_in || !GE_debug_out) {
+		/* Note that the current thread is the only thread which
+		 * can modify the value of `GE_debug_in` and `GE_debug_out`.
+		 * No need to protect their access with a mutex. */
 		return;
 	}
 	type = GE_debug_get_string(&status);
 	if (!type) {
+		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 		if (status != GE_DEBUG_READ_EOF) {
-			GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'type' is missing in request\"}\n");
-			fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
 			fflush(GE_debug_out);
-			GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-			GE_debug_out = NULL;
-			GE_debug_in = NULL;
 		}
+		GE_unprotected_debug_continue_all();
+		GE_debug_out = NULL;
+		GE_debug_in = NULL;
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 		return;
 	}
 	id = GE_debug_get_string(&status);
 	if (!id) {
 		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"'id' is missing in request\"}\n");
-		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
 		fflush(GE_debug_out);
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		GE_unprotected_debug_continue_all();
 		GE_debug_out = NULL;
 		GE_debug_in = NULL;
 		free(type);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 		return;
 	}
 	command = GE_debug_get_string(&status);
 	if (!command) {
 		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 		fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"'command' missing in request.\"}\n", id);
-		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
 		fflush(GE_debug_out);
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		GE_unprotected_debug_continue_all();
 		GE_debug_out = NULL;
 		GE_debug_in = NULL;
 		free(type);
 		free(id);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 		return;
 	} 
 	GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
@@ -1693,6 +1705,7 @@ GE_debug_receive_done:
 	} else if (!GE_debug_in) {
 		fprintf(GE_debug_out, "{\"type\":\"event\",\"event\":\"protocolError\",\"body\":{},\"message\":\"The Eiffel debugger connection is no longer available.\"}\n");
 		fflush(GE_debug_out);
+		GE_unprotected_debug_continue_all();
 		GE_debug_out = NULL;
 	}
 	GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
@@ -1703,8 +1716,12 @@ GE_debug_receive_done:
  * and process them.
  *
  * Thread-safe.
+ * Note that the current thread is the only thread
+ * which can modify the value of `GE_debug_in`.
+ * No need to protect their access with a mutex.
  */
-static void GE_debug_receive_requests() {
+static void GE_debug_receive_requests()
+{
 	while (GE_debug_in) {
 		GE_debug_receive_request();
 	}
@@ -1744,7 +1761,13 @@ static int get_env_fd(const char *name, int *fd)
 	return 1;
 }
 
-/* Initialize debugging facilities. */
+/*
+ * Initialize debugging facilities. *
+ * Thread-safe.
+ * Note that the current thread is the only thread
+ * currently running. No need to protect anything
+ * with a mutex.
+ */
 void GE_debug_init(GE_context* a_thread)
 {
 	int debug_pipe_in;
@@ -1864,10 +1887,17 @@ static int GE_unprotected_debug_stoppable_breakpoint(GE_context* a_thread, GE_de
  */
 void GE_debug_hit_breakpoint(GE_context* a_thread, GE_debug_breakpoint* a_breakpoint)
 {
-	if (!GE_debug_in || !GE_debug_out) {
+	if (!GE_debug_mutex) {
+		/* Not initialized yet.
+		 * This might happen when initializing Eiffel exception
+		 * handlers which execute Eiffel code behind the scene. */
 		return;
 	}
 	GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+	if (!GE_debug_out) {
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		return;
+	}
 	if (GE_debug_is_stopped || GE_debug_is_stopping || GE_unprotected_debug_stoppable_breakpoint(a_thread, a_breakpoint)) {
 		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
 		if (!GE_debug_is_stopped) {
