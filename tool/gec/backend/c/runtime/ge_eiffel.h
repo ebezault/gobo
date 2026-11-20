@@ -152,8 +152,8 @@ typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned __int64 uint64_t;
-#define PRId64 lld
-#define PRIu64 llu
+#define PRId64 "lld"
+#define PRIu64 "llu"
 #else
 #if defined (__BORLANDC__) && (__BORLANDC__ < 0x600) /* Borland before 6.0 */
 typedef signed char int8_t;
@@ -164,8 +164,8 @@ typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned long int uint32_t;
 typedef unsigned __int64 uint64_t;
-#define PRId64 lld
-#define PRIu64 llu
+#define PRId64 "lld"
+#define PRIu64 "llu"
 #else
 #include <inttypes.h>
 #endif
