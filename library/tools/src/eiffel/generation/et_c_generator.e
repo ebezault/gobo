@@ -3472,7 +3472,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 						-- ISE Eiffel (as of 26.09.9.9100) raises a postcondition violation when
 						-- a postcondition is the 'False' entity, even when postcondition
 						-- assertions are not monitored.
-					print_false_postcondition
+					print_false_postcondition (a_feature)
 					l_print_footer := True
 				end
 				if l_print_footer then
@@ -7741,6 +7741,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			nb_debug_local_variables: INTEGER
 			nb_locals: INTEGER
 			l_local_names: DS_ARRAYED_LIST [ET_IDENTIFIER]
+			l_position: ET_POSITION
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -7783,6 +7784,20 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_string (c_ge_rescue)
 				current_file.put_character (' ')
 				current_file.put_string (c_r)
+				print_assign_to
+				current_file.put_character ('{')
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_last_rescue)
+				current_file.put_character (',')
+				if l_rescue /= Void then
+					current_file.put_character ('1')
+				else
+					current_file.put_character ('0')
+				end
+				current_file.put_character (',')
+				current_file.put_character ('0')
+				current_file.put_character ('}')
 				print_semicolon_newline
 				print_indentation
 				current_file.put_string (c_volatile)
@@ -7972,15 +7987,6 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			locals_read := locals_read_in_rescue
 			if l_rescue /= Void or l_is_once then
 				print_indentation
-				current_file.put_string (c_r)
-				current_file.put_character ('.')
-				current_file.put_string (c_previous)
-				print_assign_to
-				current_file.put_string (c_ac)
-				current_file.put_string (c_arrow)
-				current_file.put_string (c_last_rescue)
-				print_semicolon_newline
-				print_indentation
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
 				current_file.put_string (c_last_rescue)
@@ -8070,6 +8076,15 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_string (c_previous)
 				print_semicolon_newline
 				if l_rescue /= Void then
+					if debug_mode then
+						if attached a_feature.postconditions as l_postconditions then
+							l_position := l_postconditions.ensure_keyword.position
+						else
+							l_position := a_feature.end_keyword.position
+						end
+						print_position_reached (l_position)
+						print_set_exception_trace_position (l_position)
+					end
 					print_indentation
 					current_file.put_string (c_ge_raise)
 					current_file.put_character ('(')
@@ -8125,7 +8140,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					-- ISE Eiffel (as of 26.09.9.9100) raises a postcondition violation when
 					-- a postcondition is the 'False' entity, even when postcondition
 					-- assertions are not monitored.
-				print_false_postcondition
+				print_false_postcondition (a_feature)
 				l_print_footer := True
 			end
 			if l_print_footer then
@@ -8272,6 +8287,16 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_string (c_ge_rescue)
 				current_file.put_character (' ')
 				current_file.put_string (c_r3)
+				print_assign_to
+				current_file.put_character ('{')
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_last_rescue)
+				current_file.put_character (',')
+				current_file.put_character ('0')
+				current_file.put_character (',')
+				current_file.put_character ('0')
+				current_file.put_character ('}')
 				print_semicolon_newline
 				print_indentation
 				print_type_declaration (current_type, current_file)
@@ -8468,17 +8493,6 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_new_line
 			end
 			if a_creation then
-				print_indentation
-				current_file.put_string (c_r3)
-				current_file.put_character ('.')
-				current_file.put_string (c_previous)
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
-				current_file.put_string (c_ac)
-				current_file.put_string (c_arrow)
-				current_file.put_string (c_last_rescue)
-				print_semicolon_newline
 				print_indentation
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
@@ -9031,7 +9045,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 						-- ISE Eiffel (as of 26.09.9.9100) raises a postcondition violation when
 						-- a postcondition is the 'False' entity, even when postcondition
 						-- assertions are not monitored.
-					print_false_postcondition
+					print_false_postcondition (a_feature)
 					l_print_footer := True
 				end
 				if l_print_footer then
@@ -10272,6 +10286,7 @@ feature {NONE} -- Instruction generation
 			l_area_type: ET_DYNAMIC_PRIMARY_TYPE
 			l_index: INTEGER
 			l_need_if: BOOLEAN
+			l_position: ET_POSITION
 		do
 			l_inspect_if_choices := inspect_if_choices
 			l_inspect_case_choices := inspect_case_choices
@@ -10660,7 +10675,9 @@ feature {NONE} -- Instruction generation
 				print_compound (l_else_compound)
 			else
 				if debug_mode then
-					print_position_reached (a_inspect_component.end_keyword.position)
+					l_position := a_inspect_component.end_keyword.position
+					print_position_reached (l_position)
+					print_set_exception_trace_position (l_position)
 				end
 				print_indentation
 				current_file.put_string (c_ge_raise)
@@ -16390,6 +16407,7 @@ feature {NONE} -- Expression generation
 		local
 			l_temp: ET_IDENTIFIER
 			l_exception_temp: ET_IDENTIFIER
+			l_position: ET_POSITION
 		do
 			if in_operand then
 				if debug_mode then
@@ -16416,6 +16434,20 @@ feature {NONE} -- Expression generation
 					print_temp_name (l_exception_temp, current_file)
 					current_file.put_character ('?')
 					current_file.put_character ('(')
+					if debug_mode then
+						l_position := an_expression.position
+						current_file.put_string (c_ge_debug_set_call_position)
+						current_file.put_character ('(')
+						current_file.put_string (c_ac)
+						print_comma
+						current_file.put_string (c_tc_address)
+						print_comma
+						current_file.put_integer (l_position.line)
+						print_comma
+						current_file.put_integer (l_position.column)
+						current_file.put_character (')')
+						current_file.put_character (',')
+					end
 					current_file.put_string (c_ge_raise_old_exception)
 					current_file.put_character ('(')
 					current_file.put_string (c_ac)
@@ -17720,8 +17752,8 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 			assignment_target := Void
 			if in_operand then
 				if debug_mode then
-					print_set_exception_trace_position (a_call.position)
 					print_position_reached (a_call.position)
+					print_set_exception_trace_position (a_call.position)
 				end
 				if in_call_target then
 					l_call_type := dynamic_type_set (a_call).static_type.primary_type
@@ -21428,21 +21460,10 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 			end
 			current_file := current_function_body_buffer
 			if l_target_type_is_separate then
-				print_indentation
-				current_file.put_string (c_rs)
-				current_file.put_character ('.')
-				current_file.put_string (c_previous)
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_last_rescue)
 				print_assign_to
-				current_file.put_string (c_ac)
-				current_file.put_string (c_arrow)
-				current_file.put_string (c_last_rescue)
-				print_semicolon_newline
-				current_file.put_string (c_ac)
-				current_file.put_string (c_arrow)
-				current_file.put_string (c_last_rescue)
-				current_file.put_character (' ')
-				current_file.put_character ('=')
-				current_file.put_character (' ')
 				current_file.put_character ('&')
 				current_file.put_string (c_rs)
 				print_semicolon_newline
@@ -24350,16 +24371,6 @@ feature {NONE} -- SCOOP
 					dedent
 					print_indentation
 					current_file.put_character ('}')
-					current_file.put_new_line
-					print_indentation
-					current_file.put_string (c_rs)
-					current_file.put_character ('.')
-					current_file.put_string (c_previous)
-					print_assign_to
-					current_file.put_string (c_ac)
-					current_file.put_string (c_arrow)
-					current_file.put_string (c_last_rescue)
-					print_semicolon_newline
 					print_indentation
 					current_file.put_string (c_ac)
 					current_file.put_string (c_arrow)
@@ -25370,6 +25381,16 @@ feature {NONE} -- SCOOP
 			current_file.put_string (c_ge_rescue)
 			current_file.put_character (' ')
 			current_file.put_string (c_rs)
+			print_assign_to
+			current_file.put_character ('{')
+			current_file.put_string (c_ac)
+			current_file.put_string (c_arrow)
+			current_file.put_string (c_last_rescue)
+			current_file.put_character (',')
+			current_file.put_character ('0')
+			current_file.put_character (',')
+			current_file.put_character ('0')
+			current_file.put_character ('}')
 			print_semicolon_newline
 		end
 
@@ -26175,15 +26196,6 @@ feature {NONE} -- SCOOP
 			i, nb: INTEGER
 			l_name: ET_IDENTIFIER
 		do
-			print_indentation
-			current_file.put_string (c_rs)
-			current_file.put_character ('.')
-			current_file.put_string (c_previous)
-			print_assign_to
-			current_file.put_string (c_ac)
-			current_file.put_string (c_arrow)
-			current_file.put_string (c_last_rescue)
-			print_semicolon_newline
 			print_indentation
 			current_file.put_string (c_ac)
 			current_file.put_string (c_arrow)
@@ -42115,6 +42127,9 @@ feature {NONE} -- Assertion generation
 										end
 										if k = l_count then
 											if a_correctness_enabled then
+												if debug_mode then
+													print_set_exception_trace_position (l_assertion.position)
+												end
 												print_indentation
 												current_file.put_string (c_ge_raise_with_message)
 												current_file.put_character ('(')
@@ -42226,10 +42241,17 @@ feature {NONE} -- Assertion generation
 			l_separate_formal_arguments.wipe_out
 		end
 
-	print_false_postcondition
+	print_false_postcondition (a_feature: ET_CLOSURE)
 			-- Print a False postcondition to `current_file`.
 		do
 			print_postconditions_comment
+			if debug_mode then
+				if attached {ET_FEATURE_CLOSURE} a_feature as l_feature_closure then
+					print_set_exception_trace_position (l_feature_closure.end_keyword.position)
+				else
+					print_set_exception_trace_position (a_feature.last_leaf.position)
+				end
+			end
 			print_indentation
 			current_file.put_string (c_ge_raise_with_message)
 			current_file.put_character ('(')
@@ -42520,6 +42542,9 @@ feature {NONE} -- Assertion generation
 				current_file.put_character ('{')
 				current_file.put_new_line
 				indent
+				if debug_mode then
+					print_set_exception_trace_position (l_variant_part.assertion_position)
+				end
 				print_indentation
 				current_file.put_string (c_ge_raise_with_message)
 				current_file.put_character ('(')
@@ -42553,6 +42578,9 @@ feature {NONE} -- Assertion generation
 				current_file.put_character ('{')
 				current_file.put_new_line
 				indent
+				if debug_mode then
+					print_set_exception_trace_position (l_variant_part.assertion_position)
+				end
 				print_indentation
 				current_file.put_string (c_ge_raise_with_message)
 				current_file.put_character ('(')
@@ -42606,6 +42634,9 @@ feature {NONE} -- Assertion generation
 						current_file.put_character ('{')
 						current_file.put_new_line
 						indent
+						if debug_mode then
+							print_set_exception_trace_position (l_assertion.position)
+						end
 						print_indentation
 						current_file.put_string (c_ge_raise_with_message)
 						current_file.put_character ('(')
@@ -42793,15 +42824,16 @@ feature {NONE} -- Assertion generation
 				current_file.put_string (c_ge_rescue)
 				current_file.put_character (' ')
 				current_file.put_string (c_ra)
-				print_semicolon_newline
-				print_indentation
-				current_file.put_string (c_ra)
-				current_file.put_character ('.')
-				current_file.put_string (c_previous)
 				print_assign_to
+				current_file.put_character ('{')
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
 				current_file.put_string (c_last_rescue)
+				current_file.put_character (',')
+				current_file.put_character ('0')
+				current_file.put_character (',')
+				current_file.put_character ('0')
+				current_file.put_character ('}')
 				print_semicolon_newline
 				print_indentation
 				current_file.put_string (c_ac)
@@ -48350,6 +48382,9 @@ feature {NONE} -- Include files
 					if use_threads then
 						include_runtime_header_file ("ge_thread.h", False, a_header_file)
 					end
+					if debug_mode then
+						include_runtime_header_file ("ge_debug.h", False, a_header_file)
+					end
 				elseif a_filename.same_string ("ge_gc.c") then
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
 					include_runtime_header_file ("ge_types.h", False, a_header_file)
@@ -49699,13 +49734,11 @@ feature {NONE} -- Assertions
 		do
 			if attached a_variant.tag as l_tag then
 				Result := l_tag.identifier.name
-			elseif attached a_variant.expression as l_expression then
-				Result := expression_text (l_expression)
+			else
+				Result := expression_text (a_variant.expression)
 				if Result.has ('%N') then
 					Result.replace_substring_all ("%N", " ")
 				end
-			else
-				Result := ""
 			end
 		ensure
 			variant_tag_not_void: Result /= Void

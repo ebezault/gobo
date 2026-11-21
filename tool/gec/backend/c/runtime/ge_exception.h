@@ -148,8 +148,9 @@ struct GE_call_struct {
  */
 typedef volatile struct GE_rescue_struct GE_rescue;
 struct GE_rescue_struct {
-	GE_jmp_buf jb;
 	GE_rescue* volatile previous; /* previous context in the call chain */
+	uint8_t volatile is_eiffel; /* associated with an Eiffel rescue clause */
+	GE_jmp_buf jb;
 };
 
 /*

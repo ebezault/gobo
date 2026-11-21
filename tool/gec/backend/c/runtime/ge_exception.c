@@ -34,6 +34,11 @@
 #include "ge_thread.h"
 #endif
 #endif
+#ifdef GE_DEBUG_MODE
+#ifndef GE_DEBUG_H
+#include "ge_debug.h"
+#endif
+#endif
 
 #ifdef EIF_WINDOWS
 #ifdef __LCC__
@@ -681,6 +686,9 @@ static void GE_raise_exception(long code, int new_obj, int signal_code, int erro
 		if ((code != GE_EX_FAIL) && l_trace) {
 			GE_append_to_exception_trace_buffer(&l_context->last_exception_trace, l_trace);
 		}
+#ifdef GE_DEBUG_MODE
+		GE_debug_hit_exception_breakpoint(l_context, code, tag);
+#endif
 		GE_call_set_exception_data(l_context, code, new_obj, signal_code, error_code, tag, recipient, eclass, rf_routine, rf_class, l_trace, line_number, is_invariant_entry);
 		l_context->raising_exception = '\0';
 		l_context->exception_code = 0;

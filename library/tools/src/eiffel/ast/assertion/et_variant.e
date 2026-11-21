@@ -66,6 +66,22 @@ feature -- Access
 			end
 		end
 
+	assertion_position: ET_POSITION
+			-- Position of the first character of the assertion
+			-- (including its tag if any) in the source code
+		do
+			if attached tag as l_tag then
+				Result := l_tag.position
+			else
+				Result := expression.position
+			end
+			if Result.is_null then
+				Result := variant_keyword.position
+			end
+		ensure
+			assertion_position_not_void: Result /= Void
+		end
+
 	first_leaf: ET_AST_LEAF
 			-- First leaf node in current node
 		do

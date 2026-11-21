@@ -62,6 +62,9 @@ extern void GE_debug_remove_thread(GE_context* a_thread);
 #define GE_bp(a,b) GE_debug_hit_breakpoint((a),(b))
 extern void GE_debug_hit_breakpoint(GE_context* a_thread, GE_debug_breakpoint* a_breakpoint);
 
+/* Action executed when exception breakpoint is hit.*/
+extern void GE_debug_hit_exception_breakpoint(GE_context* a_thread, long code, const char* tag);
+
 /* Set `is_blocking` status of `a_thread`. */
 extern void GE_debug_set_blocking(GE_context* a_thread, int a_value);
 
