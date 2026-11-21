@@ -5,7 +5,7 @@
 		"Eiffel lists of elseif parts"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2002-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2002-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_ELSEIF_PART_LIST
@@ -146,6 +146,23 @@ feature -- Status report
 			nb := count - 1
 			from i := 0 until i > nb loop
 				if storage.item (i).has_inline_separate_instruction then
+					Result := True
+						-- Jump out of the loop.
+					i := nb
+				end
+				i := i + 1
+			end
+		end
+
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in one of current elseif parts or
+			-- (recursively) in one of their subinstructions?
+		local
+			i, nb: INTEGER
+		do
+			nb := count - 1
+			from i := 0 until i > nb loop
+				if storage.item (i).has_retry_instruction then
 					Result := True
 						-- Jump out of the loop.
 					i := nb

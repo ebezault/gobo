@@ -154,6 +154,23 @@ feature -- Status report
 			end
 		end
 
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in current when parts or
+			-- (recursively) in one of their subinstructions?
+		local
+			i, nb: INTEGER
+		do
+			nb := count - 1
+			from i := 0 until i > nb loop
+				if storage.item (i).has_retry_instruction then
+					Result := True
+						-- Jump out of the loop.
+					i := nb
+				end
+				i := i + 1
+			end
+		end
+
 feature -- Measurement
 
 	nested_instruction_count: INTEGER

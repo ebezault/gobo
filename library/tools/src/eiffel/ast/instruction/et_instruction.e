@@ -5,7 +5,7 @@
 		"Eiffel instructions"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 1999-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 1999-2026, Eric Bezault and others"
 	license: "MIT License"
 
 deferred class ET_INSTRUCTION
@@ -59,6 +59,13 @@ feature -- Status report
 
 	has_inline_separate_instruction: BOOLEAN
 			-- Does an inline separate instruction appear in current instruction or
+			-- (recursively) in one of its subinstructions?
+		do
+			-- Result := False
+		end
+
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in current instruction or
 			-- (recursively) in one of its subinstructions?
 		do
 			-- Result := False

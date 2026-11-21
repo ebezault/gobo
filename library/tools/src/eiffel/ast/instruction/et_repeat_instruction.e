@@ -5,7 +5,7 @@
 		"Eiffel loop instruction of the form '⟳ ... ⟲'"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2019-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2019-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_REPEAT_INSTRUCTION
@@ -15,6 +15,7 @@ inherit
 	ET_ITERATION_INSTRUCTION
 		redefine
 			has_inline_separate_instruction,
+			has_retry_instruction,
 			nested_instruction_count
 		end
 
@@ -60,6 +61,14 @@ feature -- Status report
 		do
 			Result := attached from_compound as l_from_compound and then l_from_compound.has_inline_separate_instruction or
 				attached loop_compound as l_loop_compound and then l_loop_compound.has_inline_separate_instruction
+		end
+
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in current instruction or
+			-- (recursively) in one of its subinstructions?
+		do
+			Result := attached from_compound as l_from_compound and then l_from_compound.has_retry_instruction or
+				attached loop_compound as l_loop_compound and then l_loop_compound.has_retry_instruction
 		end
 
 feature -- Access

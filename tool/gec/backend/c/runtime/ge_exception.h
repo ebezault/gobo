@@ -149,7 +149,10 @@ struct GE_call_struct {
 typedef volatile struct GE_rescue_struct GE_rescue;
 struct GE_rescue_struct {
 	GE_rescue* volatile previous; /* previous context in the call chain */
+#ifdef GE_DEBUG_MODE
 	uint8_t volatile is_eiffel; /* associated with an Eiffel rescue clause */
+	uint8_t volatile has_retry; /* does rescue clause contain a 'retry' instruction? */
+#endif
 	GE_jmp_buf jb;
 };
 

@@ -20,6 +20,7 @@ inherit
 			has_agent,
 			has_typed_object_test,
 			has_inline_separate_instruction,
+			has_retry_instruction,
 			nested_instruction_count
 		end
 
@@ -113,6 +114,14 @@ feature -- Status report
 		do
 			Result := attached when_parts as l_when_parts and then l_when_parts.has_inline_separate_instruction or
 				attached else_compound as l_else_compound and then l_else_compound.has_inline_separate_instruction
+		end
+
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in current instruction or
+			-- (recursively) in one of its subinstructions?
+		do
+			Result := attached when_parts as l_when_parts and then l_when_parts.has_retry_instruction or
+				attached else_compound as l_else_compound and then l_else_compound.has_retry_instruction
 		end
 
 feature -- Measurement

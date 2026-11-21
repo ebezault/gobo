@@ -104,6 +104,13 @@ feature -- Status report
 			Result := attached then_compound as l_then_compound and then l_then_compound.has_inline_separate_instruction
 		end
 
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in current when part or
+			-- (recursively) in one of its subinstructions?
+		do
+			Result := attached then_compound as l_then_compound and then l_then_compound.has_retry_instruction
+		end
+
 feature -- Measurement
 
 	nested_instruction_count: INTEGER

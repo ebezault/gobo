@@ -5,7 +5,7 @@
 		"Eiffel retry instructions"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 1999-2014, Eric Bezault and others"
+	copyright: "Copyright (c) 1999-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_RETRY_INSTRUCTION
@@ -17,6 +17,8 @@ inherit
 			first_position,
 			last_position,
 			break
+		redefine
+			has_retry_instruction
 		end
 
 	ET_KEYWORD
@@ -29,6 +31,12 @@ inherit
 create
 
 	make
+
+feature -- Status report
+
+	has_retry_instruction: BOOLEAN = True
+			-- Does a 'retry' instruction appear in current instruction or
+			-- (recursively) in one of its subinstructions?
 
 feature -- Processing
 

@@ -75,6 +75,46 @@ static uint32_t GE_debug_step_level = 0;
 
 /* Exception breakpoints. */
 static int GE_debug_exception_breakpoint_raised = 0;
+static int GE_debug_exception_breakpoint_uncaught = 0;
+static int GE_debug_exception_breakpoint_unretried = 0;
+
+/* Enabled Exception categories. */
+static int GE_debug_exception_breakpoint_categories[] = {
+	0,	/* Nothing */
+	0,	/* GE_EX_VOID */
+	0,	/* GE_EX_MEM */
+	0,	/* GE_EX_PRE */
+	0,	/* GE_EX_POST */
+	0,	/* GE_EX_FLOAT */
+	0,	/* GE_EX_CINV */
+	0,	/* GE_EX_CHECK */
+	0,	/* GE_EX_FAIL */
+	0,	/* GE_EX_WHEN */
+	0,	/* GE_EX_VAR */
+	0,	/* GE_EX_LINV */
+	0,	/* GE_EX_SIG */
+	0,	/* GE_EX_BYE */
+	0,	/* GE_EX_RESC */
+	0,	/* GE_EX_OMEM */
+	0,	/* GE_EX_RES */
+	0,	/* GE_EX_CDEF */
+	0,	/* GE_EX_EXT */
+	0,	/* GE_EX_VEXP */
+	0,	/* GE_EX_HDLR */
+	0,	/* GE_EX_IO */
+	0,	/* GE_EX_SYS */
+	0,	/* GE_EX_RETR */
+	0,	/* GE_EX_PROG */
+	0,	/* GE_EX_FATAL */
+	0,	/* GE_EX_DOL */
+	0,	/* GE_EX_ISE_IO */
+	0,	/* GE_EX_COM */
+	0,	/* GE_EX_RT_CHECK */
+	0,	/* GE_EX_OLD */
+	0,	/* GE_EX_SEL */
+	0,	/* GE_EX_DIRTY */
+	0	/* GE_EX_REGION_ID */
+};
 
 /* Used to generate debugger thread ids. */
 static uint32_t GE_debug_thread_counter = 0;
@@ -357,6 +397,105 @@ static void GE_unprotected_debug_disable_all_file_breakpoints(GE_debug_file_brea
 static void GE_unprotected_debug_disable_all_exception_breakpoints()
 {
 	GE_debug_exception_breakpoint_raised = 0;
+	GE_debug_exception_breakpoint_uncaught = 0;
+	GE_debug_exception_breakpoint_unretried = 0;
+}
+
+/*
+ * Disable all exception categories.
+ * 
+ * Not thread-safe.
+ * Need to be protected by:
+ * - `GE_debug_mutex`.
+ */
+static void GE_unprotected_debug_disable_all_exception_categories()
+{
+	int i;
+	for (i = 1; i <= GE_EX_NEX; i++) {
+		GE_debug_exception_breakpoint_categories[i] = 0;
+	}
+}
+
+/*
+ * Enable exception category `category_id`.
+ * Return 0 if this category is unknown.
+ * 
+ * Not thread-safe.
+ * Need to be protected by:
+ * - `GE_debug_mutex`.
+ */
+static int GE_unprotected_debug_enable_exception_category(char* category_id)
+{
+	if (strcmp(category_id, "precondition") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_PRE] = 1;
+	} else if (strcmp(category_id, "postcondition") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_POST] = 1;
+	} else if (strcmp(category_id, "invariant") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_CINV] = 1;
+	} else if (strcmp(category_id, "check") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_CHECK] = 1;
+	} else if (strcmp(category_id, "loop_invariant") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_LINV] = 1;
+	} else if (strcmp(category_id, "loop_variant") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_VAR] = 1;
+	} else if (strcmp(category_id, "developer_exception") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_PROG] = 1;
+	} else if (strcmp(category_id, "void_target") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_VOID] = 1;
+	} else if (strcmp(category_id, "routine_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_FAIL] = 1;
+	} else if (strcmp(category_id, "inspect_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_WHEN] = 1;
+	} else if (strcmp(category_id, "deferred_creation_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_CDEF] = 1;
+	} else if (strcmp(category_id, "void_expanded_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_VEXP] = 1;
+	} else if (strcmp(category_id, "old_expression_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_OLD] = 1;
+	} else if (strcmp(category_id, "cecil_melted_code_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_DOL] = 1;
+	} else if (strcmp(category_id, "floating_point_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_FLOAT] = 1;
+	} else if (strcmp(category_id, "scoop_processor_dirty") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_DIRTY] = 1;
+	} else if (strcmp(category_id, "scoop_region_id_overflow") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_REGION_ID] = 1;
+	} else if (strcmp(category_id, "retrieval_error") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_RETR] = 1;
+	} else if (strcmp(category_id, "serialization_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_SEL] = 1;
+	} else if (strcmp(category_id, "io_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_IO] = 1;
+	} else if (strcmp(category_id, "com_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_COM] = 1;
+	} else if (strcmp(category_id, "no_more_memory") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_MEM] = 1;
+	} else if (strcmp(category_id, "out_of_memory") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_OMEM] = 1;
+	} else if (strcmp(category_id, "operating_system_signal") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_SIG] = 1;
+	} else if (strcmp(category_id, "operating_system_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_SYS] = 1;
+	} else if (strcmp(category_id, "signal_handler_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_HDLR] = 1;
+	} else if (strcmp(category_id, "eiffel_runtime_io_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_ISE_IO] = 1;
+	} else if (strcmp(category_id, "eiffel_runtime_fatal_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_FATAL] = 1;
+	} else if (strcmp(category_id, "eiffel_runtime_panic") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_BYE] = 1;
+	} else if (strcmp(category_id, "eiffel_runtime_check_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_RT_CHECK] = 1;
+	} else if (strcmp(category_id, "exception_in_rescue_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_RESC] = 1;
+	} else if (strcmp(category_id, "resumption_attempt_failure") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_RES] = 1;
+	} else if (strcmp(category_id, "external_event") == 0) {
+		GE_debug_exception_breakpoint_categories[GE_EX_EXT] = 1;
+	} else {
+		return 0;
+	}
+	return 1;
 }
 
 /*
@@ -1400,12 +1539,62 @@ static void GE_debug_receive_request()
 				GE_debug_exception_breakpoint_raised = 1;
 				fprintf(GE_debug_out, "{\"verified\":true}");
 				free(l_filter);
+			} else if(strcmp(l_filter, "uncaught") == 0) {
+				GE_debug_exception_breakpoint_uncaught = 1;
+				fprintf(GE_debug_out, "{\"verified\":true}");
+				free(l_filter);
+			} else if(strcmp(l_filter, "unretried") == 0) {
+				GE_debug_exception_breakpoint_unretried = 1;
+				fprintf(GE_debug_out, "{\"verified\":true}");
+				free(l_filter);
 			} else {
 				fprintf(GE_debug_out, "{\"verified\":false,\"message\":\"Unknown filter %s.\"}", l_filter);
 				free(l_filter);
 			}
 		}
 		fprintf(GE_debug_out, "]}}\n");
+
+	} else if(strcmp(command, "setExceptionCategories") == 0) {
+		/* Handle 'setExceptionCategories'. */
+		char* l_category;
+		char* str;
+		uint32_t l_count;
+		uint32_t i;
+		int l_category_error_reported = 0;
+		int l_updated;
+		GE_unprotected_debug_disable_all_exception_categories();
+		str = GE_debug_get_string(&status);
+		if (!str) {
+			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"exception category count missing in request '%s'.\"}\n", id, command);
+			goto GE_debug_receive_done;
+		}
+		if (sscanf(str, "%u", &l_count) != 1) {
+			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"exception category count missing in request '%s'.\"}\n", id, command);
+			free(str);
+			goto GE_debug_receive_done;
+		}
+		free(str);
+		for (i = 0; i < l_count; i++) {
+			l_category = GE_debug_get_string(&status);
+			if (!l_category) {
+				if (!l_category_error_reported) {
+					fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"Missing exception category.\"}\n", id);
+				}
+				goto GE_debug_receive_done;
+			} else {
+				l_updated = GE_unprotected_debug_enable_exception_category(l_category);
+				if (!l_updated) {
+					if (!l_category_error_reported) {
+						fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":false,\"body\":{},\"message\":\"Unknown exception category %s.\"}\n", id, l_category);
+						l_category_error_reported = 1;
+					}
+				}
+				free(l_category);
+			}
+		}
+		if (!l_category_error_reported) {
+			fprintf(GE_debug_out, "{\"type\":\"response\",\"id\":%s,\"success\":true,\"body\":{}}\n", id);
+		}
 
 	} else if(strcmp(command, "threads") == 0) {
 		/* Handle 'threads'. */
@@ -2023,10 +2212,55 @@ void GE_debug_hit_breakpoint(GE_context* a_thread, GE_debug_breakpoint* a_breakp
  * Not thread-safe.
  * Need to be protected by:
  * - `GE_debug_mutex`.
+ * Protected by:
+ * - Mutex of `a_thread`.
  */
-static int GE_unprotected_debug_stoppable_exception_breakpoint(GE_context* a_thread)
+static int GE_unprotected_debug_stoppable_exception_breakpoint(GE_context* a_thread, long code)
 {
-	return GE_debug_exception_breakpoint_raised;
+	if (code < 1 || code > GE_EX_NEX) {
+		return 0;
+	}
+	if (!GE_debug_exception_breakpoint_categories[code]) {
+		return 0;
+	}
+	if (GE_debug_exception_breakpoint_raised) {
+		return 1;
+	}
+	if (GE_debug_exception_breakpoint_uncaught) {
+		GE_rescue* l_rescue;
+		int l_uncaught = 1;
+		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+		l_rescue = a_thread->last_rescue;
+		while (l_rescue) {
+			if (l_rescue->is_eiffel) {
+				l_uncaught = 0;
+				break;
+			}
+			l_rescue = l_rescue->previous;
+		}
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		if (l_uncaught) {
+			return 1;
+		}
+	}
+	if (GE_debug_exception_breakpoint_unretried) {
+		GE_rescue* l_rescue;
+		int l_unretried = 1;
+		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+		l_rescue = a_thread->last_rescue;
+		while (l_rescue) {
+			if (l_rescue->is_eiffel && l_rescue->has_retry) {
+				l_unretried = 0;
+				break;
+			}
+			l_rescue = l_rescue->previous;
+		}
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		if (l_unretried) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 /*
@@ -2050,7 +2284,7 @@ void GE_debug_hit_exception_breakpoint(GE_context* a_thread, long code, const ch
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 		return;
 	}
-	if (GE_debug_is_stopped || GE_debug_is_stopping || GE_unprotected_debug_stoppable_exception_breakpoint(a_thread)) {
+	if (GE_debug_is_stopped || GE_debug_is_stopping || GE_unprotected_debug_stoppable_exception_breakpoint(a_thread, code)) {
 		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
 		if (!GE_debug_is_stopped) {
 			if (!GE_debug_stopped_thread_id) {

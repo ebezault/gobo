@@ -5,7 +5,7 @@
 		"Eiffel instruction compounds"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 1999-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 1999-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_COMPOUND
@@ -148,6 +148,23 @@ feature -- Status report
 			nb := count - 1
 			from i := 0 until i > nb loop
 				if storage.item (i).has_inline_separate_instruction then
+					Result := True
+						-- Jump out of the loop.
+					i := nb + 1
+				end
+				i := i + 1
+			end
+		end
+
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in current compound or
+			-- (recursively) in one of its subinstructions?
+		local
+			i, nb: INTEGER
+		do
+			nb := count - 1
+			from i := 0 until i > nb loop
+				if storage.item (i).has_retry_instruction then
 					Result := True
 						-- Jump out of the loop.
 					i := nb + 1

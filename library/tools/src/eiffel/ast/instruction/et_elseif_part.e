@@ -5,7 +5,7 @@
 		"Eiffel 'elseif' parts"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 2002-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 2002-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_ELSEIF_PART
@@ -121,6 +121,13 @@ feature -- Status report
 			-- (recursively) in one of its subinstructions?
 		do
 			Result := attached then_compound as l_then_compound and then l_then_compound.has_inline_separate_instruction
+		end
+
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in current elseif part or
+			-- (recursively) in one of its subinstructions?
+		do
+			Result := attached then_compound as l_then_compound and then l_then_compound.has_retry_instruction
 		end
 
 feature -- Measurement

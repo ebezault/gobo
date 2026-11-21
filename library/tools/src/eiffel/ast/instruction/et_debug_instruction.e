@@ -5,7 +5,7 @@
 		"Eiffel debug instructions"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 1999-2024, Eric Bezault and others"
+	copyright: "Copyright (c) 1999-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_DEBUG_INSTRUCTION
@@ -20,6 +20,7 @@ inherit
 			has_agent,
 			has_typed_object_test,
 			has_inline_separate_instruction,
+			has_retry_instruction,
 			nested_instruction_count
 		end
 
@@ -138,6 +139,13 @@ feature -- Status report
 			-- (recursively) in one of its subinstructions?
 		do
 			Result := attached compound as l_compound and then l_compound.has_inline_separate_instruction
+		end
+
+	has_retry_instruction: BOOLEAN
+			-- Does a 'retry' instruction appear in current instruction or
+			-- (recursively) in one of its subinstructions?
+		do
+			Result := attached compound as l_compound and then l_compound.has_retry_instruction
 		end
 
 feature -- Measurement

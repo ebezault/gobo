@@ -7789,11 +7789,21 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
 				current_file.put_string (c_last_rescue)
-				current_file.put_character (',')
-				if l_rescue /= Void then
-					current_file.put_character ('1')
-				else
-					current_file.put_character ('0')
+				if debug_mode then
+					current_file.put_character (',')
+					if l_rescue /= Void then
+						current_file.put_character ('1')
+						current_file.put_character (',')
+						if l_rescue.has_retry_instruction then
+							current_file.put_character ('1')
+						else
+							current_file.put_character ('0')
+						end
+					else
+						current_file.put_character ('0')
+						current_file.put_character (',')
+						current_file.put_character ('0')
+					end
 				end
 				current_file.put_character (',')
 				current_file.put_character ('0')
@@ -8292,8 +8302,12 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
 				current_file.put_string (c_last_rescue)
-				current_file.put_character (',')
-				current_file.put_character ('0')
+				if debug_mode then
+					current_file.put_character (',')
+					current_file.put_character ('0')
+					current_file.put_character (',')
+					current_file.put_character ('0')
+				end
 				current_file.put_character (',')
 				current_file.put_character ('0')
 				current_file.put_character ('}')
@@ -25386,8 +25400,12 @@ feature {NONE} -- SCOOP
 			current_file.put_string (c_ac)
 			current_file.put_string (c_arrow)
 			current_file.put_string (c_last_rescue)
-			current_file.put_character (',')
-			current_file.put_character ('0')
+			if debug_mode then
+				current_file.put_character (',')
+				current_file.put_character ('0')
+				current_file.put_character (',')
+				current_file.put_character ('0')
+			end
 			current_file.put_character (',')
 			current_file.put_character ('0')
 			current_file.put_character ('}')
@@ -42829,8 +42847,12 @@ feature {NONE} -- Assertion generation
 				current_file.put_string (c_ac)
 				current_file.put_string (c_arrow)
 				current_file.put_string (c_last_rescue)
-				current_file.put_character (',')
-				current_file.put_character ('0')
+				if debug_mode then
+					current_file.put_character (',')
+					current_file.put_character ('0')
+					current_file.put_character (',')
+					current_file.put_character ('0')
+				end
 				current_file.put_character (',')
 				current_file.put_character ('0')
 				current_file.put_character ('}')
