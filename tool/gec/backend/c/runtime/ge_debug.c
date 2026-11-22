@@ -1000,16 +1000,18 @@ static void GE_unprotected_debug_write_stack_trace_body(uint32_t thread_id, uint
 		}
 		fprintf(GE_debug_out, "{\"id\":{\"threadId\":%u,\"frameId\":\"0x%016" EIF_POINTER_DISPLAY "\"},\"name\":\"", thread_id, (uintptr_t)l_call);
 		GE_debug_write_escaped_string(l_call->feature_name);
-		fprintf(GE_debug_out, "\",\"line\":%u,\"column\":%u,\"source\":{\"name\":\"", l_call->line, l_call->column);
-		GE_debug_write_escaped_string(l_call->class_name);
-		fprintf(GE_debug_out, "\",\"path\":\"");
-		GE_debug_write_escaped_string(l_call->filename);
-		fprintf(GE_debug_out, "\"}");
-		l_call = l_call->caller;
-		if (!l_call) {
+		fprintf(GE_debug_out, "\",\"line\":%u,\"column\":%u", l_call->line, l_call->column);
+		if (!l_call->caller || strcmp(l_call->feature_name, "GC dispose") == 0) {
 			fprintf(GE_debug_out, ",\"presentationHint\":\"label\"");
+		} else {
+			fprintf(GE_debug_out, ",\"source\":{\"name\":\"");
+			GE_debug_write_escaped_string(l_call->class_name);
+			fprintf(GE_debug_out, "\",\"path\":\"");
+			GE_debug_write_escaped_string(l_call->filename);
+			fprintf(GE_debug_out, "\"}");
 		}
 		fputc('}', GE_debug_out);
+		l_call = l_call->caller;
 	}
 	fprintf(GE_debug_out, "],\"totalFrames\":%u}", count);
 	GE_mutex_unlock((EIF_POINTER)l_thread->debug_mutex);

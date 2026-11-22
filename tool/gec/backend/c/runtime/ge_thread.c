@@ -1364,7 +1364,7 @@ static void* GE_thread_routine(void* arg)
 #endif
 #if defined(GE_USE_CURRENT_IN_EXCEPTION_TRACE) || defined(GE_DEBUG_MODE)
 #if defined(GE_DEBUG_MODE)
-	GE_call tc = {(void* volatile)l_thread_context->current,"",l_root_name,"separate call",0,0,0};
+	GE_call tc = {(void* volatile)l_thread_context->current,"",l_root_name,"",0,0,0};
 #else
 	GE_call tc = {(void* volatile)l_thread_context->current,"",l_root_name,0};
 #endif
