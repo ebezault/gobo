@@ -48409,7 +48409,15 @@ feature {NONE} -- Include files
 					end
 				elseif a_filename.same_string ("ge_gc.c") then
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
-					include_runtime_header_file ("ge_types.h", False, a_header_file)
+					if use_boehm_gc then
+						include_runtime_header_file ("ge_types.h", False, a_header_file)
+						if use_threads then
+							include_runtime_header_file ("ge_thread.h", False, a_header_file)
+						end
+						if debug_mode then
+							include_runtime_header_file ("ge_debug.h", False, a_header_file)
+						end
+					end
 				elseif a_filename.same_string ("ge_identified.c") then
 					include_runtime_header_file ("ge_identified.h", False, a_header_file)
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
