@@ -2401,24 +2401,81 @@ feature {NONE} -- Feature generation
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
+			if debug_mode or current_class.invariants_enabled then
+				print_indentation
+				print_context_type_declaration (current_file)
+				current_file.put_character (' ')
+				current_file.put_string (c_ac)
+				print_assign_to
+				current_file.put_string (c_ge_current_context)
+				current_file.put_character ('(')
+				current_file.put_character (')')
+				print_semicolon_newline
+			end
+			if debug_mode then
+				if l_result_type /= Void then
+					print_indentation
+					print_type_declaration (l_result_type, current_file)
+					current_file.put_character (' ')
+					print_result_name (current_file)
+					print_semicolon_newline
+				end
+				print_indentation
+				current_file.put_string (c_uint8_t)
+				current_file.put_character (' ')
+				current_file.put_string (c_is_blocking)
+				print_assign_to
+				current_file.put_string (c_ac)
+				current_file.put_string (c_arrow)
+				current_file.put_string (c_is_blocking)
+				print_semicolon_newline
+				print_indentation
+				current_file.put_string (c_if)
+				current_file.put_character (' ')
+				current_file.put_character ('(')
+				current_file.put_string (c_is_blocking)
+				current_file.put_character (')')
+				current_file.put_character (' ')
+				current_file.put_character ('{')
+				current_file.put_new_line
+				indent
+				print_set_blocking_execution (False)
+				dedent
+				print_indentation
+				current_file.put_character ('}')
+				current_file.put_new_line
+			end
 			print_indentation
 			if l_result_type /= Void then
-				current_file.put_string (c_return)
-				current_file.put_character (' ')
+				if debug_mode then
+					print_result_name (current_file)
+					print_assign_to
+				else
+					current_file.put_string (c_return)
+					current_file.put_character (' ')
+				end
 			end
 			if current_class.invariants_enabled then
 				current_file.put_string (c_ge_unqualified)
 				current_file.put_character ('(')
-				current_file.put_string (c_ge_current_context)
-				current_file.put_character ('(')
-				current_file.put_character (')')
+				if debug_mode then
+					current_file.put_string (c_ac)
+				else
+					current_file.put_string (c_ge_current_context)
+					current_file.put_character ('(')
+					current_file.put_character (')')
+				end
 				print_comma
 			end
 			print_routine_name (current_feature, current_type, current_file)
 			current_file.put_character ('(')
-			current_file.put_string (c_ge_current_context)
-			current_file.put_character ('(')
-			current_file.put_character (')')
+			if debug_mode or current_class.invariants_enabled then
+				current_file.put_string (c_ac)
+			else
+				current_file.put_string (c_ge_current_context)
+				current_file.put_character ('(')
+				current_file.put_character (')')
+			end
 			print_comma
 			print_current_name (current_file)
 			if l_arguments /= Void and then nb_args > 0 then
@@ -2431,8 +2488,31 @@ feature {NONE} -- Feature generation
 			end
 			current_file.put_character (')')
 			print_after_call (current_type)
-			current_file.put_character (';')
-			current_file.put_new_line
+			print_semicolon_newline
+			if debug_mode then
+				print_indentation
+				current_file.put_string (c_if)
+				current_file.put_character (' ')
+				current_file.put_character ('(')
+				current_file.put_string (c_is_blocking)
+				current_file.put_character (')')
+				current_file.put_character (' ')
+				current_file.put_character ('{')
+				current_file.put_new_line
+				indent
+				print_set_blocking_execution (True)
+				dedent
+				print_indentation
+				current_file.put_character ('}')
+				current_file.put_new_line
+				if l_result_type /= Void then
+					print_indentation
+					current_file.put_string (c_return)
+					current_file.put_character (' ')
+					print_result_name (current_file)
+					print_semicolon_newline
+				end
+			end
 			dedent
 			current_file.put_character ('}')
 			current_file.put_new_line
@@ -2928,6 +3008,16 @@ feature {NONE} -- Feature generation
 					print_default_entity_value (l_result_type, current_file)
 					print_semicolon_newline
 				end
+				if debug_mode then
+					if external_blocking_regexp.recognizes (l_language_string) then
+						l_is_blocking := True
+						print_indentation
+						current_file.put_string (c_uint8_t)
+						current_file.put_character (' ')
+						current_file.put_string (c_is_blocking)
+						print_semicolon_newline
+					end
+				end
 			end
 				--
 				-- Instructions.
@@ -3178,9 +3268,30 @@ feature {NONE} -- Feature generation
 				print_position_reached (l_position)
 				create l_beginning_of_line.make (l_position.line, 1)
 				print_set_exception_trace_position (l_beginning_of_line)
-				if external_blocking_regexp.recognizes (l_language_string) then
-					l_is_blocking := True
+				if debug_mode and l_is_blocking then
+					print_indentation
+					current_file.put_string (c_is_blocking)
+					print_assign_to
+					current_file.put_string (c_ac)
+					current_file.put_string (c_arrow)
+					current_file.put_string (c_is_blocking)
+					print_semicolon_newline
+					print_indentation
+					current_file.put_string (c_if)
+					current_file.put_character (' ')
+					current_file.put_character ('(')
+					current_file.put_character ('!')
+					current_file.put_string (c_is_blocking)
+					current_file.put_character (')')
+					current_file.put_character (' ')
+					current_file.put_character ('{')
+					current_file.put_new_line
+					indent
 					print_set_blocking_execution (True)
+					dedent
+					print_indentation
+					current_file.put_character ('}')
+					current_file.put_new_line
 				end
 			end
 				-- Put the body of the feature in a block so that there
@@ -3452,7 +3563,22 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			current_file.put_new_line
 			if not a_inline then
 				if debug_mode and l_is_blocking then
+					print_indentation
+					current_file.put_string (c_if)
+					current_file.put_character (' ')
+					current_file.put_character ('(')
+					current_file.put_character ('!')
+					current_file.put_string (c_is_blocking)
+					current_file.put_character (')')
+					current_file.put_character (' ')
+					current_file.put_character ('{')
+					current_file.put_new_line
+					indent
 					print_set_blocking_execution (False)
+					dedent
+					print_indentation
+					current_file.put_character ('}')
+					current_file.put_new_line
 				end
 				if current_class.invariants_enabled and not current_feature.is_static then
 					if debug_mode then
@@ -25836,7 +25962,7 @@ feature {NONE} -- SCOOP
 					current_file.put_character (')')
 					print_semicolon_newline
 					print_indentation
-					current_file.put_string (c_if)
+					current_file.put_string (c_while)
 					current_file.put_character (' ')
 					current_file.put_character ('(')
 					current_file.put_string (c_se_sync)
@@ -26106,7 +26232,7 @@ feature {NONE} -- SCOOP
 			current_file.put_character (')')
 			print_semicolon_newline
 			print_indentation
-			current_file.put_string (c_if)
+			current_file.put_string (c_while)
 			current_file.put_character (' ')
 			current_file.put_character ('(')
 			current_file.put_string (c_se_sync)
@@ -38120,9 +38246,6 @@ feature {NONE} -- C function generation
 					end
 				end
 				reset_temp_variables
-				if debug_mode then
-					print_set_blocking_execution (True)
-				end
 				if use_scoop then
 					print_indentation
 					current_file.put_string (c_ge_decrement_scoop_sessions_count)
@@ -52021,6 +52144,7 @@ feature {NONE} -- Constants
 	c_int32_t: STRING = "int32_t"
 	c_int64_t: STRING = "int64_t"
 	c_intptr_t: STRING = "intptr_t"
+	c_is_blocking: STRING = "is_blocking"
 	c_is_passive: STRING = "is_passive"
 	c_is_running: STRING = "is_running"
 	c_is_special: STRING = "is_special"

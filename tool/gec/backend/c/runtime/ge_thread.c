@@ -1375,7 +1375,6 @@ static void* GE_thread_routine(void* arg)
 	l_context->call = &tc;
 #ifdef GE_DEBUG_MODE
 	GE_debug_register_thread(l_context);
-	GE_debug_set_blocking(l_context, 1);
 #endif
 	GE_unprotected_mutex_lock((EIF_POINTER)l_parent_thread_context->children_mutex);
 	/* Wait for the parent thread to set the thread id. */
@@ -1395,14 +1394,8 @@ static void* GE_thread_routine(void* arg)
 	} else
 #endif
 	if (l_thread_context->current && l_thread_context->routine) {
-#ifdef GE_DEBUG_MODE
-		GE_debug_set_blocking(l_context, 0);
-#endif
 		l_thread_context->routine(l_thread_context->current, 0);
 	}
-#ifdef GE_DEBUG_MODE
-	GE_debug_set_blocking(l_context, 1);
-#endif
 	GE_thread_exit();
 #ifdef EIF_WINDOWS
 	return 0;
@@ -1774,13 +1767,7 @@ void GE_thread_exit(void)
 		l_thread_context->thread_exiting = 1;
 		if (l_thread_context->current) {
 			if (l_thread_context->set_terminated) {
-#ifdef GE_DEBUG_MODE
-				GE_debug_set_blocking(l_context, 0);
-#endif
 				l_thread_context->set_terminated(l_thread_context->current, EIF_TRUE);
-#ifdef GE_DEBUG_MODE
-				GE_debug_set_blocking(l_context, 1);
-#endif
 			}
 			l_thread_context->current = EIF_VOID;
 		}

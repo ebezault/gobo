@@ -96,6 +96,7 @@ void GE_boehm_dispose(void* C, void* disp) {
 	long volatile exception_code;
 	const char* volatile exception_tag;
 	int volatile signal_number;
+	uint8_t is_blocking;
 
 	l_main_context = GE_main_context;
 #ifdef GE_USE_THREADS
@@ -147,6 +148,10 @@ void GE_boehm_dispose(void* C, void* disp) {
 		ac->debug_condition_variable = (EIF_COND_TYPE*)GE_condition_variable_create();
 		GE_debug_register_thread(ac);
 	}
+	is_blocking = ac->is_blocking;
+	if (is_blocking) {
+		GE_debug_set_blocking(ac, 0);
+	}
 #endif
 	((GE_types[((EIF_REFERENCE)C)->id][0]).dispose)(ac, (EIF_REFERENCE) C);
 	ac->in_assertion = in_assertion;
@@ -160,6 +165,9 @@ void GE_boehm_dispose(void* C, void* disp) {
 	ac->signal_number = signal_number;
 	ac->call = tc.caller;
 #ifdef GE_DEBUG_MODE
+	if (is_blocking) {
+		GE_debug_set_blocking(ac, 1);
+	}
 	if (ac != l_current_context) {
 		GE_debug_remove_thread(ac);
 		GE_mutex_destroy(ac->debug_mutex);

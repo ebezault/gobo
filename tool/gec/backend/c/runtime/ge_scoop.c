@@ -729,7 +729,21 @@ void GE_scoop_session_add_call(GE_scoop_session* a_session, GE_scoop_call* a_cal
 		if (l_synchronization) {
 			GE_mutex_lock((EIF_POINTER)l_synchronization->mutex);
 			if (l_synchronization->wait) {
-				GE_condition_variable_wait((EIF_POINTER)l_synchronization->condition_variable, (EIF_POINTER)l_synchronization->mutex);
+#ifdef GE_DEBUG_MODE
+				GE_context* l_context = GE_current_context();
+				uint8_t is_blocking = l_context->is_blocking;
+				if (!is_blocking) {
+					GE_debug_set_blocking(l_context, 1);
+				}
+#endif
+				while (l_synchronization->wait) {
+					GE_condition_variable_wait((EIF_POINTER)l_synchronization->condition_variable, (EIF_POINTER)l_synchronization->mutex);
+				}
+#ifdef GE_DEBUG_MODE
+				if (!is_blocking) {
+					GE_debug_set_blocking(l_context, 0);
+				}
+#endif
 			}
 			GE_mutex_unlock((EIF_POINTER)l_synchronization->mutex);
 			GE_free_scoop_synchronization(l_synchronization);
@@ -1118,9 +1132,6 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 			a_context->last_rescue = &r;
 			if (GE_setjmp(r.jb) != 0) {
 				a_context->last_rescue = &r;
-#ifdef GE_DEBUG_MODE
-				GE_debug_set_blocking(a_context, 1);
-#endif
 				GE_scoop_session_set_eiffel_called(a_session, '\1');
 				if (l_is_synchronous) {
 					/* The exception will be propagated to the caller region. */
@@ -1166,13 +1177,7 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 				a_context->last_rescue = r.previous;
 				return;
 			}
-#ifdef GE_DEBUG_MODE
-			GE_debug_set_blocking(a_context, 0);
-#endif
 			a_call->execute(a_context, a_session, a_call);
-#ifdef GE_DEBUG_MODE
-			GE_debug_set_blocking(a_context, 1);
-#endif
 			a_context->last_rescue = r.previous;
 #ifdef GE_DEBUG_MODE
 			GE_mutex_lock((EIF_POINTER)a_context->debug_mutex);
@@ -1199,7 +1204,20 @@ static void GE_scoop_call_execute(GE_context* a_context, GE_scoop_session* a_ses
 		} else {
 			GE_mutex_lock((EIF_POINTER)l_synchronization->mutex);
 			if (l_synchronization->wait) {
-				GE_condition_variable_wait((EIF_POINTER)l_synchronization->condition_variable, (EIF_POINTER)l_synchronization->mutex);
+#ifdef GE_DEBUG_MODE
+				uint8_t is_blocking = a_context->is_blocking;
+				if (!is_blocking) {
+					GE_debug_set_blocking(a_context, 1);
+				}
+#endif
+				while (l_synchronization->wait) {
+					GE_condition_variable_wait((EIF_POINTER)l_synchronization->condition_variable, (EIF_POINTER)l_synchronization->mutex);
+				}
+#ifdef GE_DEBUG_MODE
+				if (!is_blocking) {
+					GE_debug_set_blocking(a_context, 0);
+				}
+#endif
 			}
 			GE_mutex_unlock((EIF_POINTER)l_synchronization->mutex);
 			GE_free_scoop_synchronization(l_synchronization);
@@ -1229,7 +1247,18 @@ static void GE_scoop_session_execute(GE_context* a_context, GE_scoop_session* a_
 			GE_free_scoop_call(l_call);
 		} else if (a_session->is_open && !a_session->callee->is_passive) {
 				/* The session is not finished. New calls may still be registered. */
+#ifdef GE_DEBUG_MODE
+			uint8_t is_blocking = a_context->is_blocking;
+			if (!is_blocking) {
+				GE_debug_set_blocking(a_context, 1);
+			}
+#endif
 			GE_condition_variable_wait((EIF_POINTER)a_session->condition_variable, (EIF_POINTER)a_session->mutex);
+#ifdef GE_DEBUG_MODE
+			if (!is_blocking) {
+				GE_debug_set_blocking(a_context, 0);
+			}
+#endif
 			GE_mutex_unlock((EIF_POINTER)a_session->mutex);
 		} else {
 			a_session->callee->is_dirty = 0;
@@ -1507,11 +1536,22 @@ void GE_scoop_processor_run(GE_context* a_context)
 				GE_mutex_unlock(l_mutex);
 				break;
 			} else {
+#ifdef GE_DEBUG_MODE
+				uint8_t is_blocking = a_context->is_blocking;
+				if (!is_blocking) {
+					GE_debug_set_blocking(a_context, 1);
+				}
+#endif
 #ifdef GE_USE_BOEHM_GC
 				/* Use timeout in case `GE_scoop_region_dispose' was not able to wake it up. */
 				GE_condition_variable_wait_with_timeout(l_condition_variable, l_mutex, 2000);
 #else
 				GE_condition_variable_wait(l_condition_variable, l_mutex);
+#endif
+#ifdef GE_DEBUG_MODE
+				if (!is_blocking) {
+					GE_debug_set_blocking(a_context, 0);
+				}
 #endif
 				GE_mutex_unlock(l_mutex);
 			}
