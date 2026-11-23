@@ -1001,7 +1001,7 @@ static void GE_unprotected_debug_write_stack_trace_body(uint32_t thread_id, uint
 		fprintf(GE_debug_out, "{\"id\":{\"threadId\":%u,\"frameId\":\"0x%016" EIF_POINTER_DISPLAY "\"},\"name\":\"", thread_id, (uintptr_t)l_call);
 		GE_debug_write_escaped_string(l_call->feature_name);
 		fprintf(GE_debug_out, "\",\"line\":%u,\"column\":%u", l_call->line, l_call->column);
-		if (!l_call->caller || strcmp(l_call->feature_name, "GC dispose") == 0) {
+		if (!l_call->caller || strcmp(l_call->feature_name, "GC dispose") == 0 || strcmp(l_call->feature_name, "SCOOP initialization") == 0) {
 			fprintf(GE_debug_out, ",\"presentationHint\":\"label\"");
 		} else {
 			fprintf(GE_debug_out, ",\"source\":{\"name\":\"");
@@ -2120,7 +2120,18 @@ static int GE_unprotected_debug_stoppable_breakpoint(GE_context* a_thread, GE_de
 	}
 	if (GE_debug_step_in_thread_id > 0 && GE_debug_step_level > 0) {
 		if (a_thread->debug_thread_id == GE_debug_step_in_thread_id) {
-			return 1;
+			int l_scoop_initialization = 0;
+			GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+			l_call = a_thread->call;
+			while (l_call) {
+				if (strcmp(l_call->feature_name, "SCOOP initialization") == 0) {
+					l_scoop_initialization = 1;
+					break;
+				}
+				l_call = l_call->caller;
+			}
+			GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+			return (!l_scoop_initialization);
 		}
 		return 0;
 	}

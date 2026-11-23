@@ -234,10 +234,20 @@ static void GE_scoop_init_exception(GE_scoop_region* a_region)
 {
 	EIF_REFERENCE l_exception_manager;
 	GE_context* l_context = a_region->context;
+#if defined(GE_DEBUG_MODE)
+	GE_call tc = {0,"","SCOOP initialization","",0,0,0};
+#elif defined(GE_USE_CURRENT_IN_EXCEPTION_TRACE)
+	GE_call tc = {0,"","SCOOP initialization",0};
+#else
+	GE_call tc = {"","SCOOP initialization",0};
+#endif
 
+	tc.caller = l_context->call;
+	l_context->call = &tc;
 	l_exception_manager = GE_new_exception_manager(l_context, EIF_TRUE);
 	a_region->exception_manager = l_exception_manager;
 	GE_init_exception_manager(l_context);
+	l_context->call = tc.caller;
 }
 
 /* Free and destroy uncollectable data in `a_region'. */

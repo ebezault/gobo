@@ -81,6 +81,7 @@ void GE_boehm_dispose(void* C, void* disp) {
 	GE_context* l_main_context;
 	GE_context* ac;
 #if defined(GE_DEBUG_MODE)
+	uint8_t is_blocking;
 	GE_call tc = {(void* volatile)C,"","GC dispose","",0,0,0};
 #elif defined(GE_USE_CURRENT_IN_EXCEPTION_TRACE)
 	GE_call tc = {(void* volatile)C,"","GC dispose",0};
@@ -96,7 +97,6 @@ void GE_boehm_dispose(void* C, void* disp) {
 	long volatile exception_code;
 	const char* volatile exception_tag;
 	int volatile signal_number;
-	uint8_t is_blocking;
 
 	l_main_context = GE_main_context;
 #ifdef GE_USE_THREADS
