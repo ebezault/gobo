@@ -209,9 +209,9 @@ stages:
 
   - template: .azure/test.yml
     parameters:
-      os: macos_26-arm64
+      os: macos_26_arm64
       c_compiler: zig
-      vm_image: macos-26_arm64
+      vm_image: macos-26-arm64
 
   - template: .azure/test.yml
     parameters:
