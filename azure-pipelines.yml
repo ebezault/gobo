@@ -1,4 +1,6 @@
 # For available vmImages, see https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml
+# Also https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted-deprecation-schedule?view=azure-devops&tabs=macos-images
+# and https://github.com/actions/runner-images/tree/main?tab=readme-ov-file#software-and-image-support
 
 variables:
   GOBO_CLI_THREAD: 0
@@ -23,6 +25,18 @@ stages:
 
   - template: .azure/build.yml
     parameters:
+      os: linux_ubuntu_26_04_arm64
+      c_compiler: zig
+      vm_image: ubuntu-26.04-arm64
+
+  - template: .azure/build.yml
+    parameters:
+      os: linux_ubuntu_26_04_arm64
+      c_compiler: gcc
+      vm_image: ubuntu-26.04-arm64
+
+  - template: .azure/build.yml
+    parameters:
       os: linux_ubuntu_24_04
       c_compiler: zig
       vm_image: ubuntu-24.04
@@ -35,6 +49,18 @@ stages:
 
   - template: .azure/build.yml
     parameters:
+      os: linux_ubuntu_24_04_arm64
+      c_compiler: zig
+      vm_image: ubuntu-24.04-arm64
+
+  - template: .azure/build.yml
+    parameters:
+      os: linux_ubuntu_24_04_arm64
+      c_compiler: gcc
+      vm_image: ubuntu-24.04-arm64
+
+  - template: .azure/build.yml
+    parameters:
       os: macos_26
       c_compiler: zig
       vm_image: macos-26
@@ -47,6 +73,18 @@ stages:
 
   - template: .azure/build.yml
     parameters:
+      os: macos_26_arm64
+      c_compiler: zig
+      vm_image: macos-26-arm64
+
+  - template: .azure/build.yml
+    parameters:
+      os: macos_26_arm64
+      c_compiler: clang
+      vm_image: macos-26-arm64
+
+  - template: .azure/build.yml
+    parameters:
       os: macos_15
       c_compiler: zig
       vm_image: macos-15
@@ -56,6 +94,18 @@ stages:
       os: macos_15
       c_compiler: clang
       vm_image: macos-15
+
+  - template: .azure/build.yml
+    parameters:
+      os: macos_15_arm64
+      c_compiler: zig
+      vm_image: macos-15-arm64
+
+  - template: .azure/build.yml
+    parameters:
+      os: macos_15_arm64
+      c_compiler: clang
+      vm_image: macos-15-arm64
 
   - template: .azure/build.yml
     parameters:
@@ -80,6 +130,18 @@ stages:
       os: windows_2022
       c_compiler: msc
       vm_image: windows-2022
+
+  - template: .azure/build.yml
+    parameters:
+      os: windows_11_arm64
+      c_compiler: zig
+      vm_image: windows-11-arm64
+
+  - template: .azure/build.yml
+    parameters:
+      os: windows_11_arm64
+      c_compiler: msc
+      vm_image: windows-11-arm64
 
 #
 # Running tests.
@@ -99,6 +161,18 @@ stages:
 
   - template: .azure/test.yml
     parameters:
+      os: linux_ubuntu_26_04_arm64
+      c_compiler: zig
+      vm_image: ubuntu-26.04-arm64
+
+  - template: .azure/test.yml
+    parameters:
+      os: linux_ubuntu_26_04_arm64
+      c_compiler: gcc
+      vm_image: ubuntu-26.04-arm64
+
+  - template: .azure/test.yml
+    parameters:
       os: linux_ubuntu_24_04
       c_compiler: zig
       vm_image: ubuntu-24.04
@@ -111,6 +185,18 @@ stages:
 
   - template: .azure/test.yml
     parameters:
+      os: linux_ubuntu_24_04_arm64
+      c_compiler: zig
+      vm_image: ubuntu-24.04-arm64
+
+  - template: .azure/test.yml
+    parameters:
+      os: linux_ubuntu_24_04_arm64
+      c_compiler: gcc
+      vm_image: ubuntu-24.04-arm64
+
+  - template: .azure/test.yml
+    parameters:
       os: macos_26
       c_compiler: zig
       vm_image: macos-26
@@ -123,6 +209,18 @@ stages:
 
   - template: .azure/test.yml
     parameters:
+      os: macos_26-arm64
+      c_compiler: zig
+      vm_image: macos-26_arm64
+
+  - template: .azure/test.yml
+    parameters:
+      os: macos_26_arm64
+      c_compiler: clang
+      vm_image: macos-26-arm64
+
+  - template: .azure/test.yml
+    parameters:
       os: macos_15
       c_compiler: zig
       vm_image: macos-15
@@ -132,6 +230,18 @@ stages:
       os: macos_15
       c_compiler: clang
       vm_image: macos-15
+
+  - template: .azure/test.yml
+    parameters:
+      os: macos_15_arm64
+      c_compiler: zig
+      vm_image: macos-15-arm64
+
+  - template: .azure/test.yml
+    parameters:
+      os: macos_15_arm64
+      c_compiler: clang
+      vm_image: macos-15-arm64
 
   - template: .azure/test.yml
     parameters:
@@ -156,3 +266,15 @@ stages:
       os: windows_2022
       c_compiler: msc
       vm_image: windows-2022
+
+  - template: .azure/test.yml
+    parameters:
+      os: windows_11_arm64
+      c_compiler: zig
+      vm_image: windows-11-arm64
+
+  - template: .azure/test.yml
+    parameters:
+      os: windows_11_arm64
+      c_compiler: msc
+      vm_image: windows-11-arm64
