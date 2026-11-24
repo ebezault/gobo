@@ -30,6 +30,8 @@
 * Raise a postcondition violation when a postcondition is the
   `False` entity, even when postcondition assertions are not
   monitored (interoperability with ISE Eiffel).
+* In finalize mode, do not check invariants inherited from 
+  class `ANY` (interoperability with ISE Eiffel).
 
 ### gelsp
 
