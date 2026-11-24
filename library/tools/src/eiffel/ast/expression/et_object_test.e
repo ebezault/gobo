@@ -166,8 +166,12 @@ feature -- Formal arguments
 			-- and (recursively) in its subexpressions: set the boolean to true
 			-- if the formal argument name at the index corresponding to its seed
 			-- is not Void.
+			-- Note: do not take into account attachment tests for formal arguments
+			-- (e.g. 'a /= Void' or 'attached a').
 		do
-			expression.add_formal_arguments (a_list)
+			if not (attached {ET_IDENTIFIER} expression as l_expression and then l_expression.is_argument) then
+				expression.add_formal_arguments (a_list)
+			end
 		end
 
 feature -- Assertions

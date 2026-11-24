@@ -79,8 +79,11 @@ feature -- Formal arguments
 			-- and (recursively) in their subexpressions: set the boolean to true
 			-- if the formal argument name at the index corresponding to its seed
 			-- is not Void.
+			-- Note: do not take into account attachment tests for formal arguments
+			-- (e.g. 'a /= Void' or 'attached a').
 		do
 		end
+
 feature -- Assertions
 
 	add_old_expressions (a_list: DS_ARRAYED_LIST [ET_OLD_EXPRESSION]; a_context: ET_TYPE_CONTEXT)

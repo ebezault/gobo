@@ -5,7 +5,7 @@
 		"Eiffel equality expressions (i.e. '=' and '/=')"
 
 	library: "Gobo Eiffel Tools Library"
-	copyright: "Copyright (c) 1999-2022, Eric Bezault and others"
+	copyright: "Copyright (c) 1999-2026, Eric Bezault and others"
 	license: "MIT License"
 
 class ET_EQUALITY_EXPRESSION
@@ -14,7 +14,8 @@ inherit
 
 	ET_BINARY_EXPRESSION
 		redefine
-			reset
+			reset,
+			add_formal_arguments
 		end
 
 create
@@ -70,6 +71,25 @@ feature -- Setting
 			operator := a_operator
 		ensure
 			operator_set: operator = a_operator
+		end
+
+feature -- Formal arguments
+
+	add_formal_arguments (a_list: DS_ARRAYED_LIST_2 [detachable ET_IDENTIFIER, BOOLEAN])
+			-- Add to `a_list' all formal arguments appearing in current expression
+			-- and (recursively) in its subexpressions: set the boolean to true
+			-- if the formal argument name at the index corresponding to its seed
+			-- is not Void.
+			-- Note: do not take into account attachment tests for formal arguments
+			-- (e.g. 'a /= Void' or 'attached a').
+		do
+			if attached {ET_VOID} right and then attached {ET_IDENTIFIER} left as l_left and then l_left.is_argument then
+				-- Attachment test.
+			elseif attached {ET_VOID} left and then attached {ET_IDENTIFIER} right as l_right and then l_right.is_argument then
+				-- Attachment test.
+			else
+				precursor (a_list)
+			end
 		end
 
 feature -- Processing

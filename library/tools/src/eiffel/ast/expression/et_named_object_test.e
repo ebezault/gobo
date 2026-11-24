@@ -19,6 +19,7 @@ inherit
 			name,
 			last_leaf,
 			reset,
+			add_formal_arguments,
 			process
 		end
 
@@ -89,6 +90,19 @@ feature -- Setting
 			as_keyword := a_as
 		ensure
 			as_keyword_set: as_keyword = a_as
+		end
+
+feature -- Formal arguments
+
+	add_formal_arguments (a_list: DS_ARRAYED_LIST_2 [detachable ET_IDENTIFIER, BOOLEAN])
+			-- Add to `a_list' all formal arguments appearing in current expression
+			-- and (recursively) in its subexpressions: set the boolean to true
+			-- if the formal argument name at the index corresponding to its seed
+			-- is not Void.
+			-- Note: do not take into account attachment tests for formal arguments
+			-- (e.g. 'a /= Void' or 'attached a').
+		do
+			expression.add_formal_arguments (a_list)
 		end
 
 feature -- Processing
