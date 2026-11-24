@@ -19,7 +19,9 @@ feature
 	copy (other: like Current)
 		do
 			value := other.value
-			print ("EE copied%N")
+			if not {ISE_RUNTIME}.in_assertion then
+				print ("EE copied%N")
+			end
 		end
 		
 end

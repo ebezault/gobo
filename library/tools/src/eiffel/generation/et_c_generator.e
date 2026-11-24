@@ -2327,6 +2327,7 @@ feature {NONE} -- Feature generation
 			i, nb_args: INTEGER
 			old_file: KI_TEXT_OUTPUT_STREAM
 			l_name: ET_IDENTIFIER
+			l_invariant_enabled: BOOLEAN
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -2401,7 +2402,11 @@ feature {NONE} -- Feature generation
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
-			if debug_mode or current_class.invariants_enabled then
+			l_invariant_enabled := current_class.invariants_enabled and then
+				attached current_type.invariants as l_invariants and then
+				attached l_invariants.invariants as l_all_invariants and then
+				not l_all_invariants.is_empty
+			if debug_mode or l_invariant_enabled then
 				print_indentation
 				print_context_type_declaration (current_file)
 				current_file.put_character (' ')
@@ -2455,7 +2460,7 @@ feature {NONE} -- Feature generation
 					current_file.put_character (' ')
 				end
 			end
-			if current_class.invariants_enabled then
+			if l_invariant_enabled then
 				current_file.put_string (c_ge_unqualified)
 				current_file.put_character ('(')
 				if debug_mode then
@@ -2885,7 +2890,11 @@ feature {NONE} -- Feature generation
 			end
 			l_need_distinct_inline := l_is_inline and then not a_inline and then
 				(l_has_reference_arguments or (exception_trace_mode or debug_mode or trace_mode) or
-				(current_class.invariants_enabled and then not current_feature.is_static) or
+				(not current_feature.is_static and then
+					current_class.invariants_enabled and then
+					attached current_type.invariants as l_invariants and then
+					attached l_invariants.invariants as l_all_invariants and then
+					not l_all_invariants.is_empty) or
 				(current_class.postconditions_enabled and then not current_feature.postconditions.is_empty))
 				--
 				-- Declaration of variables.
@@ -2912,7 +2921,13 @@ feature {NONE} -- Feature generation
 				end
 			end
 			if not a_inline then
-				if current_class.invariants_enabled and then not current_feature.is_static then
+				if
+					not current_feature.is_static and then
+					current_class.invariants_enabled and then
+					attached current_type.invariants as l_invariants and then
+					attached l_invariants.invariants as l_all_invariants and then
+					not l_all_invariants.is_empty
+				then
 					print_indentation
 					current_file.put_string (c_uint8_t)
 					current_file.put_character (' ')
@@ -2992,9 +3007,11 @@ feature {NONE} -- Feature generation
 				end
 				print_supplier_preconditions_declaration
 				if
-					current_class.preconditions_enabled or
-					class_supplier_preconditions_enabled (current_class) or
-					current_class.postconditions_enabled
+					((current_class.preconditions_enabled or
+						class_supplier_preconditions_enabled (current_class)) and then
+						not current_feature.preconditions.is_empty) or
+					(current_class.postconditions_enabled and then
+						not current_feature.postconditions.is_empty)
 				then
 					print_in_assertion_declaration
 				end
@@ -3212,7 +3229,13 @@ feature {NONE} -- Feature generation
 						l_print_body := True
 					end
 				end
-				if current_class.invariants_enabled and not current_feature.is_static and not a_creation then
+				if
+					not current_feature.is_static and not a_creation and then
+					current_class.invariants_enabled and then
+					attached current_type.invariants as l_invariants and then
+					attached l_invariants.invariants as l_all_invariants and then
+					not l_all_invariants.is_empty
+				then
 					if debug_mode then
 						if attached a_feature.preconditions as l_preconditions then
 							print_set_exception_trace_position (l_preconditions.position)
@@ -3223,7 +3246,8 @@ feature {NONE} -- Feature generation
 					print_all_invariants (True)
 					l_print_body := True
 				end
-				l_preconditions_enabled := current_class.preconditions_enabled or class_supplier_preconditions_enabled (current_class)
+				l_preconditions_enabled := (current_class.preconditions_enabled or
+					class_supplier_preconditions_enabled (current_class)) and then not current_feature.preconditions.is_empty
 				if l_preconditions_enabled or l_has_separate_formal_arguments then
 					print_all_preconditions (a_feature, l_preconditions_enabled)
 					l_print_body := True
@@ -3237,7 +3261,10 @@ feature {NONE} -- Feature generation
 					current_file.put_character ('}')
 					current_file.put_new_line
 				end
-				if current_class.postconditions_enabled then
+				if
+					current_class.postconditions_enabled and then
+					not current_feature.postconditions.is_empty
+				then
 					print_all_old_expression_declarations (a_feature)
 					l_print_body := True
 				end
@@ -3580,7 +3607,13 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character ('}')
 					current_file.put_new_line
 				end
-				if current_class.invariants_enabled and not current_feature.is_static then
+				if
+					not current_feature.is_static and then
+					current_class.invariants_enabled and then
+					attached current_type.invariants as l_invariants and then
+					attached l_invariants.invariants as l_all_invariants and then
+					not l_all_invariants.is_empty
+				then
 					if debug_mode then
 						if attached a_feature.postconditions as l_postconditions then		
 							print_set_exception_trace_position (l_postconditions.position)
@@ -3591,7 +3624,10 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					print_all_invariants (False)
 					l_print_footer := True
 				end
-				if current_class.postconditions_enabled then
+				if
+					current_class.postconditions_enabled and then
+					not current_feature.postconditions.is_empty
+				then
 					print_all_postconditions (a_feature)
 					l_print_footer := True
 				elseif a_feature.has_false_postcondition_recursive then
@@ -3664,7 +3700,11 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				-- Declarations of temporary variables.
 			current_file := current_function_header_buffer
 			print_temporary_variable_declarations
-			if not a_inline and then (l_preconditions_enabled or current_class.postconditions_enabled) then
+			if
+				not a_inline and then
+				(l_preconditions_enabled or
+				(current_class.postconditions_enabled and then not current_feature.postconditions.is_empty))
+			then
 				print_object_test_local_declarations
 				print_iteration_cursor_declarations
 			end
@@ -7500,7 +7540,13 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			current_file.put_character ('{')
 			current_file.put_new_line
 			indent
-			if current_class.invariants_enabled and not current_feature.is_static then
+			if
+				not current_feature.is_static and then
+				current_class.invariants_enabled and then
+				attached current_type.invariants as l_invariants and then
+				attached l_invariants.invariants as l_all_invariants and then
+				not l_all_invariants.is_empty
+			then
 				print_indentation
 				current_file.put_string (c_uint8_t)
 				current_file.put_character (' ')
@@ -7520,10 +7566,15 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				l_is_empty :=
 					not a_creation and then
 					not current_feature.has_separate_argument and then
-					not (current_class.invariants_enabled and not current_closure.is_static) and then
-					not current_class.preconditions_enabled and then
-					not class_supplier_preconditions_enabled (current_class) and then
-					not current_class.postconditions_enabled and then
+					not (not current_closure.is_static and then
+						current_class.invariants_enabled and then
+						attached current_type.invariants as l_invariants and then
+						attached l_invariants.invariants as l_all_invariants and then
+						not l_all_invariants.is_empty) and then
+					not ((current_class.preconditions_enabled or
+						class_supplier_preconditions_enabled (current_class))
+						and then not current_feature.preconditions.is_empty) and then
+					not (current_class.postconditions_enabled and then not current_feature.postconditions.is_empty) and then
 					(not attached a_feature.compound as l_compound or else l_compound.is_empty) and then
 					a_feature.rescue_clause = Void and then
 					not debug_mode
@@ -7868,6 +7919,8 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 			nb_locals: INTEGER
 			l_local_names: DS_ARRAYED_LIST [ET_IDENTIFIER]
 			l_position: ET_POSITION
+			l_has_check_assertions: BOOLEAN
+			l_has_loop_assertions: BOOLEAN
 		do
 			old_file := current_file
 			current_file := current_function_header_buffer
@@ -7947,11 +8000,19 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_string (c_in_rescue)
 				print_semicolon_newline
 			end
+				-- TODO: determine whether this feature contains
+				-- a check or loop assertion.
+			l_has_check_assertions := assertions_enabled
+			l_has_loop_assertions := assertions_enabled
 			if
-				l_rescue /= Void and assertions_enabled or
-				current_class.preconditions_enabled or
-				class_supplier_preconditions_enabled (current_class) or
-				current_class.postconditions_enabled
+				(l_rescue /= Void and assertions_enabled) or
+				l_has_check_assertions or
+				l_has_loop_assertions or
+				((current_class.preconditions_enabled or
+					class_supplier_preconditions_enabled (current_class)) and then
+					closure_has_preconditions (a_feature)) or
+				(current_class.postconditions_enabled and then
+					closure_has_postconditions (a_feature))
 			then
 				print_in_assertion_declaration
 			end
@@ -8081,7 +8142,13 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_open_formal_argument_scoop_sessions (a_feature)
 				l_print_body := True
 			end
-			if current_class.invariants_enabled and not current_closure.is_static and not a_creation then
+			if 
+				not current_closure.is_static and not a_creation and then
+				current_class.invariants_enabled and then
+				attached current_type.invariants as l_invariants and then
+				attached l_invariants.invariants as l_all_invariants and then
+				not l_all_invariants.is_empty
+			then
 				if debug_mode then
 					if attached a_feature.preconditions as l_preconditions then
 						print_set_exception_trace_position (l_preconditions.position)
@@ -8096,7 +8163,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_all_invariants (True)
 				l_print_body := True
 			end
-			l_preconditions_enabled := current_class.preconditions_enabled or class_supplier_preconditions_enabled (current_class)
+			l_preconditions_enabled := (current_class.preconditions_enabled or
+				class_supplier_preconditions_enabled (current_class))
+					and then closure_has_preconditions (a_feature)
 			if l_preconditions_enabled or l_has_separate_formal_arguments then
 				print_all_preconditions (a_feature, l_preconditions_enabled)
 				l_print_body := True
@@ -8110,7 +8179,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				current_file.put_character ('}')
 				current_file.put_new_line
 			end
-			if current_class.postconditions_enabled then
+			if current_class.postconditions_enabled and then closure_has_postconditions (a_feature) then
 				print_all_old_expression_declarations (a_feature)
 				l_print_body := True
 			end
@@ -8256,7 +8325,13 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_local_variables_initialization (a_feature)
 				print_compound (l_compound)
 			end
-			if current_class.invariants_enabled and not current_closure.is_static then
+			if
+				not current_closure.is_static and then
+				current_class.invariants_enabled and then
+				attached current_type.invariants as l_invariants and then
+				attached l_invariants.invariants as l_all_invariants and then
+				not l_all_invariants.is_empty
+			then
 				if debug_mode then
 					if attached a_feature.postconditions as l_postconditions then		
 						print_set_exception_trace_position (l_postconditions.position)
@@ -8269,7 +8344,7 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				print_all_invariants (False)
 				l_print_footer := True
 			end
-			if current_class.postconditions_enabled then
+			if current_class.postconditions_enabled and then closure_has_postconditions (a_feature) then
 				print_all_postconditions (a_feature)
 				l_print_footer := True
 			elseif a_feature.has_false_postcondition_recursive then
@@ -8815,10 +8890,12 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 		do
 			if
 				a_feature.has_self_initializing_code or
-				(current_class.preconditions_enabled and then not current_feature.preconditions.is_empty) or
-				(class_supplier_preconditions_enabled (current_class) and then not current_feature.preconditions.is_empty) or
+				((current_class.preconditions_enabled or
+					class_supplier_preconditions_enabled (current_class)) and then
+					not current_feature.preconditions.is_empty) or
 				(current_class.postconditions_enabled and then not current_feature.postconditions.is_empty) or
-				current_class.invariants_enabled
+				(current_class.invariants_enabled and then attached current_type.invariants as l_invariants and then
+					attached l_invariants.invariants as l_all_invariants and then not l_all_invariants.is_empty)
 			then
 				print_internal_feature (a_feature, False)
 			else
@@ -8942,7 +9019,12 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					--
 					-- Declaration of variables.
 					--
-				if current_class.invariants_enabled then
+				if 
+					current_class.invariants_enabled and then
+					attached current_type.invariants as l_invariants and then
+					attached l_invariants.invariants as l_all_invariants and then
+					not l_all_invariants.is_empty
+				then
 					print_indentation
 					current_file.put_string (c_uint8_t)
 					current_file.put_character (' ')
@@ -9050,7 +9132,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_new_line
 				end
 				print_supplier_preconditions_declaration
-				if current_class.postconditions_enabled then
+				if
+					current_class.postconditions_enabled and then not current_feature.postconditions.is_empty
+				then
 					print_in_assertion_declaration
 				end
 					-- Variable for 'Result' entity.
@@ -9141,7 +9225,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					-- (implicit 'require True' on immediate declarations
 					-- and 'require else True' on redeclarations).
 					--
-				if current_class.postconditions_enabled then
+				if
+					current_class.postconditions_enabled and then not current_feature.postconditions.is_empty
+				then
 					print_all_old_expression_declarations (a_feature)
 					print_body_comment
 				end
@@ -9167,7 +9253,12 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					current_file.put_character (';')
 					current_file.put_new_line
 				end
-				if current_class.invariants_enabled then
+				if
+					current_class.invariants_enabled and then
+					attached current_type.invariants as l_invariants and then
+					attached l_invariants.invariants as l_all_invariants and then
+					not l_all_invariants.is_empty
+				then
 					if debug_mode then
 						if attached a_feature.postconditions as l_postconditions then		
 							print_set_exception_trace_position (l_postconditions.position)
@@ -9178,7 +9269,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 					print_all_invariants (False)
 					l_print_footer := True
 				end
-				if current_class.postconditions_enabled then
+				if
+					current_class.postconditions_enabled and then not current_feature.postconditions.is_empty
+				then
 					print_all_postconditions (a_feature)
 					l_print_footer := True
 				elseif a_feature.has_false_postcondition_recursive then
@@ -9223,7 +9316,9 @@ error_handler.report_warning_message ("**** language not recognized: " + l_langu
 				-- Declarations of temporary variables.
 			current_file := current_function_header_buffer
 			print_temporary_variable_declarations
-			if current_class.postconditions_enabled then
+			if
+				current_class.postconditions_enabled and then not current_feature.postconditions.is_empty
+			then
 				print_object_test_local_declarations
 				print_iteration_cursor_declarations
 			end
@@ -17963,6 +18058,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 			l_inlined_call: BOOLEAN
 			l_printed: BOOLEAN
 			l_standard_is_equal: BOOLEAN
+			l_same_type: BOOLEAN
 		do
 			l_assignment_target := assignment_target
 			assignment_target := Void
@@ -18024,6 +18120,7 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 			end
 			if l_manifest_tuple_operand = Void then
 				l_standard_is_equal := a_feature.is_builtin_any_class and a_feature.builtin_feature_code = {ET_TOKEN_CODES}.builtin_any_standard_is_equal
+				l_same_type := a_feature.is_builtin_any_class and a_feature.builtin_feature_code = {ET_TOKEN_CODES}.builtin_any_same_type
 				operand_stack.force (tokens.current_keyword)
 				nb := 0
 				if l_actuals /= Void then
@@ -18035,6 +18132,10 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_strip_expression not
 								-- Do not clone expanded arguments of 'ANY.standard_is_equal'
 								-- otherwise this might violate the invariant
 								-- 'reflexive_equality: standard_is_equal (Current)'.
+							print_operand (l_actual)
+						elseif l_same_type then
+								-- Interoperability with ISE Eiffel: do not clone expanded
+								-- arguments of 'ANY.same_type'.
 							print_operand (l_actual)
 						else
 							print_attachment_operand (l_actual, l_actual_type_set)
@@ -21157,7 +21258,13 @@ error_handler.report_warning_message ("ET_C_GENERATOR.print_once_procedure_inlin
 				--
 				-- Declaration of variables.
 				--
-			if a_agent.is_inline_agent and current_class.invariants_enabled then
+			if
+				a_agent.is_inline_agent and
+				current_class.invariants_enabled and then
+				attached current_type.invariants as l_invariants and then
+				attached l_invariants.invariants as l_all_invariants and then
+				not l_all_invariants.is_empty
+			then
 				print_indentation
 				current_file.put_string (c_uint8_t)
 				current_file.put_character (' ')
@@ -42077,6 +42184,30 @@ feature {NONE} -- Assertion generation
 				(finalize_mode implies not a_class.is_basic)
 		end
 
+	closure_has_preconditions (a_feature: ET_INTERNAL_FEATURE_CLOSURE): BOOLEAN
+			-- Does `a_feature` have preconditions (possibly inherited)?
+		require
+			a_feature_not_void: a_feature /= Void
+		do
+			if attached {ET_FEATURE} a_feature then
+				Result := not current_feature.preconditions.is_empty
+			else
+				Result := attached a_feature.preconditions
+			end
+		end
+
+	closure_has_postconditions (a_feature: ET_INTERNAL_FEATURE_CLOSURE): BOOLEAN
+			-- Does `a_feature` have postconditions (possibly inherited)?
+		require
+			a_feature_not_void: a_feature /= Void
+		do
+			if attached {ET_FEATURE} a_feature then
+				Result := not current_feature.postconditions.is_empty
+			else
+				Result := attached a_feature.postconditions
+			end
+		end
+
 	print_all_invariants (a_on_entry: BOOLEAN)
 			-- Print to `current_file' a call to procedure which checks all invariants
 			-- (even those inherited from ancestors) of `current_type'.
@@ -42398,7 +42529,8 @@ feature {NONE} -- Assertion generation
 			current_file.put_character ('(')
 			current_file.put_string (c_ge_ex_post)
 			print_comma
-			print_escaped_string (tokens.false_keyword.text)
+			current_file.put_character ('%"')
+			current_file.put_character ('%"')
 			current_file.put_character (')')
 			print_semicolon_newline
 		end
@@ -42825,7 +42957,7 @@ feature {NONE} -- Assertion generation
 				current_file.put_string (c_arrow)
 				current_file.put_string (c_preconditions_enabled)
 				print_assign_to
-				if current_type.base_class.supplier_preconditions_enabled then
+				if current_class.supplier_preconditions_enabled then
 					current_file.put_character ('1')
 				else
 					current_file.put_character ('0')
@@ -43227,6 +43359,8 @@ feature {NONE} -- Inlining
 				Result := False
 			elseif a_feature.target_type.base_class.postconditions_enabled and then not a_feature.postconditions.is_empty then
 				Result := False
+			elseif a_feature.static_feature.has_false_postcondition_recursive then
+				Result := False
 			elseif
 				a_feature.target_type.base_class.invariants_enabled and then
 				attached a_feature.target_type.invariants as l_invariants and then
@@ -43288,6 +43422,8 @@ feature {NONE} -- Inlining
 			elseif class_supplier_preconditions_enabled (a_feature.target_type.base_class) and then not a_feature.preconditions.is_empty then
 				Result := False
 			elseif a_feature.target_type.base_class.postconditions_enabled and then not a_feature.postconditions.is_empty then
+				Result := False
+			elseif a_feature.static_feature.has_false_postcondition_recursive then
 				Result := False
 			elseif
 				a_feature.target_type.base_class.invariants_enabled and then
@@ -50835,7 +50971,12 @@ feature {NONE} -- Qualified/unqualified calls
 		require
 			a_target_type_not_void: a_target_type /= Void
 		do
-			if a_target_type.base_class.invariants_enabled then
+			if
+				a_target_type.base_class.invariants_enabled and then
+				attached a_target_type.invariants as l_invariants and then
+				attached l_invariants.invariants as l_all_invariants and then
+				not l_all_invariants.is_empty
+			then
 				if in_separate_creation_call then
 					current_file.put_string (c_ge_creation)
 				elseif a_qualified_call then
@@ -50854,7 +50995,12 @@ feature {NONE} -- Qualified/unqualified calls
 		require
 			a_target_type_not_void: a_target_type /= Void
 		do
-			if a_target_type.base_class.invariants_enabled then
+			if
+				a_target_type.base_class.invariants_enabled and then
+				attached a_target_type.invariants as l_invariants and then
+				attached l_invariants.invariants as l_all_invariants and then
+				not l_all_invariants.is_empty
+			then
 				current_file.put_character (')')
 			end
 		end

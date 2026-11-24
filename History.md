@@ -28,8 +28,14 @@
 * In finalize mode, inline routines from basic types and do not
   check their assertions (interoperability with ISE Eiffel).
 * Raise a postcondition violation when a postcondition is the
-  'False' entity, even when postcondition assertions are not
+  `False` entity, even when postcondition assertions are not
   monitored (interoperability with ISE Eiffel).
+* In finalize mode, do not check invariants inherited from 
+  class `ANY` (interoperability with ISE Eiffel).
+* SCOOP code generation improvement: consider attachment tests with separate
+  arguments such as `a /= Void` or `attached a` as correctness preconditions
+  at compile time instead of delaying until run time to realize that they
+  are not wait conditions.
 
 ### gelsp
 

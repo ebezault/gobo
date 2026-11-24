@@ -16,7 +16,8 @@ inherit
 		undefine
 			add_separate_arguments
 		redefine
-			reset
+			reset,
+			add_formal_arguments
 		end
 
 	ET_QUALIFIED_FEATURE_CALL_EXPRESSION
@@ -81,6 +82,25 @@ feature -- Access
 			-- Feature name when considered as a feature call to 'is_equal'
 		once
 			Result := tokens.is_equal_feature_name.twin
+		end
+
+feature -- Formal arguments
+
+	add_formal_arguments (a_list: DS_ARRAYED_LIST_2 [detachable ET_IDENTIFIER, BOOLEAN])
+			-- Add to `a_list' all formal arguments appearing in current expression
+			-- and (recursively) in its subexpressions: set the boolean to true
+			-- if the formal argument name at the index corresponding to its seed
+			-- is not Void.
+			-- Note: do not take into account attachment tests for formal arguments
+			-- (e.g. 'a /= Void' or 'attached a').
+		do
+			if attached {ET_VOID} right and then attached {ET_IDENTIFIER} left as l_left and then l_left.is_argument then
+				-- Attachment test.
+			elseif attached {ET_VOID} left and then attached {ET_IDENTIFIER} right as l_right and then l_right.is_argument then
+				-- Attachment test.
+			else
+				precursor {ET_BINARY_EXPRESSION} (a_list)
+			end
 		end
 
 feature -- Processing
