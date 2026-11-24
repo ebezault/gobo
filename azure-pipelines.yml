@@ -1,4 +1,6 @@
 # For available vmImages, see https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml
+# Also https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted-deprecation-schedule?view=azure-devops&tabs=macos-images
+# and https://github.com/actions/runner-images/tree/main?tab=readme-ov-file#software-and-image-support
 
 variables:
   GOBO_CLI_THREAD: 0
@@ -11,6 +13,18 @@ stages:
 
   - template: .azure/build.yml
     parameters:
+      os: linux_ubuntu_26_04
+      c_compiler: zig
+      vm_image: ubuntu-26.04
+
+  - template: .azure/build.yml
+    parameters:
+      os: linux_ubuntu_26_04
+      c_compiler: gcc
+      vm_image: ubuntu-26.04
+
+  - template: .azure/build.yml
+    parameters:
       os: linux_ubuntu_24_04
       c_compiler: zig
       vm_image: ubuntu-24.04
@@ -23,15 +37,15 @@ stages:
 
   - template: .azure/build.yml
     parameters:
-      os: linux_ubuntu_22_04
+      os: macos_26
       c_compiler: zig
-      vm_image: ubuntu-22.04
+      vm_image: macos-26
 
   - template: .azure/build.yml
     parameters:
-      os: linux_ubuntu_22_04
-      c_compiler: gcc
-      vm_image: ubuntu-22.04
+      os: macos_26
+      c_compiler: clang
+      vm_image: macos-26
 
   - template: .azure/build.yml
     parameters:
@@ -44,18 +58,6 @@ stages:
       os: macos_15
       c_compiler: clang
       vm_image: macos-15
-
-  - template: .azure/build.yml
-    parameters:
-      os: macos_14
-      c_compiler: zig
-      vm_image: macos-14
-
-  - template: .azure/build.yml
-    parameters:
-      os: macos_14
-      c_compiler: clang
-      vm_image: macos-14
 
   - template: .azure/build.yml
     parameters:
@@ -69,6 +71,18 @@ stages:
       c_compiler: msc
       vm_image: windows-2025
 
+  - template: .azure/build.yml
+    parameters:
+      os: windows_2025_vs2026
+      c_compiler: zig
+      vm_image: windows-2025-vs2026
+
+  - template: .azure/build.yml
+    parameters:
+      os: windows_2025_vs2026
+      c_compiler: msc
+      vm_image: windows-2025-vs2026
+      
   - template: .azure/build.yml
     parameters:
       os: windows_2022
@@ -87,6 +101,18 @@ stages:
 
   - template: .azure/test.yml
     parameters:
+      os: linux_ubuntu_26_04
+      c_compiler: zig
+      vm_image: ubuntu-26.04
+
+  - template: .azure/test.yml
+    parameters:
+      os: linux_ubuntu_26_04
+      c_compiler: gcc
+      vm_image: ubuntu-26.04
+
+  - template: .azure/test.yml
+    parameters:
       os: linux_ubuntu_24_04
       c_compiler: zig
       vm_image: ubuntu-24.04
@@ -99,6 +125,18 @@ stages:
 
   - template: .azure/test.yml
     parameters:
+      os: macos_26
+      c_compiler: zig
+      vm_image: macos-26
+
+  - template: .azure/test.yml
+    parameters:
+      os: macos_26
+      c_compiler: clang
+      vm_image: macos-26
+
+  - template: .azure/test.yml
+    parameters:
       os: macos_15
       c_compiler: zig
       vm_image: macos-15
@@ -108,18 +146,6 @@ stages:
       os: macos_15
       c_compiler: clang
       vm_image: macos-15
-
-  - template: .azure/test.yml
-    parameters:
-      os: macos_14
-      c_compiler: zig
-      vm_image: macos-14
-
-  - template: .azure/test.yml
-    parameters:
-      os: macos_14
-      c_compiler: clang
-      vm_image: macos-14
 
   - template: .azure/test.yml
     parameters:
@@ -132,6 +158,18 @@ stages:
       os: windows_2025
       c_compiler: msc
       vm_image: windows-2025
+
+  - template: .azure/test.yml
+    parameters:
+      os: windows_2025_vs2026
+      c_compiler: zig
+      vm_image: windows-2025-vs2026
+
+  - template: .azure/test.yml
+    parameters:
+      os: windows_2025_vs2026
+      c_compiler: msc
+      vm_image: windows-2025-vs2026
 
   - template: .azure/test.yml
     parameters:
