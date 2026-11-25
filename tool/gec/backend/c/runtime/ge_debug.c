@@ -34,6 +34,9 @@
 #include <errno.h>
 #include <limits.h>
 #include <sys/stat.h>
+#ifdef GE_WINDOWS
+#include <ctype.h> /* For GE_stricmp */
+#endif
 
 #if defined(_MSC_VER)
 #include <crtdbg.h>  // Required for _set_invalid_parameter_handler
@@ -336,6 +339,29 @@ void GE_debug_remove_thread(GE_context* a_thread)
 	GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 }
 
+#ifdef GE_WINDOWS
+/* Compare strings in a case-insensitive way for ASCII characters (<= 127). */
+static int GE_stricmp(const char *s1, const char *s2)
+{
+	int c1, c2;
+
+	do {
+		c1 = (unsigned char) *s1++;
+		c2 = (unsigned char) *s2++;
+
+		if (c1 <= 127 && c2 <= 127) {
+			c1 = tolower(c1);
+			c2 = tolower(c2);
+		}
+
+		if (c1 != c2) {
+			return c1 - c2;
+		}
+	} while (c1 != 0);
+	return 0;
+}
+#endif
+
 /*
  * Breakpoints for file `filename` if any, NULL otherwise.
  * 
@@ -345,7 +371,11 @@ static GE_debug_file_breakpoints* GE_debug_breakpoints_for_file(char* filename)
 {
 	uint32_t i;
 	for (i = 0; i < GE_debug_breakpoint_count; i++) {
+#ifdef GE_WINDOWS
+		if (GE_stricmp(GE_debug_breakpoints[i]->filename, filename) == 0) {
+#else
 		if (strcmp(GE_debug_breakpoints[i]->filename, filename) == 0) {
+#endif
 			return GE_debug_breakpoints[i];
 		}
 	}
