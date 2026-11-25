@@ -819,7 +819,7 @@ feature -- Output
 					a_string.append_string (tokens.reference_keyword.text)
 					a_string.append_character (' ')
 				end
-				if scoop_mode and l_type_mark.is_separate_mark and not l_base_class.is_separate then
+				if scoop_mode and l_type_mark.is_separate_mark and not l_base_class.is_separate and not l_base_class.is_expanded then
 					a_string.append_string (tokens.separate_keyword.text)
 					a_string.append_character (' ')
 				end
