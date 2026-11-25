@@ -123,6 +123,12 @@ inherit
 	ET_SHARED_IDENTIFIER_SORTER
 		export {NONE} all end
 
+	ET_SHARED_FEATURE_NAME_TESTER
+		export {NONE} all end
+
+	ET_SHARED_FEATURE_NAME_SORTER
+		export {NONE} all end
+
 	ET_SHARED_DYNAMIC_PRIMARY_TYPE_COMPARATOR_BY_ID
 		export {NONE} all end
 
@@ -44840,6 +44846,10 @@ feature {NONE} -- Type generation
 			l_item_count: INTEGER
 			a, l_nb_variants: INTEGER
 			l_annotation: INTEGER
+			l_sortable_attribute_position_start: INTEGER
+			l_sortable_attribute_position_end: INTEGER
+			l_attribute_names: DS_ARRAYED_LIST [ET_FEATURE_NAME]
+			l_attribute_positions: DS_HASH_TABLE [INTEGER, ET_FEATURE_NAME]
 		do
 			l_dynamic_types := dynamic_types
 			nb := l_dynamic_types.count
@@ -44993,6 +45003,12 @@ feature {NONE} -- Type generation
 			current_file.put_new_line
 			current_file.put_new_line
 
+			if type_info_attribute_name_used then
+					-- Try to keep attributes in alphabetical order.
+				create l_attribute_names.make (500)
+				create l_attribute_positions.make_map (500)
+				l_attribute_positions.set_key_equality_tester (feature_name_tester)
+			end
 			create l_ancestors.make (100)
 			create l_sorter.make (dynamic_primary_type_comparator)
 			nb := l_dynamic_types.count
@@ -45049,6 +45065,35 @@ feature {NONE} -- Type generation
 					-- Attributes.
 				if type_info_attributes_used and l_type.is_alive then
 					l_attribute_count := l_type.attribute_count
+					if type_info_attribute_name_used and l_attribute_names /= Void and l_attribute_positions /= Void then
+						l_sortable_attribute_position_start := 1
+						if l_type.base_class = current_system.string_8_type.base_class then
+							l_sortable_attribute_position_start := 3
+						elseif l_type.base_class = current_system.immutable_string_8_type.base_class then
+							l_sortable_attribute_position_start := 3
+						elseif l_type.base_class = current_system.string_32_type.base_class then
+							l_sortable_attribute_position_start := 3
+						elseif l_type.base_class = current_system.immutable_string_32_type.base_class then
+							l_sortable_attribute_position_start := 3
+						elseif l_type.base_class = current_system.special_any_type.base_class then
+							l_sortable_attribute_position_start := 4
+						elseif l_type.base_class = current_system.array_any_type.base_class then
+							l_sortable_attribute_position_start := 4
+						elseif l_type.base_class = current_system.typed_pointer_identity_type.base_class then
+							l_sortable_attribute_position_start := 2
+						elseif l_type.base_class = current_system.procedure_identity_type.base_class then
+							l_sortable_attribute_position_start := 3
+						elseif l_type.base_class = current_system.function_identity_any_type.base_class then
+							l_sortable_attribute_position_start := 3
+						elseif l_type.base_class = current_system.predicate_identity_type.base_class then
+							l_sortable_attribute_position_start := 3
+						elseif l_type.base_class.is_once then
+							l_sortable_attribute_position_start := 2
+						end
+						l_sortable_attribute_position_end := l_attribute_count
+						l_attribute_names.wipe_out
+						l_attribute_positions.wipe_out
+					end
 					if l_attribute_count > 0 then
 						from j := 1 until j > l_attribute_count loop
 							l_comma_needed := False
@@ -45062,6 +45107,13 @@ feature {NONE} -- Type generation
 							if type_info_attribute_name_used then
 								print_escaped_string (l_attribute.static_feature.lower_name)
 								l_comma_needed := True
+								if
+									j >= l_sortable_attribute_position_start and j <= l_sortable_attribute_position_end and
+									l_attribute_positions /= Void and l_attribute_names /= Void
+								then
+									l_attribute_positions.force_last (j, l_attribute.static_feature.name)
+									l_attribute_names.force_last (l_attribute.static_feature.name)
+								end
 							end
 								-- type_id.
 							if type_info_attribute_type_id_used then
@@ -45512,17 +45564,33 @@ feature {NONE} -- Type generation
 						current_file.put_string ("aa[")
 						current_file.put_integer (l_attribute_count)
 						current_file.put_string ("] = {")
+						if l_attribute_names /= Void then
+							l_attribute_names.sort (feature_name_sorter)
+						end
 						from j := 1 until j > l_attribute_count loop
 							current_file.put_string ("&T")
 							current_file.put_integer (l_type.id)
 							current_file.put_string ("aa")
-							current_file.put_integer (j)
+							if
+								l_attribute_positions /= Void and l_attribute_names /= Void and
+								j >= l_sortable_attribute_position_start and j <= l_sortable_attribute_position_end
+							then
+								current_file.put_integer (l_attribute_positions.item (l_attribute_names.item (j - l_sortable_attribute_position_start + 1)))
+							else
+								current_file.put_integer (j)
+							end
 							if j /= l_attribute_count then
-								current_file.put_string (", ")
+								print_comma
 							end
 							j := j + 1
 						end
 						current_file.put_line ("};")
+					end
+					if l_attribute_names /= Void and l_attribute_positions /= Void then
+						l_sortable_attribute_position_start := 1
+						l_sortable_attribute_position_end := 0
+						l_attribute_names.wipe_out
+						l_attribute_positions.wipe_out
 					end
 				end
 					-- Generic parameters.
