@@ -127,6 +127,31 @@ static GE_context* GE_debug_first_thread = 0;
 static GE_context* GE_debug_last_thread = 0;
 
 /*
+ * Set 'debug_status_pending' in all threads except `a_thread` (if not NULL)
+ *
+ * Not thread-safe.
+ * Need to be protected by:
+ * - `GE_debug_mutex`.
+ * Protected by:
+ * - Mutex of each thread other than `a_thread` (or of all threads if `a_thread` is NULL).
+ */
+static void GE_unprotected_debug_set_status_pending(GE_context* a_thread)
+{
+	if (!GE_debug_out) {
+		return;
+	}
+	GE_context* l_other_thread = GE_debug_first_thread;
+	while (l_other_thread) {
+		if (l_other_thread != a_thread) {
+			GE_mutex_lock((EIF_POINTER)l_other_thread->debug_mutex);
+			l_other_thread->debug_status_pending = 1;
+			GE_mutex_unlock((EIF_POINTER)l_other_thread->debug_mutex);
+		}
+		l_other_thread = l_other_thread->next_thread;
+	}
+}
+
+/*
  * Write escaped version of `s` to `GE_debug_out`.
  * 
  * Not thread-safe.
@@ -213,6 +238,7 @@ static int GE_unprotected_debug_check_and_send_all_stopped(GE_context* a_thread)
 		l_other_thread = l_other_thread->next_thread;
 	}
 	if (l_all_stopped) {
+		GE_unprotected_debug_set_status_pending(a_thread);
 		GE_debug_is_stopping = 0;
 		GE_debug_is_stopped = 1;
 		if (!GE_debug_stopped_thread_id && GE_debug_first_thread) {
@@ -411,6 +437,7 @@ static void GE_unprotected_debug_disable_all_file_breakpoints(GE_debug_file_brea
 {
 	uint32_t i;
 	uint32_t nb;
+	GE_unprotected_debug_set_status_pending(NULL);
 	nb = breakpoints->breakpoint_count;
 	for (i = 0; i < nb; i++) {
 		breakpoints->breakpoints[i]->enabled = 0;
@@ -426,6 +453,7 @@ static void GE_unprotected_debug_disable_all_file_breakpoints(GE_debug_file_brea
  */
 static void GE_unprotected_debug_disable_all_exception_breakpoints()
 {
+	GE_unprotected_debug_set_status_pending(NULL);
 	GE_debug_exception_breakpoint_raised = 0;
 	GE_debug_exception_breakpoint_uncaught = 0;
 	GE_debug_exception_breakpoint_unretried = 0;
@@ -441,6 +469,7 @@ static void GE_unprotected_debug_disable_all_exception_breakpoints()
 static void GE_unprotected_debug_disable_all_exception_categories()
 {
 	int i;
+	GE_unprotected_debug_set_status_pending(NULL);
 	for (i = 1; i <= GE_EX_NEX; i++) {
 		GE_debug_exception_breakpoint_categories[i] = 0;
 	}
@@ -456,6 +485,7 @@ static void GE_unprotected_debug_disable_all_exception_categories()
  */
 static int GE_unprotected_debug_enable_exception_category(char* category_id)
 {
+	GE_unprotected_debug_set_status_pending(NULL);
 	if (strcmp(category_id, "precondition") == 0) {
 		GE_debug_exception_breakpoint_categories[GE_EX_PRE] = 1;
 	} else if (strcmp(category_id, "postcondition") == 0) {
@@ -538,6 +568,7 @@ static int GE_unprotected_debug_enable_exception_category(char* category_id)
 static void GE_unprotected_debug_pause_all()
 {
 	if (!GE_debug_is_stopping && !GE_debug_is_stopped) {
+		GE_unprotected_debug_set_status_pending(NULL);
 		GE_debug_is_stopping = 1;
 		GE_debug_step_next_thread_id = 0;
 		GE_debug_step_in_thread_id = 0;
@@ -560,6 +591,7 @@ static void GE_unprotected_debug_continue_all()
 {
 	GE_context* l_thread;
 
+	GE_unprotected_debug_set_status_pending(NULL);
 	GE_debug_is_stopping = 0;
 	GE_debug_is_stopped = 0;
 	GE_debug_stopped_thread_id = 0;
@@ -596,6 +628,7 @@ static void GE_unprotected_debug_step_next(uint32_t thread_id)
 	GE_call* l_call;
 	uint32_t count = 0;
 
+	GE_unprotected_debug_set_status_pending(NULL);
 	GE_debug_is_stopping = 0;
 	GE_debug_is_stopped = 0;
 	GE_debug_stopped_thread_id = 0;
@@ -647,6 +680,7 @@ static void GE_unprotected_debug_step_in(uint32_t thread_id)
 	GE_call* l_call;
 	uint32_t count = 0;
 
+	GE_unprotected_debug_set_status_pending(NULL);
 	GE_debug_is_stopping = 0;
 	GE_debug_is_stopped = 0;
 	GE_debug_stopped_thread_id = 0;
@@ -698,6 +732,7 @@ static void GE_unprotected_debug_step_out(uint32_t thread_id)
 	GE_call* l_call;
 	uint32_t count = 0;
 
+	GE_unprotected_debug_set_status_pending(NULL);
 	GE_debug_is_stopping = 0;
 	GE_debug_is_stopped = 0;
 	GE_debug_stopped_thread_id = 0;
@@ -2121,8 +2156,6 @@ void GE_debug_init(GE_context* a_thread)
  * 
  * Not thread-safe.
  * Need to be protected by:
- * - `GE_debug_mutex`.
- * Protected by:
  * - Mutex of `a_thread`.
  */
 static int GE_unprotected_debug_stoppable_breakpoint(GE_context* a_thread, GE_debug_breakpoint* a_breakpoint)
@@ -2135,13 +2168,11 @@ static int GE_unprotected_debug_stoppable_breakpoint(GE_context* a_thread, GE_de
 	}
 	if (GE_debug_step_next_thread_id > 0 && GE_debug_step_level > 0) {
 		if (a_thread->debug_thread_id == GE_debug_step_next_thread_id) {
-			GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
 			l_call = a_thread->call;
 			while (l_call && count <= GE_debug_step_level) {
 				count++;
 				l_call = l_call->caller;
 			}
-			GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 			if (count <= GE_debug_step_level) {
 				return 1;
 			}
@@ -2151,7 +2182,6 @@ static int GE_unprotected_debug_stoppable_breakpoint(GE_context* a_thread, GE_de
 	if (GE_debug_step_in_thread_id > 0 && GE_debug_step_level > 0) {
 		if (a_thread->debug_thread_id == GE_debug_step_in_thread_id) {
 			int l_scoop_initialization = 0;
-			GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
 			l_call = a_thread->call;
 			while (l_call) {
 				if (strcmp(l_call->feature_name, "SCOOP initialization") == 0) {
@@ -2160,20 +2190,17 @@ static int GE_unprotected_debug_stoppable_breakpoint(GE_context* a_thread, GE_de
 				}
 				l_call = l_call->caller;
 			}
-			GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 			return (!l_scoop_initialization);
 		}
 		return 0;
 	}
 	if (GE_debug_step_out_thread_id > 0 && GE_debug_step_level > 0) {
 		if (a_thread->debug_thread_id == GE_debug_step_out_thread_id) {
-			GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
 			l_call = a_thread->call;
 			while (l_call && count <= GE_debug_step_level) {
 				count++;
 				l_call = l_call->caller;
 			}
-			GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 			if (count < GE_debug_step_level) {
 				return 1;
 			}
@@ -2199,63 +2226,76 @@ void GE_debug_hit_breakpoint(GE_context* a_thread, GE_debug_breakpoint* a_breakp
 		 * handlers which execute Eiffel code behind the scene. */
 		return;
 	}
+	GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+	while (a_thread->debug_status_pending) {
+		/* Wait for the global debugger status to be updated. */
+		a_thread->debug_status_pending = 0;
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+	}
+	GE_call* l_call = a_thread->call;
+	if (l_call) {
+		l_call->line = a_breakpoint->last_line;
+		l_call->column = 1;
+	}
+	if (!GE_debug_is_stopped && !GE_debug_is_stopping && !GE_unprotected_debug_stoppable_breakpoint(a_thread, a_breakpoint)) {
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		return;
+	}
+	GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 	GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 	if (!GE_debug_out) {
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 		return;
 	}
 	GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
-	GE_call* l_call = a_thread->call;
-	if (l_call) {
-		l_call->line = a_breakpoint->last_line;
-		l_call->column = 1;
+	if (!GE_debug_is_stopped && !GE_debug_is_stopping && !GE_unprotected_debug_stoppable_breakpoint(a_thread, a_breakpoint)) {
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		return;
 	}
-	if (GE_debug_is_stopped || GE_debug_is_stopping || GE_unprotected_debug_stoppable_breakpoint(a_thread, a_breakpoint)) {
-		if (!GE_debug_is_stopped) {
-			if (!GE_debug_stopped_thread_id) {
-				GE_debug_stopped_thread_id = a_thread->debug_thread_id;
-				if (a_breakpoint->enabled) {
-					GE_debug_stopped_reason = "breakpoint";
-				} else if (!GE_debug_is_stopping) {
-					GE_debug_stopped_reason = "step";
-				} else {
-					GE_debug_stopped_reason = "pause";
-				}
-				GE_debug_stopped_exception_code = 0;
-				GE_debug_stopped_exception_tag = 0;
+	GE_unprotected_debug_set_status_pending(a_thread);
+	if (!GE_debug_is_stopped) {
+		if (!GE_debug_stopped_thread_id) {
+			GE_debug_stopped_thread_id = a_thread->debug_thread_id;
+			if (a_breakpoint->enabled) {
+				GE_debug_stopped_reason = "breakpoint";
+			} else if (!GE_debug_is_stopping) {
+				GE_debug_stopped_reason = "step";
+			} else {
+				GE_debug_stopped_reason = "pause";
 			}
+			GE_debug_stopped_exception_code = 0;
+			GE_debug_stopped_exception_tag = 0;
 		}
-		if (!GE_debug_is_stopped && !GE_debug_is_stopping) {
-			GE_debug_is_stopping = 1;
-			GE_debug_step_next_thread_id = 0;
-			GE_debug_step_in_thread_id = 0;
-			GE_debug_step_out_thread_id = 0;
-			GE_debug_step_level = 0;
-		}
-		if (!a_thread->is_stopped) {
-			a_thread->is_stopped = 1;
-		}
-		if (!GE_debug_is_stopped) {
-			GE_unprotected_debug_check_and_send_all_stopped(a_thread);
-		}
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-		while (a_thread->is_stopped) {
-			GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
-		}
-		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
-	} else {
-		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 	}
+	if (!GE_debug_is_stopped && !GE_debug_is_stopping) {
+		GE_debug_is_stopping = 1;
+		GE_debug_step_next_thread_id = 0;
+		GE_debug_step_in_thread_id = 0;
+		GE_debug_step_out_thread_id = 0;
+		GE_debug_step_level = 0;
+	}
+	if (!a_thread->is_stopped) {
+		a_thread->is_stopped = 1;
+	}
+	if (!GE_debug_is_stopped) {
+		GE_unprotected_debug_check_and_send_all_stopped(a_thread);
+	}
+	GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+	while (a_thread->is_stopped) {
+		GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+	}
+	GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 }
 
 /*
- * 
+ * Can `a_thread` be stopped on an exception of code `a_code` ?
  * 
  * Not thread-safe.
  * Need to be protected by:
- * - `GE_debug_mutex`.
- * Protected by:
  * - Mutex of `a_thread`.
  */
 static int GE_unprotected_debug_stoppable_exception_breakpoint(GE_context* a_thread, long code)
@@ -2272,7 +2312,6 @@ static int GE_unprotected_debug_stoppable_exception_breakpoint(GE_context* a_thr
 	if (GE_debug_exception_breakpoint_uncaught) {
 		GE_rescue* l_rescue;
 		int l_uncaught = 1;
-		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
 		l_rescue = a_thread->last_rescue;
 		while (l_rescue) {
 			if (l_rescue->is_eiffel) {
@@ -2281,7 +2320,6 @@ static int GE_unprotected_debug_stoppable_exception_breakpoint(GE_context* a_thr
 			}
 			l_rescue = l_rescue->previous;
 		}
-		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 		if (l_uncaught) {
 			return 1;
 		}
@@ -2289,7 +2327,6 @@ static int GE_unprotected_debug_stoppable_exception_breakpoint(GE_context* a_thr
 	if (GE_debug_exception_breakpoint_unretried) {
 		GE_rescue* l_rescue;
 		int l_unretried = 1;
-		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
 		l_rescue = a_thread->last_rescue;
 		while (l_rescue) {
 			if (l_rescue->is_eiffel && l_rescue->has_retry) {
@@ -2298,7 +2335,6 @@ static int GE_unprotected_debug_stoppable_exception_breakpoint(GE_context* a_thr
 			}
 			l_rescue = l_rescue->previous;
 		}
-		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 		if (l_unretried) {
 			return 1;
 		}
@@ -2322,45 +2358,61 @@ void GE_debug_hit_exception_breakpoint(GE_context* a_thread, long code, const ch
 		 * handlers which execute Eiffel code behind the scene. */
 		return;
 	}
+	GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+	while (a_thread->debug_status_pending) {
+		/* Wait for the global debugger status to be updated. */
+		a_thread->debug_status_pending = 0;
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+	}
+	if (!GE_debug_is_stopped && !GE_debug_is_stopping && !GE_unprotected_debug_stoppable_exception_breakpoint(a_thread, code)) {
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		return;
+	}
+	GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 	GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
 	if (!GE_debug_out) {
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
 		return;
 	}
-	if (GE_debug_is_stopped || GE_debug_is_stopping || GE_unprotected_debug_stoppable_exception_breakpoint(a_thread, code)) {
-		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
-		if (!GE_debug_is_stopped) {
-			if (!GE_debug_stopped_thread_id) {
-				GE_debug_stopped_thread_id = a_thread->debug_thread_id;
-				GE_debug_stopped_reason = "exception";
-				GE_debug_stopped_exception_code = code;
-				GE_debug_stopped_exception_tag = tag;
-			}
-		}
-		if (!GE_debug_is_stopped && !GE_debug_is_stopping) {
-			GE_debug_is_stopping = 1;
-			GE_debug_step_next_thread_id = 0;
-			GE_debug_step_in_thread_id = 0;
-			GE_debug_step_out_thread_id = 0;
-			GE_debug_step_level = 0;
-		}
-		if (!a_thread->is_stopped) {
-			if (a_thread->call) {
-				a_thread->call->column = 1;
-			}
-			a_thread->is_stopped = 1;
-		}
-		if (!GE_debug_is_stopped) {
-			GE_unprotected_debug_check_and_send_all_stopped(a_thread);
-		}
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-		while (a_thread->is_stopped) {
-			GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
-		}
+	GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+	if (!GE_debug_is_stopped && !GE_debug_is_stopping && !GE_unprotected_debug_stoppable_exception_breakpoint(a_thread, code)) {
 		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
-	} else {
 		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		return;
 	}
+	GE_unprotected_debug_set_status_pending(a_thread);
+	if (!GE_debug_is_stopped) {
+		if (!GE_debug_stopped_thread_id) {
+			GE_debug_stopped_thread_id = a_thread->debug_thread_id;
+			GE_debug_stopped_reason = "exception";
+			GE_debug_stopped_exception_code = code;
+			GE_debug_stopped_exception_tag = tag;
+		}
+	}
+	if (!GE_debug_is_stopped && !GE_debug_is_stopping) {
+		GE_debug_is_stopping = 1;
+		GE_debug_step_next_thread_id = 0;
+		GE_debug_step_in_thread_id = 0;
+		GE_debug_step_out_thread_id = 0;
+		GE_debug_step_level = 0;
+	}
+	if (!a_thread->is_stopped) {
+		if (a_thread->call) {
+			a_thread->call->column = 1;
+		}
+		a_thread->is_stopped = 1;
+	}
+	if (!GE_debug_is_stopped) {
+		GE_unprotected_debug_check_and_send_all_stopped(a_thread);
+	}
+	GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+	while (a_thread->is_stopped) {
+		GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+	}
+	GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 }
 
 /*
@@ -2371,30 +2423,55 @@ void GE_debug_hit_exception_breakpoint(GE_context* a_thread, long code, const ch
  * - `GE_debug_mutex`.
  * - Mutex of `a_thread`.
  */
-void GE_debug_set_blocking(GE_context* a_thread, int a_value)
+void GE_debug_set_blocking(GE_context* a_thread, uint8_t a_value)
 {
-	GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
-	GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
-	a_thread->is_blocking = a_value;
-	if (GE_debug_is_stopped || GE_debug_is_stopping) {
-		if (!a_thread->is_stopped) {
-			if (a_thread->call) {
-				a_thread->call->column = 1;
-			}
-			a_thread->is_stopped = 1;
-		}
-		if (!GE_debug_is_stopped) {
-			GE_unprotected_debug_check_and_send_all_stopped(a_thread);
-		}
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
-		while (a_thread->is_stopped) {
-			GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
-		}
-		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
-	} else {
-		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
-		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+	if (!GE_debug_mutex) {
+		/* Not initialized yet.
+		 * This might happen when initializing Eiffel exception
+		 * handlers which execute Eiffel code behind the scene. */
+		a_thread->is_blocking = a_value;
+		return;
 	}
+	GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+	while (a_thread->debug_status_pending) {
+		/* Wait for the global debugger status to be updated. */
+		a_thread->debug_status_pending = 0;
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+	}
+	a_thread->is_blocking = a_value;
+	if (!GE_debug_is_stopped && !GE_debug_is_stopping) {
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		return;
+	}
+	GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+	GE_mutex_lock((EIF_POINTER)GE_debug_mutex);
+	if (!GE_debug_out) {
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		return;
+	}
+	GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
+	if (!GE_debug_is_stopped && !GE_debug_is_stopping) {
+		GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
+		GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+		return;
+	}
+	if (!a_thread->is_stopped) {
+		if (a_thread->call) {
+			a_thread->call->column = 1;
+		}
+		a_thread->is_stopped = 1;
+	}
+	if (!GE_debug_is_stopped) {
+		GE_unprotected_debug_check_and_send_all_stopped(a_thread);
+	}
+	GE_mutex_unlock((EIF_POINTER)GE_debug_mutex);
+	while (a_thread->is_stopped) {
+		GE_condition_variable_wait((EIF_POINTER)a_thread->debug_condition_variable, (EIF_POINTER)a_thread->debug_mutex);
+	}
+	GE_mutex_unlock((EIF_POINTER)a_thread->debug_mutex);
 }
 
 /*
@@ -2419,7 +2496,7 @@ void GE_debug_set_call_position(GE_context* a_thread, GE_call* call, uint32_t li
  * Protected by:
  * - Mutex of `a_thread`.
  */
-void GE_debug_set_call_location(GE_context* a_thread, GE_call* call, char* class_name, char* filename)
+void GE_debug_set_call_location(GE_context* a_thread, GE_call* call, const char* class_name, const char* filename)
 {
 	GE_mutex_lock((EIF_POINTER)a_thread->debug_mutex);
 	call->class_name = class_name;

@@ -129,10 +129,10 @@ struct GE_call_struct {
 #if defined(GE_USE_CURRENT_IN_EXCEPTION_TRACE) || defined(GE_DEBUG_MODE)
 	void* volatile object; /* Current object */
 #endif
-	char* volatile class_name;
-	char* volatile feature_name;
+	const char* volatile class_name;
+	const char* volatile feature_name;
 #ifdef GE_DEBUG_MODE
-	char* volatile filename;
+	const char* volatile filename;
 	uint32_t volatile line;
 	uint32_t volatile column;
 	GE_debug_variable** volatile arguments;
@@ -190,8 +190,9 @@ struct GE_context_struct {
 #ifdef GE_DEBUG_MODE
 	EIF_MUTEX_TYPE* volatile debug_mutex;
 	EIF_COND_TYPE* volatile debug_condition_variable;
-	int volatile is_blocking; /* Should the debugger not wait for this thread to reach a breakpoint when stopping all threads? */
-	int volatile is_stopped; /* As the execution of this thread been stopped by the debugger? */
+	uint8_t volatile is_blocking; /* Should the debugger not wait for this thread to reach a breakpoint when stopping all threads? */
+	uint8_t volatile is_stopped; /* Has the execution of this thread been stopped by the debugger? */
+	uint8_t volatile debug_status_pending; /* Does the debugger require its global mutex to be acquired before proceeding further? */
 	uint32_t debug_thread_id; /* Thread id used by the debugger. */
 	GE_context* volatile next_thread; /* Next Eiffel thread known by the debugger. */
 #endif

@@ -66,13 +66,13 @@ extern void GE_debug_hit_breakpoint(GE_context* a_thread, GE_debug_breakpoint* a
 extern void GE_debug_hit_exception_breakpoint(GE_context* a_thread, long code, const char* tag);
 
 /* Set `is_blocking` status of `a_thread`. */
-extern void GE_debug_set_blocking(GE_context* a_thread, int a_value);
+extern void GE_debug_set_blocking(GE_context* a_thread, uint8_t a_value);
 
 /* Set position of `call`. */
 extern void GE_debug_set_call_position(GE_context* a_thread, GE_call* call, uint32_t line, uint32_t column);
 
 /* Set class_name/filename of `call`. */
-extern void GE_debug_set_call_location(GE_context* a_thread, GE_call* call, char* class_name, char* filename);
+extern void GE_debug_set_call_location(GE_context* a_thread, GE_call* call, const char* class_name, const char* filename);
 
 #ifdef __cplusplus
 }
