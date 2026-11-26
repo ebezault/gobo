@@ -10789,9 +10789,6 @@ feature {NONE} -- Instruction generation
 					if line_generation_mode then
 						print_position (l_when_part.position, current_feature.static_feature.implementation_class)
 					end
-					if debug_mode then
-						print_position_reached (l_when_part.position)
-					end
 					l_choices := l_when_part.choices
 					if l_choices.count /= 0 then
 						if l_is_character_n_type then
@@ -10844,9 +10841,6 @@ feature {NONE} -- Instruction generation
 					l_when_part := l_inspect_if_choices.item (i)
 					if line_generation_mode then
 						print_position (l_when_part.position, current_feature.static_feature.implementation_class)
-					end
-					if debug_mode then
-						print_position_reached (l_when_part.position)
 					end
 					l_choices := l_when_part.choices
 					if l_choices.count /= 0 then
