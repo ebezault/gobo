@@ -1,0 +1,2 @@
+[VEVI] class AA (23,3): entity 'Result' declared as attached is not initialized at the end of the body of attribute `f'.
+----
