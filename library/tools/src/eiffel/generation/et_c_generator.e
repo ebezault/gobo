@@ -25408,10 +25408,10 @@ feature {NONE} -- SCOOP
 			header_file.put_character ('*')
 			header_file.put_character ('/')
 			header_file.put_new_line
-			header_file.put_string (c_typedef)
+			header_file.put_string (c_struct)
 			header_file.put_character (' ')
-			header_file.put_string (c_volatile)
-			header_file.put_character (' ')
+			print_separate_call_object_type_name (i, current_feature, current_type, header_file)
+			header_file.put_character ('_')
 			header_file.put_string (c_struct)
 			header_file.put_character (' ')
 			header_file.put_character ('{')
@@ -25487,6 +25487,17 @@ feature {NONE} -- SCOOP
 				end
 			end
 			header_file.put_character ('}')
+			header_file.put_character (';')
+			header_file.put_new_line
+			header_file.put_string (c_typedef)
+			header_file.put_character (' ')
+			header_file.put_string (c_volatile)
+			header_file.put_character (' ')
+			header_file.put_string (c_struct)
+			header_file.put_character (' ')
+			print_separate_call_object_type_name (i, current_feature, current_type, header_file)
+			header_file.put_character ('_')
+			header_file.put_string (c_struct)
 			header_file.put_character (' ')
 			print_separate_call_object_type_name (i, current_feature, current_type, header_file)
 			header_file.put_character (';')
