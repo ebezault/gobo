@@ -38423,9 +38423,17 @@ feature {NONE} -- C function generation
 				error_handler.report_giaac_error (generator, "print_new_string_8_function", 2, "attribute `count' has no type.")
 			else
 				l_count_type := l_dynamic_type_set.static_type.primary_type
-					-- Print signature to `header_file' and `current_file'.
 				old_file := current_file
 				current_file := current_function_header_buffer
+					-- Print `GE_str8_type_id` to `current_file'.
+				current_file.put_string (c_eif_type_index)
+				current_file.put_character (' ')
+				current_file.put_string (c_ge_str8_type_id)
+				print_assign_to
+				current_file.put_integer (l_string_type.id)
+				print_semicolon_newline
+				current_file.put_new_line
+					-- Print signature to `header_file' and `current_file'.
 				header_file.put_string (c_extern)
 				header_file.put_character (' ')
 				print_type_declaration (l_string_type, header_file)
@@ -38575,9 +38583,17 @@ feature {NONE} -- C function generation
 				error_handler.report_giaac_error (generator, "print_new_string_32_function", 2, "attribute `count' has no type.")
 			else
 				l_count_type := l_dynamic_type_set.static_type.primary_type
-					-- Print signature to `header_file' and `current_file'.
 				old_file := current_file
 				current_file := current_function_header_buffer
+					-- Print `GE_str32_type_id` to `current_file'.
+				current_file.put_string (c_eif_type_index)
+				current_file.put_character (' ')
+				current_file.put_string (c_ge_str32_type_id)
+				print_assign_to
+				current_file.put_integer (l_string_type.id)
+				print_semicolon_newline
+				current_file.put_new_line
+					-- Print signature to `header_file' and `current_file'.
 				header_file.put_string (c_extern)
 				header_file.put_character (' ')
 				print_type_declaration (l_string_type, header_file)
@@ -38727,9 +38743,17 @@ feature {NONE} -- C function generation
 				error_handler.report_giaac_error (generator, "print_new_immutable_string_8_function", 2, "attribute `count' has no type.")
 			else
 				l_count_type := l_dynamic_type_set.static_type.primary_type
-					-- Print signature to `header_file' and `current_file'.
 				old_file := current_file
 				current_file := current_function_header_buffer
+					-- Print `GE_istr8_type_id` to `current_file'.
+				current_file.put_string (c_eif_type_index)
+				current_file.put_character (' ')
+				current_file.put_string (c_ge_istr8_type_id)
+				print_assign_to
+				current_file.put_integer (l_string_type.id)
+				print_semicolon_newline
+				current_file.put_new_line
+					-- Print signature to `header_file' and `current_file'.
 				header_file.put_string (c_extern)
 				header_file.put_character (' ')
 				print_type_declaration (l_string_type, header_file)
@@ -38879,9 +38903,17 @@ feature {NONE} -- C function generation
 				error_handler.report_giaac_error (generator, "print_new_immutable_string_32_function", 2, "attribute `count' has no type.")
 			else
 				l_count_type := l_dynamic_type_set.static_type.primary_type
-					-- Print signature to `header_file' and `current_file'.
 				old_file := current_file
 				current_file := current_function_header_buffer
+					-- Print `GE_istr32_type_id` to `current_file'.
+				current_file.put_string (c_eif_type_index)
+				current_file.put_character (' ')
+				current_file.put_string (c_ge_istr32_type_id)
+				print_assign_to
+				current_file.put_integer (l_string_type.id)
+				print_semicolon_newline
+				current_file.put_new_line
+					-- Print signature to `header_file' and `current_file'.
 				header_file.put_string (c_extern)
 				header_file.put_character (' ')
 				print_type_declaration (l_string_type, header_file)
@@ -48724,6 +48756,7 @@ feature {NONE} -- Include files
 					include_runtime_header_file ("ge_thread.h", False, a_header_file)
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
 					include_runtime_header_file ("ge_types.h", False, a_header_file)
+					include_runtime_header_file ("ge_string.h", False, a_header_file)
 				elseif a_filename.same_string ("ge_deep.c") then
 					include_runtime_header_file ("ge_deep.h", False, a_header_file)
 					include_runtime_header_file ("ge_gc.h", False, a_header_file)
@@ -52120,7 +52153,9 @@ feature {NONE} -- Constants
 	c_ge_is_special_of_reference_or_basic_expanded_encoded_type: STRING = "GE_is_special_of_reference_or_basic_expanded_encoded_type"
 	c_ge_is_tuple_encoded_type: STRING = "GE_is_tuple_encoded_type"
 	c_ge_is_tuple_object: STRING = "GE_is_tuple_object"
+	c_ge_istr8_type_id: STRING = "GE_istr8_type_id"
 	c_ge_istr32_from_nstr: STRING = "GE_istr32_from_nstr"
+	c_ge_istr32_type_id: STRING = "GE_istr32_type_id"
 	c_ge_jump_to_last_rescue: STRING = "GE_jump_to_last_rescue"
 	c_ge_last_exception: STRING = "GE_last_exception"
 	c_ge_last_exception_raised: STRING = "GE_last_exception_raised"
@@ -52298,8 +52333,10 @@ feature {NONE} -- Constants
 	c_ge_storable_version_of_encoded_type: STRING = "GE_storable_version_of_encoded_type"
 	c_ge_str8_is_inbetween: STRING = "GE_str8_is_inbetween"
 	c_ge_str8_same_characters: STRING = "GE_str8_same_characters"
+	c_ge_str8_type_id: STRING = "GE_str8_type_id"
 	c_ge_str32_is_inbetween: STRING = "GE_str32_is_inbetween"
 	c_ge_str32_same_characters: STRING = "GE_str32_same_characters"
+	c_ge_str32_type_id: STRING = "GE_str32_type_id"
 	c_ge_thread_create_with_attr: STRING = "GE_thread_create_with_attr"
 	c_ge_thread_onces_set_counts: STRING = "GE_thread_onces_set_counts"
 	c_ge_type_flag_boolean: STRING = "GE_TYPE_FLAG_BOOLEAN"

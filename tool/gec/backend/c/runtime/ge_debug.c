@@ -28,6 +28,9 @@
 #ifndef GE_TYPES_H
 #include "ge_types.h"
 #endif
+#ifndef GE_STRING_H
+#include "ge_string.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,6 +51,9 @@ extern "C" {
 
 /* Maximum value for a thread id, frame id, etc. accepted by ADP. (2^31 -1 ) */
 #define GE_DEBUG_MAX_ID 2147483647
+
+/* Maixium number of string characters displayed in the debugger. */
+#define GE_DEBUG_MAX_STRING_COUNT 50
 
 /* Pipes to communicate with the VS Code Eiffel debugger adapter. */
 static FILE* GE_debug_in = NULL;
@@ -872,7 +878,73 @@ static void GE_unprotected_debug_write_variable(GE_debug_variable* a_variable)
 			}
 			char* l_type_name = (char*)GE_type_infos[l_object_type_id].name;
 			if (l_type_name[0] == '!') l_type_name++;
-			fprintf(GE_debug_out, "\"<0x%" EIF_POINTER_DISPLAY ">\",\"type\":\"%s\",\"variablesReference\":", (uintptr_t)l_value, l_type_name);
+			fprintf(GE_debug_out, "\"<0x%" EIF_POINTER_DISPLAY ">", (uintptr_t)l_value);
+			if (l_object_type_id == GE_str8_type_id) {
+				EIF_STRING_8* l_string = (EIF_STRING_8*)l_value;
+				EIF_CHARACTER_8* l_special = (EIF_CHARACTER_8*)GE_sp8_base_address(l_string->area);
+				EIF_INTEGER i;
+				EIF_INTEGER l_count = l_string->count;
+				if (l_count > GE_DEBUG_MAX_STRING_COUNT) {
+					l_count = GE_DEBUG_MAX_STRING_COUNT;
+				}
+				fprintf(GE_debug_out, " \\\"");
+				for (i = 0; i < l_count; i++) {
+					GE_debug_write_printable_character((uint32_t)l_special[i]);
+				}
+				if (l_count > GE_DEBUG_MAX_STRING_COUNT) {
+					fprintf(GE_debug_out, "...");
+				}
+				fprintf(GE_debug_out, "\\\"");
+			} else if (l_object_type_id == GE_str32_type_id) {
+				EIF_STRING_32* l_string = (EIF_STRING_32*)l_value;
+				EIF_CHARACTER_32* l_special = (EIF_CHARACTER_32*)GE_sp8_base_address(l_string->area);
+				EIF_INTEGER i;
+				EIF_INTEGER l_count = l_string->count;
+				if (l_count > GE_DEBUG_MAX_STRING_COUNT) {
+					l_count = GE_DEBUG_MAX_STRING_COUNT;
+				}
+				fprintf(GE_debug_out, " \\\"");
+				for (i = 0; i < l_count; i++) {
+					GE_debug_write_printable_character((uint32_t)l_special[i]);
+				}
+				if (l_count > GE_DEBUG_MAX_STRING_COUNT) {
+					fprintf(GE_debug_out, "...");
+				}
+				fprintf(GE_debug_out, "\\\"");
+			} else if (l_object_type_id == GE_istr8_type_id) {
+				EIF_IMMUTABLE_STRING_8* l_string = (EIF_IMMUTABLE_STRING_8*)l_value;
+				EIF_CHARACTER_8* l_special = (EIF_CHARACTER_8*)GE_sp8_base_address(l_string->area);
+				EIF_INTEGER i;
+				EIF_INTEGER l_count = l_string->count;
+				if (l_count > GE_DEBUG_MAX_STRING_COUNT) {
+					l_count = GE_DEBUG_MAX_STRING_COUNT;
+				}
+				fprintf(GE_debug_out, " \\\"");
+				for (i = 0; i < l_count; i++) {
+					GE_debug_write_printable_character((uint32_t)l_special[i]);
+				}
+				if (l_count > GE_DEBUG_MAX_STRING_COUNT) {
+					fprintf(GE_debug_out, "...");
+				}
+				fprintf(GE_debug_out, "\\\"");
+			} else if (l_object_type_id == GE_istr32_type_id) {
+				EIF_IMMUTABLE_STRING_32* l_string = (EIF_IMMUTABLE_STRING_32*)l_value;
+				EIF_CHARACTER_32* l_special = (EIF_CHARACTER_32*)GE_sp8_base_address(l_string->area);
+				EIF_INTEGER i;
+				EIF_INTEGER l_count = l_string->count;
+				if (l_count > GE_DEBUG_MAX_STRING_COUNT) {
+					l_count = GE_DEBUG_MAX_STRING_COUNT;
+				}
+				fprintf(GE_debug_out, " \\\"");
+				for (i = 0; i < l_count; i++) {
+					GE_debug_write_printable_character((uint32_t)l_special[i]);
+				}
+				if (l_count > GE_DEBUG_MAX_STRING_COUNT) {
+					fprintf(GE_debug_out, "...");
+				}
+				fprintf(GE_debug_out, "\\\"");
+			}
+			fprintf(GE_debug_out, "\",\"type\":\"%s\",\"variablesReference\":", l_type_name);
 			attribute_count = GE_type_infos[l_object_type_id].attribute_count;
 			if (GE_type_infos[l_value->id].flags & GE_TYPE_FLAG_SPECIAL) {
 				item_count = *(EIF_INTEGER*)((char*)l_value + GE_type_infos[l_value->id].attributes[1]->offset);
@@ -903,12 +975,12 @@ static void GE_unprotected_debug_write_variable(GE_debug_variable* a_variable)
 	} else if ((GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_BASIC_MASK) == GE_TYPE_FLAG_CHARACTER_8) {
 		EIF_CHARACTER_8 l_value = *(EIF_CHARACTER_8*)a_variable->address;
 		fprintf(GE_debug_out, "\"%u '", (uint32_t)l_value);
-		GE_debug_write_printable_character(l_value);
+		GE_debug_write_printable_character((uint32_t)l_value);
 		fprintf(GE_debug_out, "'\",\"type\":\"CHARACTER_8\",\"variablesReference\":0}");
 	} else if ((GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_BASIC_MASK) == GE_TYPE_FLAG_CHARACTER_32) {
 		EIF_CHARACTER_32 l_value = *(EIF_CHARACTER_32*)a_variable->address;
 		fprintf(GE_debug_out, "\"%u '", (uint32_t)l_value);
-		GE_debug_write_printable_character(l_value);
+		GE_debug_write_printable_character((uint32_t)l_value);
 		fprintf(GE_debug_out, "'\",\"type\":\"CHARACTER_32\",\"variablesReference\":0}");
 	} else if ((GE_type_infos[l_type_id].flags & GE_TYPE_FLAG_BASIC_MASK) == GE_TYPE_FLAG_INTEGER_8) {
 		EIF_INTEGER_8 l_value = *(EIF_INTEGER_8*)a_variable->address;
